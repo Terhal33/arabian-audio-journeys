@@ -9,13 +9,22 @@ import { Input } from '@/components/ui/input';
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   
-  const filteredTours = tours.filter(tour => 
-    tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tour.location && typeof tour.location === 'string' 
-      ? tour.location.toLowerCase().includes(searchQuery.toLowerCase())
-      : tour.location.lat.toString().includes(searchQuery) || 
-        tour.location.lng.toString().includes(searchQuery)
-  );
+  const filteredTours = tours.filter(tour => {
+    // Handle title search
+    const titleMatches = tour.title.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Handle location search based on type
+    let locationMatches = false;
+    if (typeof tour.location === 'string') {
+      locationMatches = tour.location.toLowerCase().includes(searchQuery.toLowerCase());
+    } else if (tour.location && typeof tour.location === 'object') {
+      // For location objects, convert coordinates to string for searching
+      const locationStr = `${tour.location.lat} ${tour.location.lng}`;
+      locationMatches = locationStr.includes(searchQuery);
+    }
+    
+    return titleMatches || locationMatches;
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
