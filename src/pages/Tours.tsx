@@ -1,13 +1,13 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { getTours } from '@/services/toursData';
+import { tours } from '@/services/toursData';
 import TourCard from '@/components/TourCard';
 import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Tours = () => {
-  const tours = getTours();
   const { isAuthenticated } = useAuth();
 
   return (
