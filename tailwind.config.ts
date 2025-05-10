@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,31 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Arabian Audio Journeys custom colors
+				sand: {
+					light: "#F5EFE0",
+					DEFAULT: "#E8D9B5",
+					dark: "#C4B080"
+				},
+				desert: {
+					light: "#D9A76A",
+					DEFAULT: "#B7733F",
+					dark: "#8E4F22"
+				},
+				oasis: {
+					light: "#7CCFCF",
+					DEFAULT: "#3AA8A8",
+					dark: "#1E7878"
+				},
+				gold: {
+					light: "#FFD78A",
+					DEFAULT: "#D4AF37",
+					dark: "#9B7D24"
+				},
+				night: {
+					DEFAULT: "#1A1E2A",
+					blue: "#283046"
 				}
 			},
 			borderRadius: {
@@ -84,11 +110,36 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-slow': {
+					'0%, 100%': {
+						opacity: 1
+					},
+					'50%': {
+						opacity: 0.5
+					}
+				},
+				'wave': {
+					'0%': { transform: 'scaleY(1)' },
+					'50%': { transform: 'scaleY(0.5)' },
+					'100%': { transform: 'scaleY(1)' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-slow': 'pulse-slow 3s ease-in-out infinite',
+				'wave': 'wave 1.5s ease-in-out infinite'
+			},
+			backgroundImage: {
+				'sand-gradient': 'linear-gradient(to right, #F5EFE0, #E8D9B5)',
+				'desert-gradient': 'linear-gradient(to right, #D9A76A, #8E4F22)',
+				'oasis-gradient': 'linear-gradient(to right, #7CCFCF, #1E7878)',
+			},
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				arabic: ['Noto Sans Arabic', 'sans-serif'],
+				display: ['Playfair Display', 'serif'],
 			}
 		}
 	},
