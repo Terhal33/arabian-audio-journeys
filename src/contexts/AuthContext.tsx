@@ -172,8 +172,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Enhanced logout method with complete cleanup
-  const logout = async () => {
+  // Enhanced logout method with complete cleanup - Fix the return type to Promise<void>
+  const logout = async (): Promise<void> => {
     try {
       // Set loading state
       setAuthState(state => ({ ...state, isLoading: true }));
@@ -213,8 +213,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
-      
-      return true;
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
@@ -225,11 +223,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       // Reset loading state on error
       setAuthState(state => ({ ...state, isLoading: false }));
-      return false;
     }
   };
 
-  // Alias for logout to maintain backward compatibility
+  // Alias for logout to maintain backward compatibility - Fix the return type to Promise<void>
   const signOut = logout;
 
   const resetPassword = async (email: string) => {

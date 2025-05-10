@@ -11,8 +11,10 @@ const SearchPage = () => {
   
   const filteredTours = tours.filter(tour => 
     tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tour.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    tour.description.toLowerCase().includes(searchQuery.toLowerCase())
+    tour.location && typeof tour.location === 'string' 
+      ? tour.location.toLowerCase().includes(searchQuery.toLowerCase())
+      : tour.location.lat.toString().includes(searchQuery) || 
+        tour.location.lng.toString().includes(searchQuery)
   );
 
   return (
