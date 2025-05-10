@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import { tours } from '@/services/toursData';
@@ -16,6 +15,8 @@ const SearchPage = () => {
     // Handle location search based on type
     let locationMatches = false;
     if (typeof tour.location === 'string') {
+      // This condition is never true based on current Tour interface,
+      // but keeping it for type safety and future-proofing
       locationMatches = tour.location.toLowerCase().includes(searchQuery.toLowerCase());
     } else if (tour.location && typeof tour.location === 'object') {
       // For location objects, convert coordinates to string for searching
