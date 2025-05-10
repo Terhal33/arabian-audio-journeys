@@ -11,10 +11,17 @@ export interface UserProfile {
   updated_at: string;
 }
 
+// Extended user type with additional properties
+export interface ExtendedUser extends User {
+  name?: string;
+  isPremium?: boolean;
+}
+
 export interface AuthState {
-  user: User | null;
+  user: ExtendedUser | null;
   profile: UserProfile | null;
   session: any | null;
   isLoading: boolean;
+  isAuthenticated: boolean;
   language: 'en' | 'ar';
 }

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { User, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 

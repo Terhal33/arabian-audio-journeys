@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTour, Tour } from '@/services/toursData';
@@ -18,6 +17,7 @@ const TourDetail = () => {
   const [activePointId, setActivePointId] = useState<string | null>(null);
   
   const { isAuthenticated, user } = useAuth();
+  const isPremium = user?.isPremium || false;
   const { playAudio } = useAudio();
   const navigate = useNavigate();
   
@@ -37,7 +37,7 @@ const TourDetail = () => {
   }, [id]);
   
   // Check if the user can access this tour
-  const canAccessTour = !tour?.isPremium || (isAuthenticated && user?.isPremium);
+  const canAccessTour = !tour?.isPremium || (isAuthenticated && isPremium);
   
   // Handle playing the main audio introduction
   const handlePlayIntro = () => {

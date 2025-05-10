@@ -3,12 +3,13 @@ import React, { createContext, useState, useContext, useEffect, ReactNode } from
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { UserProfile, AuthState } from '@/types/user';
+import { UserProfile, AuthState, ExtendedUser } from '@/types/user';
 
 interface AuthContextType extends AuthState {
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
+  logout: () => Promise<void>;
+  signOut: () => Promise<void>; // Alias for logout to maintain backward compatibility
   resetPassword: (email: string) => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
   setLanguage: (lang: 'en' | 'ar') => void;
@@ -20,6 +21,7 @@ const initialState: AuthState = {
   profile: null,
   session: null,
   isLoading: true,
+  isAuthenticated: false,
   language: 'en'
 };
 
@@ -33,7 +35,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setAuthState(state => ({ ...state, session, user: session?.user || null }));
+        const isAuthenticated = !!session?.user;
+        setAuthState(state => ({ 
+          ...state, 
+          session, 
+          user: session?.user as ExtendedUser || null,
+          isAuthenticated
+        }));
         
         // Fetch user profile when session changes
         if (session?.user) {
@@ -41,14 +49,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             fetchUserProfile(session.user.id);
           }, 0);
         } else {
-          setAuthState(state => ({ ...state, profile: null }));
+          setAuthState(state => ({ 
+            ...state, 
+            profile: null, 
+            isAuthenticated: false 
+          }));
         }
       }
     );
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthState(state => ({ ...state, session, user: session?.user || null }));
+      const isAuthenticated = !!session?.user;
+      setAuthState(state => ({ 
+        ...state, 
+        session, 
+        user: session?.user as ExtendedUser || null,
+        isAuthenticated
+      }));
       
       if (session?.user) {
         fetchUserProfile(session.user.id);
@@ -80,11 +98,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw error;
       }
 
+      // Create extended user with additional properties
+      const extendedUser = authState.user ? {
+        ...authState.user,
+        name: data.full_name,
+        isPremium: false // Default value, update based on your premium status logic
+      } : null;
+
       setAuthState(state => ({ 
         ...state, 
         profile: data as UserProfile, 
+        user: extendedUser,
         isLoading: false,
-        language: data.preferred_language || state.language
+        language: data.preferred_language as 'en' | 'ar' || state.language
       }));
       
     } catch (error) {
@@ -147,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signOut = async () => {
+  const logout = async () => {
     try {
       await supabase.auth.signOut();
       
@@ -164,6 +190,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
   };
+
+  // Alias for logout to maintain backward compatibility
+  const signOut = logout;
 
   const resetPassword = async (email: string) => {
     try {
@@ -234,6 +263,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...authState,
         signUp,
         signIn,
+        logout,
         signOut,
         resetPassword,
         updateProfile,

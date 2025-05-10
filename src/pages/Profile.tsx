@@ -9,7 +9,7 @@ import { User, Star, Clock, Map } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
   
   // Since we're using mock data, these would be populated from a real API in a production app
@@ -20,6 +20,9 @@ const Profile = () => {
   
   const [favoriteCount] = useState(3);
   const [completedCount] = useState(5);
+  
+  // Check if user has premium status (default to false if not set)
+  const isPremium = user?.isPremium || false;
   
   if (!user) {
     navigate('/login');
@@ -41,7 +44,7 @@ const Profile = () => {
                 </div>
                 
                 <div className="flex-1">
-                  <h1 className="text-2xl font-bold mb-1">{user.name}</h1>
+                  <h1 className="text-2xl font-bold mb-1">{profile?.full_name || user.email}</h1>
                   <p className="text-muted-foreground mb-4">{user.email}</p>
                   
                   <div className="flex items-center space-x-4">
@@ -58,7 +61,7 @@ const Profile = () => {
                 
                 <div className="mt-6 md:mt-0 flex flex-col space-y-3">
                   <Button className="bg-desert hover:bg-desert-dark">
-                    {user.isPremium ? 'Manage Subscription' : 'Upgrade to Premium'}
+                    {isPremium ? 'Manage Subscription' : 'Upgrade to Premium'}
                   </Button>
                   
                   <Button variant="outline" onClick={() => navigate('/tours')}>
@@ -67,7 +70,7 @@ const Profile = () => {
                 </div>
               </div>
               
-              {!user.isPremium && (
+              {!isPremium && (
                 <div className="mt-8 bg-gold/10 p-4 rounded-md">
                   <h3 className="font-semibold text-gold-dark mb-1">Upgrade to Premium</h3>
                   <p className="text-sm mb-3">
