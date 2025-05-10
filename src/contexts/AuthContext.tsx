@@ -1,109 +1,118 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { UserProfile, AuthState } from '@/types/user';
 
-type User = {
-  id: string;
-  email: string;
-  name: string;
-  isPremium: boolean;
-};
-
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
-  logout: () => void;
+interface AuthContextType extends AuthState {
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  setLanguage: (lang: 'en' | 'ar') => void;
+  refreshProfile: () => Promise<void>;
 }
+
+const initialState: AuthState = {
+  user: null,
+  profile: null,
+  session: null,
+  isLoading: true,
+  language: 'en'
+};
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [authState, setAuthState] = useState<AuthState>(initialState);
 
-  // Check for existing session on mount
+  // Update auth state based on session changes
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        // Mock authentication check - this would use Supabase in the real implementation
-        const storedUser = localStorage.getItem('aaj_user');
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setAuthState(state => ({ ...state, session, user: session?.user || null }));
         
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
+        // Fetch user profile when session changes
+        if (session?.user) {
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
+        } else {
+          setAuthState(state => ({ ...state, profile: null }));
         }
-      } catch (error) {
-        console.error('Auth session check failed:', error);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    );
 
-    checkUser();
+    // Initial session check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setAuthState(state => ({ ...state, session, user: session?.user || null }));
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setAuthState(state => ({ ...state, isLoading: false }));
+      }
+    });
+
+    // Load language preference
+    const savedLanguage = localStorage.getItem('aaj_language') as 'en' | 'ar';
+    if (savedLanguage) {
+      setAuthState(state => ({ ...state, language: savedLanguage }));
+    }
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    
+  const fetchUserProfile = async (userId: string) => {
     try {
-      // Mock login - would use Supabase auth in real implementation
-      if (email && password) {
-        // For demo, create a mock user
-        const mockUser = {
-          id: 'user_' + Math.random().toString(36).substring(2, 11),
-          email,
-          name: email.split('@')[0],
-          isPremium: false
-        };
-        
-        setUser(mockUser);
-        localStorage.setItem('aaj_user', JSON.stringify(mockUser));
-        
-        toast({
-          title: "Signed in",
-          description: "You have been successfully signed in.",
-        });
-      } else {
-        throw new Error("Email and password are required");
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        throw error;
       }
+
+      setAuthState(state => ({ 
+        ...state, 
+        profile: data as UserProfile, 
+        isLoading: false,
+        language: data.preferred_language || state.language
+      }));
+      
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error signing in",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
+      console.error('Error fetching user profile:', error);
+      setAuthState(state => ({ ...state, isLoading: false }));
     }
   };
 
-  const signup = async (email: string, password: string, name: string) => {
-    setIsLoading(true);
-    
+  const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      // Mock signup - would use Supabase auth in real implementation
-      if (email && password && name) {
-        // For demo, create a mock user
-        const mockUser = {
-          id: 'user_' + Math.random().toString(36).substring(2, 11),
-          email,
-          name,
-          isPremium: false
-        };
-        
-        setUser(mockUser);
-        localStorage.setItem('aaj_user', JSON.stringify(mockUser));
-        
-        toast({
-          title: "Account created",
-          description: "Your account has been successfully created.",
-        });
-      } else {
-        throw new Error("Email, password and name are required");
-      }
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            preferred_language: authState.language
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Verification email sent",
+        description: "Please check your email to verify your account.",
+      });
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -111,31 +120,125 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: error instanceof Error ? error.message : "An unknown error occurred",
       });
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    // Mock logout - would use Supabase auth in real implementation
-    localStorage.removeItem('aaj_user');
-    setUser(null);
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Signed in",
+        description: "You have successfully signed in.",
+      });
+
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error signing in",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+      });
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        variant: "destructive",
+        title: "Error signing out",
+        description: "Failed to sign out. Please try again.",
+      });
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + '/reset-password',
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Reset email sent",
+        description: "Check your email for a password reset link.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Password reset failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+      });
+      throw error;
+    }
+  };
+
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .update(updates)
+        .eq('id', authState.user?.id as string);
+
+      if (error) throw error;
+
+      await fetchUserProfile(authState.user?.id as string);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Profile update failed",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+      });
+      throw error;
+    }
+  };
+
+  const setLanguage = (lang: 'en' | 'ar') => {
+    setAuthState(state => ({ ...state, language: lang }));
+    localStorage.setItem('aaj_language', lang);
     
-    toast({
-      title: "Signed out",
-      description: "You have been successfully signed out.",
-    });
+    // If user is logged in, update their profile
+    if (authState.user && authState.profile) {
+      updateProfile({ preferred_language: lang }).catch(console.error);
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (authState.user) {
+      await fetchUserProfile(authState.user.id);
+    }
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        signup,
-        logout
+        ...authState,
+        signUp,
+        signIn,
+        signOut,
+        resetPassword,
+        updateProfile,
+        setLanguage,
+        refreshProfile
       }}
     >
       {children}

@@ -1,21 +1,20 @@
 
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import LanguageSelector from '@/components/LanguageSelector';
 
-const Login = () => {
+const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
-  const { signIn, language } = useAuth();
+  const [isSuccess, setIsSuccess] = useState(false);
+  const { resetPassword, language } = useAuth();
   
   const { 
     values, 
@@ -23,18 +22,15 @@ const Login = () => {
     touched, 
     handleChange, 
     handleBlur, 
-    validateForm 
+    validateForm,
+    resetForm
   } = useFormValidation(
-    { email: '', password: '' },
+    { email: '' },
     {
       email: {
         required: true,
         email: true,
         message: language === 'ar' ? 'يرجى إدخال بريد إلكتروني صالح' : 'Please enter a valid email'
-      },
-      password: {
-        required: true,
-        message: language === 'ar' ? 'كلمة المرور مطلوبة' : 'Password is required'
       }
     }
   );
@@ -51,10 +47,11 @@ const Login = () => {
     setIsLoading(true);
     
     try {
-      await signIn(values.email, values.password);
-      navigate('/tours');
+      await resetPassword(values.email);
+      setIsSuccess(true);
+      resetForm();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in');
+      setError(err instanceof Error ? err.message : 'Failed to send reset email');
     } finally {
       setIsLoading(false);
     }
@@ -72,13 +69,30 @@ const Login = () => {
         
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
           <h1 className="text-2xl font-display font-semibold text-center mb-6">
-            {language === 'ar' ? 'تسجيل الدخول' : 'Sign In'}
+            {language === 'ar' ? 'استعادة كلمة المرور' : 'Reset Password'}
           </h1>
+          
+          <p className="text-muted-foreground text-center mb-6">
+            {language === 'ar' 
+              ? 'أدخل بريدك الإلكتروني وسنرسل لك رابطا لإعادة تعيين كلمة المرور' 
+              : 'Enter your email and we will send you a password reset link'}
+          </p>
           
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          {isSuccess && (
+            <Alert className="mb-6 bg-green-50 text-green-700 border-green-200">
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertDescription>
+                {language === 'ar' 
+                  ? 'تم إرسال رابط إعادة تعيين كلمة المرور. يرجى التحقق من بريدك الإلكتروني' 
+                  : 'Password reset link sent. Please check your email'}
+              </AlertDescription>
             </Alert>
           )}
           
@@ -103,56 +117,22 @@ const Login = () => {
               )}
             </div>
             
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="password">
-                  {language === 'ar' ? 'كلمة المرور' : 'Password'}
-                </Label>
-                <Link 
-                  to="/forgot-password" 
-                  className="text-xs text-oasis hover:underline"
-                >
-                  {language === 'ar' ? 'نسيت كلمة المرور؟' : 'Forgot password?'}
-                </Link>
-              </div>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                placeholder={language === 'ar' ? '••••••••' : '••••••••'}
-                value={values.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                disabled={isLoading}
-                className={touched.password && errors.password ? 'border-red-500' : ''}
-              />
-              {touched.password && errors.password && (
-                <p className="text-sm text-red-500">{errors.password}</p>
-              )}
-            </div>
-            
             <Button 
               type="submit" 
               className="w-full bg-desert hover:bg-desert-dark text-white" 
               disabled={isLoading}
             >
               {isLoading ? (
-                language === 'ar' ? 'جاري تسجيل الدخول...' : 'Signing in...'
+                language === 'ar' ? 'جاري الإرسال...' : 'Sending...'
               ) : (
-                language === 'ar' ? 'تسجيل الدخول' : 'Sign In'
+                language === 'ar' ? 'إرسال رابط إعادة التعيين' : 'Send Reset Link'
               )}
             </Button>
             
-            <Separator />
-            
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                {language === 'ar' ? 'ليس لديك حساب؟' : "Don't have an account?"}
-                {' '}
-                <Link to="/signup" className="text-oasis hover:underline">
-                  {language === 'ar' ? 'إنشاء حساب' : 'Create an account'}
-                </Link>
-              </p>
+              <Link to="/login" className="text-oasis hover:underline text-sm">
+                {language === 'ar' ? 'العودة إلى تسجيل الدخول' : 'Back to Login'}
+              </Link>
             </div>
           </form>
         </div>
@@ -161,4 +141,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ForgotPassword;
