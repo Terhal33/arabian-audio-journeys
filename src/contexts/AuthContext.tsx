@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
@@ -173,14 +172,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Enhanced logout method with complete cleanup
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      // Set loading state
+      setAuthState(state => ({ ...state, isLoading: true }));
       
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // Clear all auth state
+      setAuthState(state => ({ 
+        ...state, 
+        user: null, 
+        profile: null, 
+        session: null, 
+        isAuthenticated: false,
+        isLoading: false
+      }));
+      
+      // Remove any stored authentication data or tokens
+      localStorage.removeItem('redirectAfterLogin');
+      
+      // Optionally keep language preference
+      const language = localStorage.getItem('aaj_language');
+      
+      // Reset app state for fresh login (but keep onboarded status)
+      const onboardedStatus = localStorage.getItem('aaj_onboarded');
+      
+      // Clear local storage but keep minimal preferences
+      localStorage.clear();
+      
+      // Restore preferences we want to keep
+      if (language) localStorage.setItem('aaj_language', language);
+      if (onboardedStatus) localStorage.setItem('aaj_onboarded', onboardedStatus);
+      
+      // Successfully logged out
       toast({
         title: "Signed out",
         description: "You have been successfully signed out.",
       });
+      
+      return true;
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
@@ -188,6 +222,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Error signing out",
         description: "Failed to sign out. Please try again.",
       });
+      
+      // Reset loading state on error
+      setAuthState(state => ({ ...state, isLoading: false }));
+      return false;
     }
   };
 
@@ -264,7 +302,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signUp,
         signIn,
         logout,
-        signOut,
+        signOut: logout, // Alias for backward compatibility
         resetPassword,
         updateProfile,
         setLanguage,

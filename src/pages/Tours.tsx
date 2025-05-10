@@ -8,7 +8,7 @@ import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Tours = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isPremium } = useAuth();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -26,13 +26,16 @@ const Tours = () => {
             ))}
           </div>
           
-          {!isAuthenticated && (
-            <div className="mt-8 text-center">
-              <p className="text-muted-foreground">
-                To unlock the full experience, create an account and start your audio journey today!
+          {!isPremium && (
+            <div className="mt-8 text-center bg-gold/10 p-6 rounded-lg">
+              <h2 className="text-xl font-display font-bold mb-2 text-desert-dark">
+                Upgrade to Premium
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Get unlimited access to all premium tours and exclusive content!
               </p>
-              <Button asChild className="mt-4 bg-desert hover:bg-desert-dark text-white">
-                <Link to="/signup">Sign Up Now</Link>
+              <Button className="bg-gold hover:bg-gold-dark text-night">
+                Upgrade Now
               </Button>
             </div>
           )}

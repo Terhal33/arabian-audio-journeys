@@ -7,6 +7,7 @@ export interface UserProfile {
   full_name: string | null;
   avatar_url: string | null;
   preferred_language: 'en' | 'ar';
+  account_type?: 'free' | 'premium';
   created_at: string;
   updated_at: string;
 }
@@ -23,5 +24,7 @@ export interface AuthState {
   session: any | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isPremium?: boolean;
+  isVerified?: boolean;
   language: 'en' | 'ar';
 }
