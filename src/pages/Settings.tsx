@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -35,17 +34,45 @@ import LanguageSelector from '@/components/LanguageSelector';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 
+// Define types for our settings
+interface AudioSettings {
+  quality: string;
+  autoDownload: boolean;
+  backgroundPlay: boolean;
+}
+
+interface NotificationSettings {
+  tourUpdates: boolean;
+  newReleases: boolean;
+  recommendations: boolean;
+  nearbyTours: boolean;
+  appUpdates: boolean;
+}
+
+interface PrivacySettings {
+  locationSharing: boolean;
+  usageAnalytics: boolean;
+  personalization: boolean;
+  shareTourProgress: boolean;
+}
+
+interface StorageSettings {
+  autoDelete: boolean;
+  downloadOnlyWifi: boolean;
+  maxStorageUsage: number;
+}
+
 const Settings = () => {
   const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
   
-  const [audioSettings, setAudioSettings] = useLocalStorage('aaj_audio_settings', {
+  const [audioSettings, setAudioSettings] = useLocalStorage<AudioSettings>('aaj_audio_settings', {
     quality: 'high',
     autoDownload: true,
     backgroundPlay: true
   });
 
-  const [notificationSettings, setNotificationSettings] = useLocalStorage('aaj_notification_settings', {
+  const [notificationSettings, setNotificationSettings] = useLocalStorage<NotificationSettings>('aaj_notification_settings', {
     tourUpdates: true,
     newReleases: true,
     recommendations: true,
@@ -53,14 +80,14 @@ const Settings = () => {
     appUpdates: true
   });
   
-  const [privacySettings, setPrivacySettings] = useLocalStorage('aaj_privacy_settings', {
+  const [privacySettings, setPrivacySettings] = useLocalStorage<PrivacySettings>('aaj_privacy_settings', {
     locationSharing: true,
     usageAnalytics: true,
     personalization: true,
     shareTourProgress: true
   });
   
-  const [storageSettings, setStorageSettings] = useLocalStorage('aaj_storage_settings', {
+  const [storageSettings, setStorageSettings] = useLocalStorage<StorageSettings>('aaj_storage_settings', {
     autoDelete: false,
     downloadOnlyWifi: true,
     maxStorageUsage: 500 // MB
@@ -72,7 +99,7 @@ const Settings = () => {
     confirmPassword: ''
   });
   
-  const [themePreference, setThemePreference] = useLocalStorage('aaj_theme_preference', 'light');
+  const [themePreference, setThemePreference] = useLocalStorage<string>('aaj_theme_preference', 'light');
   
   // For the storage usage visualization
   const [storageUsage] = useState({
@@ -153,11 +180,12 @@ const Settings = () => {
     }
   };
   
-  const updateAudioSetting = (key, value) => {
-    setAudioSettings(prev => ({
-      ...prev,
+  // Update functions fixed with correct types
+  const updateAudioSetting = (key: keyof AudioSettings, value: any) => {
+    setAudioSettings({
+      ...audioSettings,
       [key]: value
-    }));
+    });
     
     toast({
       title: "Settings updated",
@@ -165,25 +193,25 @@ const Settings = () => {
     });
   };
   
-  const updateNotificationSetting = (key, value) => {
-    setNotificationSettings(prev => ({
-      ...prev,
+  const updateNotificationSetting = (key: keyof NotificationSettings, value: boolean) => {
+    setNotificationSettings({
+      ...notificationSettings,
       [key]: value
-    }));
+    });
   };
   
-  const updatePrivacySetting = (key, value) => {
-    setPrivacySettings(prev => ({
-      ...prev,
+  const updatePrivacySetting = (key: keyof PrivacySettings, value: boolean) => {
+    setPrivacySettings({
+      ...privacySettings,
       [key]: value
-    }));
+    });
   };
   
-  const updateStorageSetting = (key, value) => {
-    setStorageSettings(prev => ({
-      ...prev,
+  const updateStorageSetting = (key: keyof StorageSettings, value: any) => {
+    setStorageSettings({
+      ...storageSettings,
       [key]: value
-    }));
+    });
   };
   
   const clearCache = () => {
