@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Login from '@/pages/Login';
@@ -40,4 +40,5 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
   );
 };
 
-export default AuthNavigator;
+// Use memo to prevent unnecessary re-renders
+export default memo(AuthNavigator);

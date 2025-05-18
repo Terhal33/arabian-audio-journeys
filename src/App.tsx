@@ -28,57 +28,55 @@ const queryClient = new QueryClient({
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <TooltipProvider>
         <AuthProvider>
           <AudioProvider>
             <Toaster />
             <Sonner />
-            <AppInitializer>
-              <Routes>
-                {/* Auth routes */}
-                <Route path="/*" element={<AuthNavigator showOnboarding={!localStorage.getItem('aaj_onboarded')} />} />
-                
-                {/* Protected app routes */}
-                <Route path="/home/*" element={
-                  <ProtectedRoute>
-                    <MainNavigator />
-                  </ProtectedRoute>
-                } />
-                <Route path="/tours/*" element={
-                  <ProtectedRoute>
-                    <MainNavigator />
-                  </ProtectedRoute>
-                } />
-                <Route path="/map/*" element={
-                  <ProtectedRoute>
-                    <MainNavigator />
-                  </ProtectedRoute>
-                } />
-                <Route path="/search/*" element={
-                  <ProtectedRoute>
-                    <MainNavigator />
-                  </ProtectedRoute>
-                } />
-                <Route path="/library/*" element={
-                  <ProtectedRoute>
-                    <MainNavigator />
-                  </ProtectedRoute>
-                } />
-                <Route path="/profile/*" element={
-                  <ProtectedRoute>
-                    <MainNavigator />
-                  </ProtectedRoute>
-                } />
-                
-                {/* Fallback */}
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
-            </AppInitializer>
+            <Routes>
+              {/* Auth routes */}
+              <Route path="/*" element={<AuthNavigator showOnboarding={!localStorage.getItem('aaj_onboarded')} />} />
+              
+              {/* Protected app routes */}
+              <Route path="/home/*" element={
+                <ProtectedRoute>
+                  <MainNavigator />
+                </ProtectedRoute>
+              } />
+              <Route path="/tours/*" element={
+                <ProtectedRoute>
+                  <MainNavigator />
+                </ProtectedRoute>
+              } />
+              <Route path="/map/*" element={
+                <ProtectedRoute>
+                  <MainNavigator />
+                </ProtectedRoute>
+              } />
+              <Route path="/search/*" element={
+                <ProtectedRoute>
+                  <MainNavigator />
+                </ProtectedRoute>
+              } />
+              <Route path="/library/*" element={
+                <ProtectedRoute>
+                  <MainNavigator />
+                </ProtectedRoute>
+              } />
+              <Route path="/profile/*" element={
+                <ProtectedRoute>
+                  <MainNavigator />
+                </ProtectedRoute>
+              } />
+              
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
           </AudioProvider>
         </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+      </TooltipProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 
