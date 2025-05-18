@@ -19,6 +19,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   ];
 
   const isActive = (path: string) => {
+    // Consider /tour/:id and other sub-routes to be part of their parent sections
+    if (path === '/home' && location.pathname.startsWith('/tour/')) {
+      return true;
+    }
     return location.pathname === path || 
       (path === '/home' && location.pathname === '/');
   };
@@ -26,12 +30,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="flex flex-col h-screen">
       {/* Main content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto pb-16">
         {children}
       </div>
 
       {/* Bottom navigation */}
-      <nav className="bg-white border-t border-gray-200 h-16">
+      <nav className="bg-white border-t border-gray-200 h-16 fixed bottom-0 w-full">
         <div className="flex h-full">
           {navItems.map(({ path, icon: Icon, label }) => (
             <NavLink

@@ -56,7 +56,6 @@ const AppInitializer: React.FC = () => {
     return <Splash />;
   }
   
-  // Define the route structure
   return (
     <Routes>
       {/* Auth routes - unprotected */}

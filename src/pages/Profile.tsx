@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { User, Star, Clock, Map } from 'lucide-react';
-import Navbar from '@/components/Navbar';
 
 const Profile = () => {
   const { user, profile, logout } = useAuth();
@@ -30,14 +28,12 @@ const Profile = () => {
   }
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 py-10 bg-sand-light">
+    <div className="min-h-screen flex flex-col pb-16">
+      <main className="flex-1 py-6 bg-sand-light">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             {/* User Profile Header */}
-            <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <div className="flex flex-col md:flex-row md:items-center">
                 <div className="h-20 w-20 bg-desert rounded-full flex items-center justify-center mb-4 md:mb-0 md:mr-6">
                   <User className="h-10 w-10 text-white" />
@@ -71,7 +67,7 @@ const Profile = () => {
               </div>
               
               {!isPremium && (
-                <div className="mt-8 bg-gold/10 p-4 rounded-md">
+                <div className="mt-6 bg-gold/10 p-4 rounded-md">
                   <h3 className="font-semibold text-gold-dark mb-1">Upgrade to Premium</h3>
                   <p className="text-sm mb-3">
                     Get access to our complete library of premium audio tours and exclusive content.
@@ -183,7 +179,7 @@ const Profile = () => {
                     <Button variant="ghost" onClick={() => navigate('/tours')}>
                       Cancel
                     </Button>
-                    <Button onClick={logout}>
+                    <Button variant="outline" onClick={logout} className="text-destructive border-destructive hover:bg-destructive/10">
                       Sign Out
                     </Button>
                   </CardFooter>
