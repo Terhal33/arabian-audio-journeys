@@ -21,7 +21,13 @@ interface MapProps {
 
 // Map component that delegates rendering to MapCore
 const Map = (props: MapProps) => {
-  console.log("Map component rendering with props:", props);
+  console.log("Map component rendering with props:", {
+    location: props.location,
+    pointsCount: props.points?.length,
+    interactive: props.interactive,
+    showUserLocation: props.showUserLocation
+  });
+  
   return <MapCore {...props} />;
 };
 

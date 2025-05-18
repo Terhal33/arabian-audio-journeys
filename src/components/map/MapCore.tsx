@@ -43,6 +43,7 @@ const MapCore = ({
 }: MapProps) => {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapCenter, setMapCenter] = useState<MapLocation>(location);
+  const [viewportRadius, setViewportRadius] = useState<number>(5); // km
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const [activeTourId, setActiveTourId] = useState<string | null>(null);
   const [longPressLocation, setLongPressLocation] = useState<MapLocation | null>(null);
@@ -53,6 +54,15 @@ const MapCore = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsMapLoaded(true);
+      
+      // Notify region change once map is loaded
+      if (onRegionChange) {
+        onRegionChange({
+          lat: location.lat,
+          lng: location.lng,
+          radius: viewportRadius
+        });
+      }
     }, 500);
     
     return () => clearTimeout(timer);
@@ -62,11 +72,20 @@ const MapCore = ({
   useEffect(() => {
     setMapCenter(location);
     
+    // Notify region change when location changes
+    if (onRegionChange && isMapLoaded) {
+      onRegionChange({
+        lat: location.lat,
+        lng: location.lng,
+        radius: viewportRadius
+      });
+    }
+    
     // Save last viewed location to localStorage for persistence between sessions
     if (interactive) {
       localStorage.setItem('last_map_location', JSON.stringify(location));
     }
-  }, [location.lat, location.lng, interactive]);
+  }, [location.lat, location.lng, interactive, isMapLoaded, onRegionChange, viewportRadius]);
 
   // Load last viewed location on initial render
   useEffect(() => {
@@ -77,13 +96,22 @@ const MapCore = ({
           const parsedLocation = JSON.parse(savedLocation);
           if (parsedLocation.lat && parsedLocation.lng) {
             setMapCenter(parsedLocation);
+            
+            // Notify region change with saved location
+            if (onRegionChange) {
+              onRegionChange({
+                lat: parsedLocation.lat,
+                lng: parsedLocation.lng,
+                radius: viewportRadius
+              });
+            }
           }
         } catch (e) {
           console.error('Error parsing saved location', e);
         }
       }
     }
-  }, [interactive]);
+  }, [interactive, onRegionChange, viewportRadius]);
 
   // Simulate offline detection
   useEffect(() => {
@@ -114,7 +142,18 @@ const MapCore = ({
     if (interactive) {
       // Zoom in when clicking a cluster
       setMapCenter(center);
-      // In a real map implementation, we would increase zoom level here
+      
+      // Decrease viewport radius to simulate zoom in
+      setViewportRadius(Math.max(2, viewportRadius * 0.7));
+      
+      // Notify region change with new center and radius
+      if (onRegionChange) {
+        onRegionChange({
+          lat: center.lat,
+          lng: center.lng,
+          radius: Math.max(2, viewportRadius * 0.7)
+        });
+      }
     }
   };
   
@@ -159,7 +198,15 @@ const MapCore = ({
   
   const handleViewBookmark = (bookmark: Bookmark) => {
     setMapCenter({ lat: bookmark.lat, lng: bookmark.lng });
-    // In a real implementation, we would adjust zoom level here
+    
+    // Notify region change with bookmark location
+    if (onRegionChange) {
+      onRegionChange({
+        lat: bookmark.lat,
+        lng: bookmark.lng,
+        radius: viewportRadius
+      });
+    }
   };
   
   // Find tours to display paths for
@@ -167,6 +214,34 @@ const MapCore = ({
     .filter(p => p.tour && (p.tour.id === activeTourId || p.tour.points.length > 0))
     .map(p => p.tour!)
     .filter((tour: Tour, index: number, self: Tour[]) => self.findIndex(t => t.id === tour.id) === index);
+
+  const handleZoomIn = () => {
+    // Decrease viewport radius to simulate zoom in
+    setViewportRadius(Math.max(1, viewportRadius * 0.7));
+    
+    // Notify region change with new radius
+    if (onRegionChange) {
+      onRegionChange({
+        lat: mapCenter.lat,
+        lng: mapCenter.lng,
+        radius: Math.max(1, viewportRadius * 0.7)
+      });
+    }
+  };
+  
+  const handleZoomOut = () => {
+    // Increase viewport radius to simulate zoom out
+    setViewportRadius(viewportRadius * 1.5);
+    
+    // Notify region change with new radius
+    if (onRegionChange) {
+      onRegionChange({
+        lat: mapCenter.lat,
+        lng: mapCenter.lng,
+        radius: viewportRadius * 1.5
+      });
+    }
+  };
 
   return (
     <div 
@@ -219,8 +294,8 @@ const MapCore = ({
           {/* Map controls and compass */}
           <MapControls 
             interactive={interactive}
-            onZoomIn={() => {/* In a real map, we would increase zoom here */}}
-            onZoomOut={() => {/* In a real map, we would decrease zoom here */}}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
             onAddBookmark={handleOpenBookmarkForm}
             showBookmarkButton={true}
           />

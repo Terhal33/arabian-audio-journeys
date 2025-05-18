@@ -9,6 +9,7 @@ import UpgradePrompt from '@/components/UpgradePrompt';
 import { useTourLocations } from '@/hooks/useTourLocations';
 import { useMapInteractions } from '@/hooks/useMapInteractions';
 import MapHeader from '@/components/map/MapHeader';
+import { toast } from '@/hooks/use-toast';
 
 const MapPage = () => {
   console.log("MapPage component rendering");
@@ -20,6 +21,7 @@ const MapPage = () => {
     selectedTour,
     userLocation,
     activeRegion,
+    mapRadius,
     bookmarks,
     isBookmarksOpen,
     isOfflineManagerOpen,
@@ -31,6 +33,7 @@ const MapPage = () => {
     handleSearchBlur,
     handleSearchClear,
     handleRegionChange,
+    handleMapRegionChange,
     handleAddBookmark,
     handleDeleteBookmark,
     handleSelectBookmark,
@@ -44,10 +47,22 @@ const MapPage = () => {
   
   const { locations, isLoading, error } = useTourLocations(activeRegion, searchQuery);
 
+  // Display error toast if tour locations fail to load
+  React.useEffect(() => {
+    if (error) {
+      toast({
+        title: "Failed to load locations",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  }, [error]);
+
   console.log("MapPage data:", { 
     hasUserLocation: !!userLocation,
     locationsCount: locations?.length,
-    activeRegion
+    activeRegion,
+    mapRadius
   });
 
   return (
@@ -74,9 +89,16 @@ const MapPage = () => {
           interactive={true}
           className="w-full h-full"
           onPinClick={handleMapPinClick}
+          onRegionChange={handleMapRegionChange}
           showUserLocation={true}
         />
       </div>
+      
+      {isLoading && (
+        <div className="absolute top-20 right-4 bg-background/90 text-foreground px-3 py-1 rounded-full text-sm animate-pulse">
+          Loading locations...
+        </div>
+      )}
       
       {/* Bookmarks panel */}
       <Bookmarks 

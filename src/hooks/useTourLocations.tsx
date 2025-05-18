@@ -84,7 +84,7 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
         
         setLocations([...processedLocations, ...tourPointLocations]);
         setIsLoading(false);
-      }, 800);
+      }, 400); // Reduced delay for better user experience
       
       return () => clearTimeout(timer);
       
