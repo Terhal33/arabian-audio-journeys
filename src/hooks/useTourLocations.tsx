@@ -30,7 +30,7 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
             if (regionFilter === 'all') return true;
             
             // This is a simplification. In a real app, each tour would have a region property
-            // For demo, we'll use arbitrary matching:
+            // For demo, we'll use arbitrary mapping:
             const regionMapping: Record<string, string[]> = {
               'riyadh': ['diriyah-main'],
               'makkah': ['jeddah-historical'],
@@ -50,11 +50,17 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
           // Filter by search query if provided
           .filter(tour => {
             if (!searchQuery) return true;
-            const query = searchQuery.toLowerCase();
+            const query = searchQuery.toLowerCase().trim();
+            
+            if (query === '') return true;
             
             return (
               tour.title.toLowerCase().includes(query) ||
-              tour.description.toLowerCase().includes(query)
+              tour.description.toLowerCase().includes(query) || 
+              tour.points.some(point => 
+                point.title.toLowerCase().includes(query) || 
+                point.description.toLowerCase().includes(query)
+              )
             );
           })
           .map(tour => {
@@ -75,16 +81,50 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
           });
         
         // Add tour points as additional locations
-        const tourPointLocations = tours.flatMap(tour => {
-          return tour.points.map(point => ({
-            id: point.id,
-            lat: point.location.lat,
-            lng: point.location.lng,
-            type: 'historic' as const,
-            isPremium: tour.isPremium,
-            tour: tour
-          }));
-        });
+        const tourPointLocations = tours
+          .filter(tour => {
+            // Apply the same filters to tour points
+            if (regionFilter !== 'all') {
+              const regionMapping: Record<string, string[]> = {
+                'riyadh': ['diriyah-main'],
+                'makkah': ['jeddah-historical'],
+                'madinah': [],
+                'qassim': [],
+                'eastern': [],
+                'asir': [],
+                'tabuk': ['al-ula'],
+                'hail': [],
+              };
+              
+              if (regionMapping[regionFilter] && !regionMapping[regionFilter].includes(tour.id)) {
+                return false;
+              }
+            }
+            
+            if (searchQuery) {
+              const query = searchQuery.toLowerCase().trim();
+              if (query !== '' && !tour.title.toLowerCase().includes(query) && 
+                  !tour.description.toLowerCase().includes(query) &&
+                  !tour.points.some(point => 
+                    point.title.toLowerCase().includes(query) || 
+                    point.description.toLowerCase().includes(query)
+                  )) {
+                return false;
+              }
+            }
+            
+            return true;
+          })
+          .flatMap(tour => {
+            return tour.points.map(point => ({
+              id: point.id,
+              lat: point.location.lat,
+              lng: point.location.lng,
+              type: 'historic' as const,
+              isPremium: tour.isPremium,
+              tour: tour
+            }));
+          });
         
         const allLocations = [...processedLocations, ...tourPointLocations];
         console.log(`Loaded ${allLocations.length} locations (${processedLocations.length} tours + ${tourPointLocations.length} points)`);
@@ -96,6 +136,7 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
       return () => clearTimeout(timer);
       
     } catch (err) {
+      console.error("Error loading tour locations:", err);
       setError(err instanceof Error ? err : new Error('Failed to load locations'));
       setIsLoading(false);
     }

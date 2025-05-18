@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Search, Filter, Menu, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +41,13 @@ const MapHeader: React.FC<MapHeaderProps> = ({
   userLocation,
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Auto-focus the search input when expanded
+  useEffect(() => {
+    if (isSearchExpanded && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchExpanded]);
 
   return (
     <div className="absolute top-0 left-0 right-0 z-10 p-4">
@@ -69,6 +76,7 @@ const MapHeader: React.FC<MapHeaderProps> = ({
                 onChange={(e) => onSearchChange(e.target.value)}
                 onBlur={onSearchBlur}
                 className="flex-1 border-none shadow-none focus-visible:ring-0 bg-transparent"
+                autoComplete="off"
               />
               {searchQuery && (
                 <Button 

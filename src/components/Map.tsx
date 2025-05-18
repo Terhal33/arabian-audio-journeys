@@ -24,7 +24,7 @@ const Map = (props: MapProps) => {
       interactive: props.interactive,
       showUserLocation: props.showUserLocation
     });
-  }, [props.location, props.points?.length]);
+  }, [props.location, props.points, props.interactive, props.showUserLocation]);
   
   return <MapCore {...props} />;
 };

@@ -21,7 +21,12 @@ const UserLocation: React.FC<UserLocationProps> = ({ location, showUserLocation 
     return () => clearInterval(interval);
   }, [hasUserLocation]);
 
-  if (!hasUserLocation) return null;
+  if (!hasUserLocation) {
+    console.log("UserLocation not showing: location missing or showUserLocation is false");
+    return null;
+  }
+  
+  console.log("Rendering UserLocation at:", location);
   
   return (
     <div 

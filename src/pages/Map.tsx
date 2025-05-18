@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Map from '@/components/Map';
 import MapBottomSheet from '@/components/MapBottomSheet';
 import Bookmarks from '@/components/map/Bookmarks';
@@ -48,7 +48,7 @@ const MapPage = () => {
   const { locations, isLoading, error } = useTourLocations(activeRegion, searchQuery);
 
   // Display error toast if tour locations fail to load
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       toast({
         title: "Failed to load locations",
@@ -58,12 +58,14 @@ const MapPage = () => {
     }
   }, [error]);
 
-  console.log("MapPage data:", { 
-    hasUserLocation: !!userLocation,
-    locationsCount: locations?.length,
-    activeRegion,
-    mapRadius
-  });
+  // Debug when key data changes
+  useEffect(() => {
+    console.log("MapPage data updated:", { 
+      activeRegion,
+      searchQuery,
+      locationsCount: locations?.length
+    });
+  }, [activeRegion, searchQuery, locations?.length]);
 
   return (
     <div className="flex flex-col h-full relative bg-sand-light">
@@ -90,7 +92,7 @@ const MapPage = () => {
           className="w-full h-full"
           onPinClick={handleMapPinClick}
           onRegionChange={handleMapRegionChange}
-          showUserLocation={true}
+          showUserLocation={!!userLocation}
         />
       </div>
       
