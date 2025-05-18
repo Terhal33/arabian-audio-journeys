@@ -59,7 +59,7 @@ const AppInitializer: React.FC = () => {
   // Define the route structure
   return (
     <Routes>
-      {/* Auth routes */}
+      {/* Auth routes - unprotected */}
       <Route path="/onboarding/*" element={<AuthNavigator showOnboarding={true} />} />
       <Route path="/login/*" element={<AuthNavigator showOnboarding={false} />} />
       <Route path="/signup/*" element={<AuthNavigator showOnboarding={false} />} />

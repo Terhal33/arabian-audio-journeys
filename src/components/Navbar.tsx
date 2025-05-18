@@ -40,6 +40,12 @@ const Navbar = () => {
     }
   };
 
+  // If we're on a login or signup page, don't show the navbar at all
+  if (['/login', '/signup', '/forgot-password', '/verification', '/onboarding'].some(path => 
+      location.pathname.startsWith(path))) {
+    return null;
+  }
+
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -51,15 +57,14 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <NavLink to="/home" className={`nav-link ${isActive('/home') ? 'text-foreground font-medium' : ''}`}>
-            Home
-          </NavLink>
-          <NavLink to="/tours" className={`nav-link ${isActive('/tours') ? 'text-foreground font-medium' : ''}`}>
-            Tours
-          </NavLink>
-          
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <>
+              <NavLink to="/home" className={`nav-link ${isActive('/home') ? 'text-foreground font-medium' : ''}`}>
+                Home
+              </NavLink>
+              <NavLink to="/tours" className={`nav-link ${isActive('/tours') ? 'text-foreground font-medium' : ''}`}>
+                Tours
+              </NavLink>
               <NavLink to="/profile" className={`nav-link ${isActive('/profile') ? 'text-foreground font-medium' : ''}`}>
                 Profile
               </NavLink>
@@ -67,34 +72,27 @@ const Navbar = () => {
                 Sign Out
               </Button>
             </>
-          ) : (
-            <>
-              <NavLink to="/login" className={`nav-link ${isActive('/login') ? 'text-foreground font-medium' : ''}`}>
-                Sign In
-              </NavLink>
-              <Button asChild className="bg-desert hover:bg-desert-dark text-white">
-                <Link to="/signup">Sign Up</Link>
-              </Button>
-            </>
           )}
         </nav>
 
-        {/* Mobile Menu Button */}
-        <button 
-          onClick={toggleMenu}
-          className="md:hidden p-2 focus:outline-none"
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? (
-            <X className="h-6 w-6 text-desert-dark" />
-          ) : (
-            <Menu className="h-6 w-6 text-desert-dark" />
-          )}
-        </button>
+        {/* Mobile Menu Button - only show if authenticated */}
+        {isAuthenticated && (
+          <button 
+            onClick={toggleMenu}
+            className="md:hidden p-2 focus:outline-none"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <X className="h-6 w-6 text-desert-dark" />
+            ) : (
+              <Menu className="h-6 w-6 text-desert-dark" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* Mobile Navigation */}
-      {menuOpen && (
+      {menuOpen && isAuthenticated && (
         <nav className="bg-white px-4 py-2 md:hidden border-t border-gray-100">
           <div className="flex flex-col space-y-3">
             <NavLink 
@@ -111,45 +109,23 @@ const Navbar = () => {
             >
               Tours
             </NavLink>
-            
-            {isAuthenticated ? (
-              <>
-                <NavLink 
-                  to="/profile" 
-                  className={`py-2 ${isActive('/profile') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Profile
-                </NavLink>
-                <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }} 
-                  className="text-muted-foreground hover:text-foreground justify-start pl-0"
-                >
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <NavLink 
-                  to="/login" 
-                  className={`py-2 ${isActive('/login') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Sign In
-                </NavLink>
-                <NavLink 
-                  to="/signup" 
-                  className="py-2 text-desert-dark font-medium"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Sign Up
-                </NavLink>
-              </>
-            )}
+            <NavLink 
+              to="/profile" 
+              className={`py-2 ${isActive('/profile') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
+              onClick={() => setMenuOpen(false)}
+            >
+              Profile
+            </NavLink>
+            <Button 
+              variant="ghost" 
+              onClick={() => {
+                handleLogout();
+                setMenuOpen(false);
+              }} 
+              className="text-muted-foreground hover:text-foreground justify-start pl-0"
+            >
+              Sign Out
+            </Button>
           </div>
         </nav>
       )}
