@@ -17,12 +17,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { isAuthenticated, isLoading, user, isPremium } = useAuth();
   const location = useLocation();
   
-  // Save the current location to redirect back after login
+  // Save the current location to redirect back after login - only once per path
   useEffect(() => {
-    if (!isAuthenticated && requiresAuth) {
+    if (!isAuthenticated && requiresAuth && !isLoading) {
       localStorage.setItem('redirectAfterLogin', location.pathname);
     }
-  }, [isAuthenticated, requiresAuth, location]);
+  }, [isAuthenticated, requiresAuth, location.pathname, isLoading]);
   
   // Show loading state
   if (isLoading) {

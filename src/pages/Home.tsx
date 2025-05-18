@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import { tours, Tour } from '@/services/toursData';
@@ -31,29 +31,47 @@ const HomePage = () => {
   const [recommendedTours, setRecommendedTours] = useState<Tour[]>([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
-  // Simulated data loading
+  // Simulated data loading - with check to prevent multiple loads
   useEffect(() => {
+    if (dataLoaded) return;
+    
     setIsLoading(true);
     
     // Simulate API calls
-    setTimeout(() => {
-      setFeaturedTours(tours.slice(0, 3));
-      setRecentTours([tours[2], tours[0], tours[1]]);
-      setNearbyTours(tours.slice(0, 2));
-      setRecommendedTours(tours.slice(1, 3));
-      
-      // Simulate getting user location
-      setUserLocation({
-        lat: 24.7136,
-        lng: 46.6753
-      });
-      setLocationName('Riyadh, Saudi Arabia');
-      
-      setIsLoading(false);
+    const loadingTimeout = setTimeout(() => {
+      try {
+        setFeaturedTours(tours.slice(0, 3));
+        setRecentTours([tours[2], tours[0], tours[1]]);
+        setNearbyTours(tours.slice(0, 2));
+        setRecommendedTours(tours.slice(1, 3));
+        
+        // Simulate getting user location
+        setUserLocation({
+          lat: 24.7136,
+          lng: 46.6753
+        });
+        setLocationName('Riyadh, Saudi Arabia');
+        
+        setDataLoaded(true);
+      } catch (error) {
+        console.error("Error loading tour data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }, 1500);
     
-    // Check online status
+    return () => clearTimeout(loadingTimeout);
+  }, [dataLoaded]);
+  
+  // Online status handler - using useCallback to prevent recreating function
+  const handleOnlineStatus = useCallback(() => {
+    setIsOnline(navigator.onLine);
+  }, []);
+  
+  // Set up event listeners for online status
+  useEffect(() => {
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
     
@@ -61,32 +79,42 @@ const HomePage = () => {
       window.removeEventListener('online', handleOnlineStatus);
       window.removeEventListener('offline', handleOnlineStatus);
     };
-  }, []);
-  
-  // Online status handler
-  const handleOnlineStatus = () => {
-    setIsOnline(navigator.onLine);
-  };
+  }, [handleOnlineStatus]);
   
   // Category selection handler
-  const handleCategorySelect = (categoryId: string) => {
+  const handleCategorySelect = useCallback((categoryId: string) => {
     setSelectedCategory(categoryId);
     // In a real app, this would filter tours based on category
-  };
+  }, []);
   
-  // Pull to refresh simulation
-  const handleRefresh = () => {
+  // Pull to refresh simulation with stability improvements
+  const handleRefresh = useCallback(() => {
+    if (isRefreshing) return;
+    
     setIsRefreshing(true);
     
     // Simulate refresh
     setTimeout(() => {
-      // Shuffle the order of tours to simulate new data
-      setFeaturedTours([...tours].sort(() => Math.random() - 0.5).slice(0, 3));
-      setRecentTours([...tours].sort(() => Math.random() - 0.5).slice(0, 3));
-      
-      setIsRefreshing(false);
+      try {
+        // Shuffle the order of tours to simulate new data
+        setFeaturedTours([...tours].sort(() => Math.random() - 0.5).slice(0, 3));
+        setRecentTours([...tours].sort(() => Math.random() - 0.5).slice(0, 3));
+      } catch (error) {
+        console.error("Error refreshing tour data:", error);
+      } finally {
+        setIsRefreshing(false);
+      }
     }, 1000);
-  };
+  }, [isRefreshing]);
+  
+  // Track scroll position for pull-to-refresh
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    // Simplified pull-to-refresh detection
+    const target = e.currentTarget;
+    if (target.scrollTop < -50 && !isRefreshing) {
+      handleRefresh();
+    }
+  }, [handleRefresh, isRefreshing]);
   
   return (
     <div className="min-h-screen flex flex-col">
@@ -100,13 +128,7 @@ const HomePage = () => {
       )}
       
       <main className="flex-1 py-6 bg-sand-light">
-        <ScrollArea className="h-full" data-testid="pull-to-refresh" onScroll={(e) => {
-          // Simplified pull-to-refresh detection
-          const target = e.currentTarget;
-          if (target.scrollTop < -50 && !isRefreshing) {
-            handleRefresh();
-          }
-        }}>
+        <ScrollArea className="h-full" data-testid="pull-to-refresh" onScroll={handleScroll}>
           <div className="container mx-auto px-4 pb-16">
             {/* Welcome Header with Location */}
             <WelcomeHeader location={locationName} isLoading={isLoading} />

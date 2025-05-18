@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Crown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,11 +13,12 @@ interface UpgradePromptProps {
   variant?: 'default' | 'subtle' | 'banner';
 }
 
-const UpgradePrompt = ({
+// Using memo to prevent unnecessary re-renders
+const UpgradePrompt = memo(({
   title = "Unlock Premium Tours",
   description = "Get unlimited access to all premium tours and exclusive content",
   buttonText = "Upgrade Now",
-  onUpgrade,
+  onUpgrade = () => console.log("Upgrade clicked"),
   className = "",
   variant = 'default'
 }: UpgradePromptProps) => {
@@ -77,6 +78,8 @@ const UpgradePrompt = ({
       </CardContent>
     </Card>
   );
-};
+});
+
+UpgradePrompt.displayName = 'UpgradePrompt';
 
 export default UpgradePrompt;

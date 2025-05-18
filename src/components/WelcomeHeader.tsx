@@ -11,7 +11,12 @@ interface WelcomeHeaderProps {
 
 const WelcomeHeader = ({ location = "Saudi Arabia", isLoading = false }: WelcomeHeaderProps) => {
   const { user } = useAuth();
-  const userName = user?.name ? user.name.split(' ')[0] : '';
+  
+  // Safely extract the first name without causing refreshes
+  const userName = React.useMemo(() => {
+    if (!user || !user.name) return '';
+    return user.name.split(' ')[0];
+  }, [user?.name]);
 
   return (
     <div className="mb-6">
