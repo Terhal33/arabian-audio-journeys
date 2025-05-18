@@ -12,7 +12,10 @@ import GeofenceAlert from './GeofenceAlert';
 import BookmarkForm from './BookmarkForm';
 import MapPinsLayer from './MapPinsLayer';
 import TourPathsLayer from './TourPathsLayer';
-import useMapCore from '@/hooks/useMapCore';
+import { useMapState } from '@/hooks/map/useMapState';
+import { useMapEffects } from '@/hooks/map/useMapEffects';
+import { useMapInteractions } from '@/hooks/map/useMapInteractions';
+import { useTourPathsData } from '@/hooks/map/useTourPathsData';
 
 const MapCore = (props: MapProps) => {
   const {
@@ -26,15 +29,49 @@ const MapCore = (props: MapProps) => {
     showUserLocation = true
   } = props;
   
+  // Use the refactored hooks
   const {
     isMapLoaded,
+    setIsMapLoaded,
     mapCenter,
+    setMapCenter,
     viewportRadius,
+    setViewportRadius,
     isOfflineMode,
+    setIsOfflineMode,
     activeTourId,
+    setActiveTourId,
     longPressLocation,
+    setLongPressLocation,
     isBookmarkFormOpen,
+    setIsBookmarkFormOpen,
     bookmarks,
+    setBookmarks,
+    lastNotifiedRegion,
+    setLastNotifiedRegion
+  } = useMapState();
+
+  // Use tour paths data hook
+  const { toursWithPaths } = useTourPathsData(points, activeTourId);
+
+  // Setup map effects
+  useMapEffects(
+    location,
+    setIsMapLoaded,
+    setMapCenter,
+    lastNotifiedRegion,
+    viewportRadius,
+    interactive,
+    setIsOfflineMode,
+    onRegionChange ? 
+      (region) => {
+        onRegionChange(region);
+        setLastNotifiedRegion(region);
+      } : undefined
+  );
+
+  // Setup map interactions
+  const {
     handlePinClick,
     handleClusterClick,
     handleMapLongPress,
@@ -42,9 +79,23 @@ const MapCore = (props: MapProps) => {
     handleAddBookmark,
     handleViewBookmark,
     handleZoomIn,
-    handleZoomOut,
-    toursWithPaths
-  } = useMapCore(props);
+    handleZoomOut
+  } = useMapInteractions(
+    mapCenter,
+    setMapCenter,
+    viewportRadius,
+    setViewportRadius,
+    setActiveTourId,
+    bookmarks,
+    setBookmarks,
+    setIsBookmarkFormOpen,
+    setLongPressLocation,
+    lastNotifiedRegion,
+    setLastNotifiedRegion,
+    interactive,
+    onRegionChange,
+    onPinClick
+  );
 
   return (
     <div 

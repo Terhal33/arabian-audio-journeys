@@ -12,6 +12,7 @@ export const useMapEffects = (
   lastNotifiedRegion: MapRegion | null,
   viewportRadius: number,
   interactive: boolean,
+  setIsOfflineMode: (isOffline: boolean) => void,
   onRegionChange?: (region: MapRegion) => void
 ) => {
   // Simulate map loading
