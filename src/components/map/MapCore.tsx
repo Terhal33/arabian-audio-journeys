@@ -2,6 +2,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Tour } from '@/services/toursData';
+import { MapLocation, MapProps } from '@/types/map';
 import MapBackground from './MapBackground';
 import MapLoading from './MapLoading';
 import MapOfflineIndicator from './MapOfflineIndicator';
@@ -12,22 +13,6 @@ import BookmarkForm from './BookmarkForm';
 import MapPinsLayer from './MapPinsLayer';
 import TourPathsLayer from './TourPathsLayer';
 import useMapCore from '@/hooks/useMapCore';
-
-interface MapLocation {
-  lat: number;
-  lng: number;
-}
-
-interface MapProps {
-  location: MapLocation;
-  points?: any[];
-  zoom?: number;
-  interactive?: boolean;
-  className?: string;
-  onPinClick?: (location: MapLocation, tour?: Tour) => void;
-  onRegionChange?: (region: { lat: number, lng: number, radius: number }) => void;
-  showUserLocation?: boolean;
-}
 
 const MapCore = (props: MapProps) => {
   const {
@@ -92,7 +77,10 @@ const MapCore = (props: MapProps) => {
           />
           
           {/* User's current location */}
-          <UserLocation location={location} showUserLocation={showUserLocation} />
+          <UserLocation 
+            location={location} 
+            showUserLocation={showUserLocation} 
+          />
           
           {/* All map pins, bookmarks, and clusters */}
           <MapPinsLayer

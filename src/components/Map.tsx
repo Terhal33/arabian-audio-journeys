@@ -1,12 +1,8 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Tour } from '@/services/toursData';
 import MapCore from './map/MapCore';
-
-interface MapLocation {
-  lat: number;
-  lng: number;
-}
+import { MapLocation } from '@/types/map';
 
 interface MapProps {
   location: MapLocation;
@@ -21,12 +17,14 @@ interface MapProps {
 
 // Map component that delegates rendering to MapCore
 const Map = (props: MapProps) => {
-  console.log("Map component rendering with props:", {
-    location: props.location,
-    pointsCount: props.points?.length,
-    interactive: props.interactive,
-    showUserLocation: props.showUserLocation
-  });
+  useEffect(() => {
+    console.log("Map component rendering with props:", {
+      location: props.location,
+      pointsCount: props.points?.length,
+      interactive: props.interactive,
+      showUserLocation: props.showUserLocation
+    });
+  }, [props.location, props.points?.length]);
   
   return <MapCore {...props} />;
 };

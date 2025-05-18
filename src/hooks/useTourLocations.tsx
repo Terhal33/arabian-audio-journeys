@@ -17,6 +17,7 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    console.log("Fetching tour locations with:", { regionFilter, searchQuery });
     setIsLoading(true);
     
     try {
@@ -40,6 +41,9 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
               'tabuk': ['al-ula'],
               'hail': [],
             };
+            
+            // If no explicit mapping, show all tours (better user experience)
+            if (!regionMapping[regionFilter]) return true;
             
             return regionMapping[regionFilter]?.includes(tour.id) ?? false;
           })
@@ -82,9 +86,12 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
           }));
         });
         
-        setLocations([...processedLocations, ...tourPointLocations]);
+        const allLocations = [...processedLocations, ...tourPointLocations];
+        console.log(`Loaded ${allLocations.length} locations (${processedLocations.length} tours + ${tourPointLocations.length} points)`);
+        
+        setLocations(allLocations);
         setIsLoading(false);
-      }, 400); // Reduced delay for better user experience
+      }, 300); // Reduced delay for better user experience
       
       return () => clearTimeout(timer);
       
