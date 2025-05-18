@@ -14,7 +14,17 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiresAuth = true,
   requiresPremium = false
 }) => {
-  const { isAuthenticated, isLoading, user, session } = useAuth();
+  // Use try/catch to handle cases where we might not be within an AuthProvider
+  let authState;
+  try {
+    authState = useAuth();
+  } catch (e) {
+    console.error("ProtectedRoute: Error accessing auth context:", e);
+    // If we can't access the auth context, we redirect to login
+    return <Navigate to="/login" replace />;
+  }
+  
+  const { isAuthenticated, isLoading, user, session } = authState;
   const location = useLocation();
   const hasSetRedirect = useRef(false);
   

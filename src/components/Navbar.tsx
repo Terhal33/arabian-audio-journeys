@@ -6,7 +6,17 @@ import { Button } from '@/components/ui/button';
 import { User, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  // Add a try/catch to detect if we're outside the AuthProvider context
+  let authData;
+  try {
+    authData = useAuth();
+  } catch (e) {
+    console.error("Navbar: Error accessing auth context:", e);
+    // Provide fallback values if not within AuthProvider
+    authData = { user: null, isAuthenticated: false, logout: () => Promise.resolve() };
+  }
+  
+  const { user, isAuthenticated, logout } = authData;
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -17,6 +27,9 @@ const Navbar = () => {
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
+
+  // Add debug logging
+  console.log("Navbar rendering, isAuthenticated:", isAuthenticated);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
