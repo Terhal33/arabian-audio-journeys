@@ -3,6 +3,41 @@ import React from 'react';
 import { Tour } from '@/services/toursData';
 import { cn } from '@/lib/utils';
 
+interface MapLocation {
+  lat: number;
+  lng: number;
+}
+
+interface TourPathsLayerProps {
+  tours: Tour[];
+  mapCenter: MapLocation;
+  zoom: number;
+  activeTourId: string | null;
+}
+
+const TourPathsLayer: React.FC<TourPathsLayerProps> = ({ 
+  tours, 
+  mapCenter, 
+  zoom, 
+  activeTourId 
+}) => {
+  if (!tours || tours.length === 0) return null;
+  
+  return (
+    <>
+      {tours.map(tour => (
+        <TourPath
+          key={`tour-path-${tour.id}`}
+          tour={tour}
+          mapCenter={mapCenter}
+          zoom={zoom}
+          isActive={tour.id === activeTourId}
+        />
+      ))}
+    </>
+  );
+};
+
 interface TourPathProps {
   tour: Tour;
   mapCenter: { lat: number; lng: number };
@@ -93,4 +128,4 @@ const TourPath: React.FC<TourPathProps> = ({ tour, mapCenter, zoom, isActive = f
   );
 };
 
-export default TourPath;
+export default TourPathsLayer;
