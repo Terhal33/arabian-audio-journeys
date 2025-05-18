@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthProvider';
 import Splash from '@/pages/Splash';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import MainNavigator from '@/navigation/MainNavigator';
@@ -44,7 +44,8 @@ const AppInitializer: React.FC = () => {
             navigate('/login', { replace: true });
           }
         } else {
-          // If authenticated, direct to home
+          // If authenticated, always direct to home for discovery
+          console.log("User is authenticated, redirecting to home page");
           navigate('/home', { replace: true });
         }
         
@@ -53,7 +54,7 @@ const AppInitializer: React.FC = () => {
           isNavigating.current = false;
         }, 100);
       }
-    }, 1000); // Reduced splash time for better UX
+    }, 800); // Reduced splash time for better UX
     
     return () => clearTimeout(timer);
   }, [isLoading, isAuthenticated, navigate, location.pathname]);

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthProvider';
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -21,18 +21,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   let isAuthenticated = false;
   let isLoading = true;
   let user = null;
+  let isPremium = false;
   
   try {
     const auth = useAuth();
     isAuthenticated = auth.isAuthenticated;
     isLoading = auth.isLoading;
     user = auth.user;
+    isPremium = auth.isPremium;
     
     // For debugging
     console.log("ProtectedRoute - Auth state:", { 
       isAuthenticated, 
       isLoading, 
       userId: user?.id,
+      isPremium,
       path: location.pathname
     });
   } catch (e) {
@@ -63,12 +66,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       }
       
       // Check premium status if required
-      if (requiresPremium && user && !user.isPremium && !redirecting) {
+      if (requiresPremium && user && !isPremium && !redirecting) {
         setRedirecting(true);
-        navigate('/upgrade', { replace: true });
+        navigate('/subscription', { replace: true });
       }
     }
-  }, [isLoading, isAuthenticated, user, location, navigate, redirecting, requiresPremium]);
+  }, [isLoading, isAuthenticated, user, location, navigate, redirecting, requiresPremium, isPremium]);
   
   // If still loading auth or checking, show a simple loading indicator
   if (isLoading || isChecking) {

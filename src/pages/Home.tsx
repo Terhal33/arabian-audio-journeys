@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthProvider';
 import { tours, Tour } from '@/services/toursData';
 import { categories, regions } from '@/services/categoryData';
 import EnhancedTourCard from '@/components/EnhancedTourCard';
@@ -14,14 +13,15 @@ import UpgradePrompt from '@/components/UpgradePrompt';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, RefreshCcw, MapPin } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const HomePage = () => {
-  const { user } = useAuth();
+  const { user, isPremium } = useAuth();
   const { toast } = useToast();
-  const isPremium = false; // For demo purposes
   const scrollRef = useRef<HTMLDivElement>(null);
   const startY = useRef<number | null>(null);
+  
+  console.log("Home page rendering, auth state:", { user, isPremium });
   
   // State
   const [isLoading, setIsLoading] = useState(true);
@@ -39,21 +39,22 @@ const HomePage = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingY, setRefreshingY] = useState(0);
 
-  // Simulated data loading - with check to prevent multiple loads
+  // Load tour data
   useEffect(() => {
     if (dataLoaded) return;
     
+    console.log("Home: Starting data load, dataLoaded=", dataLoaded);
     setIsLoading(true);
     
     // Try to get user's location
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log("Geolocation successful");
           setUserLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude
           });
-          // This would be replaced with a reverse geocoding API call in production
           setLocationName('Riyadh, Saudi Arabia');
         },
         (error) => {
@@ -63,23 +64,40 @@ const HomePage = () => {
       );
     }
     
-    // Simulate API calls
+    // Preload tours to ensure they're available
+    console.log("Available tours:", tours.length);
+    
+    // Load tours with minimal delay
     const loadingTimeout = setTimeout(() => {
       try {
+        console.log("Setting tour data...");
+        // Make sure there's something to display
+        if (tours.length === 0) {
+          console.error("No tours available in data source");
+          toast({
+            title: "No tours found",
+            description: "We couldn't find any tours to display.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        // Using imported tour data
         setFeaturedTours(tours.slice(0, 3));
         setRecentTours([tours[2], tours[0], tours[1]]);
         setNearbyTours(tours.slice(0, 2));
         setRecommendedTours(tours.slice(1, 3));
         
-        // If no real geolocation, simulate one
+        // If no real geolocation, use default
         if (!userLocation) {
           setUserLocation({
-            lat: 24.7136,
+            lat: 24.7136, // Riyadh coordinates
             lng: 46.6753
           });
         }
         
         setDataLoaded(true);
+        console.log("Tours data loaded successfully");
       } catch (error) {
         console.error("Error loading tour data:", error);
         toast({
@@ -90,7 +108,7 @@ const HomePage = () => {
       } finally {
         setIsLoading(false);
       }
-    }, 1500);
+    }, 500); // Reduced timeout for faster loading
     
     return () => clearTimeout(loadingTimeout);
   }, [dataLoaded, userLocation, toast]);

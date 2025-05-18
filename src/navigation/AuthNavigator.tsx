@@ -1,7 +1,7 @@
 
 import React, { memo } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthProvider';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -18,6 +18,7 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
   
   // If user is authenticated and trying to access auth routes, redirect to main app
   if (isAuthenticated && !location.pathname.startsWith('/onboarding')) {
+    console.log("User is authenticated in AuthNavigator, redirecting to home");
     // Check if there's a requested redirect
     const redirectPath = localStorage.getItem('redirectAfterLogin');
     if (redirectPath) {
