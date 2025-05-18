@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
@@ -135,8 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
       const preferred_language = authState.language || 'en';
 
-      // Create a new profile
-      const newProfile: Partial<UserProfile> = {
+      // Create a new profile - FIX: Ensure id property is set and not optional
+      const newProfile = {
         id: userId,
         full_name: userName,
         username: user.email,
@@ -144,9 +145,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar_url: null
       };
 
+      // FIX: Changed from passing an array [newProfile] to passing a single object
       const { data, error } = await supabase
         .from('user_profiles')
-        .insert([newProfile])
+        .insert(newProfile)
         .select()
         .single();
 
