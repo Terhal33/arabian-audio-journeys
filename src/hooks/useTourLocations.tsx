@@ -6,7 +6,7 @@ export interface TourLocation {
   id: string;
   lat: number;
   lng: number;
-  type?: 'historic' | 'cultural' | 'religious' | 'nature' | 'modern' | 'user';
+  type: 'historic' | 'cultural' | 'religious' | 'nature' | 'modern' | 'user';
   isPremium: boolean;
   tour: typeof tours[0];
 }
@@ -54,20 +54,20 @@ export const useTourLocations = (regionFilter: string = 'all', searchQuery: stri
             );
           })
           .map(tour => {
-            // Map tours to location objects
+            // Map tours to location objects with proper type casting
             return {
               id: tour.id,
               lat: tour.location.lat,
               lng: tour.location.lng,
-              // Determine type based on id (simplified)
+              // Determine type based on id with proper type assertion
               type: tour.id.includes('historical') 
                 ? 'historic' 
                 : tour.id.includes('ula') 
                   ? 'cultural' 
-                  : 'modern',
+                  : 'modern' as 'historic' | 'cultural' | 'religious' | 'nature' | 'modern' | 'user',
               isPremium: tour.isPremium,
               tour: tour
-            };
+            } as TourLocation;
           });
         
         // Add tour points as additional locations

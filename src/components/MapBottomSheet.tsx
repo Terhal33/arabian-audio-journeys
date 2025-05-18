@@ -110,7 +110,7 @@ const MapBottomSheet: React.FC<MapBottomSheetProps> = ({ tour, onClose }) => {
           <Card className="mb-4 p-3 bg-muted/50">
             <p className="text-sm font-medium mb-2">Tour Preview</p>
             <AudioPlayer 
-              audioSrc={tour.audioUrl} 
+              audioSrc={tour.audioUrl}
               title={tour.title} 
               small={true}
             />

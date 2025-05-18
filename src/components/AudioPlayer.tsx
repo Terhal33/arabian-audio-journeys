@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAudio } from '@/contexts/AudioContext';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -11,7 +11,13 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
-const AudioPlayer = () => {
+interface AudioPlayerProps {
+  audioSrc?: string;
+  title?: string;
+  small?: boolean;
+}
+
+const AudioPlayer = ({ audioSrc, title, small }: AudioPlayerProps = {}) => {
   const { 
     isPlaying, 
     currentTrack, 
@@ -43,8 +49,29 @@ const AudioPlayer = () => {
     // In a real implementation, you would mute/unmute the audio element
   };
 
-  if (!currentTrack) {
-    return null; // Don't render if there's no current track
+  // Use props if provided, otherwise use context values
+  const displayTitle = title || audioTitle || "Playing audio...";
+  const displayTrack = audioSrc || currentTrack;
+  
+  if (!displayTrack && !currentTrack) {
+    return null; // Don't render if there's no track
+  }
+
+  // Small version for embedded players
+  if (small) {
+    return (
+      <div className="flex items-center">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-8 w-8 rounded-full bg-desert/80 text-white hover:bg-desert"
+          onClick={togglePlayPause}
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+        <div className="ml-2 text-sm font-medium line-clamp-1">{displayTitle}</div>
+      </div>
+    );
   }
 
   return (
@@ -63,7 +90,7 @@ const AudioPlayer = () => {
           <div className="flex-1 max-w-xl">
             <div className="flex flex-col space-y-1">
               <div className="flex justify-between items-center">
-                <p className="text-sm font-medium line-clamp-1">{audioTitle || "Playing audio..."}</p>
+                <p className="text-sm font-medium line-clamp-1">{displayTitle}</p>
                 <p className="text-xs text-muted-foreground">
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </p>
