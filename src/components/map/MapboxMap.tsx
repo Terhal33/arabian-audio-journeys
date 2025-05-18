@@ -5,7 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapLocation, MapProps } from '@/types/map';
 import { toast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { initializeMap, addMapControls, setupMapEventHandlers } from '@/utils/mapboxUtils';
+import { initializeMap, addMapControls, setupMapEventHandlers } from '@/utils/mapbox';
 import MapboxMarkers from './MapboxMarkers';
 import MapboxTourPaths from './MapboxTourPaths';
 

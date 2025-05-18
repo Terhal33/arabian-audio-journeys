@@ -1,9 +1,8 @@
-
 import { useEffect, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Tour } from '@/services/toursData';
 import { MapLocation } from '@/types/map';
-import { createMarkerElement, createUserLocationMarker, addMarkerStyles } from '@/utils/mapboxUtils';
+import { createMarkerElement, createUserLocationMarker, addMarkerStyles } from '@/utils/mapbox';
 
 interface MapboxMarkersProps {
   map: mapboxgl.Map | null;

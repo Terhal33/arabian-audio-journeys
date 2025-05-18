@@ -1,7 +1,6 @@
-
 import { useEffect } from 'react';
 import mapboxgl from 'mapbox-gl';
-import { updateTourPaths } from '@/utils/mapboxUtils';
+import { updateTourPaths } from '@/utils/mapbox';
 
 interface MapboxTourPathsProps {
   map: mapboxgl.Map | null;
