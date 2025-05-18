@@ -17,10 +17,10 @@ const SearchPage = () => {
     let locationMatches = false;
     
     // The Tour interface defines location as an object with lat and lng
-    if (tour.location && typeof tour.location === 'object') {
+    if (tour.location) {
       // For location objects, convert coordinates to string for searching
       const locationStr = `${tour.location.lat} ${tour.location.lng}`;
-      locationMatches = locationStr.includes(searchQuery);
+      locationMatches = locationStr.toLowerCase().includes(searchQuery.toLowerCase());
     }
     
     return titleMatches || locationMatches;
