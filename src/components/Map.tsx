@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { MapPin, MapPinOff, Compass, Navigation } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -81,7 +80,8 @@ const Map = ({
     // Simple clustering simulation
     const newClusters = [];
     const gridSize = 0.05; // Approximately 5km grid
-    const gridMap = new Map<string, { points: MapPin[], center: MapLocation }>();
+    // Fix: Create Map object without type parameters in the constructor
+    const gridMap = new Map();
     
     points.forEach(point => {
       // Create a grid cell key
