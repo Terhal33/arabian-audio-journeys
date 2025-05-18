@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, MapPin, Navigation, BookmarkIcon, Download, Menu } from 'lucide-react';
+import { Search, Filter, BookmarkIcon, Download, Menu, Navigation } from 'lucide-react';
 import Map from '@/components/Map';
 import MapBottomSheet from '@/components/MapBottomSheet';
 import MapFilterControls from '@/components/MapFilterControls';
@@ -220,6 +220,7 @@ const MapPage = () => {
           interactive={true}
           className="w-full h-full"
           onPinClick={handleMapPinClick}
+          showUserLocation={true}
         />
       </div>
       

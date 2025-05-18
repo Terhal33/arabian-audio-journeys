@@ -15,6 +15,7 @@ import { useMapClustering, MapPin as MapPinType } from './map/useMapClustering';
 import { Bookmark } from './map/Bookmarks';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { toast } from '@/hooks/use-toast';
+import BookmarkForm from './map/BookmarkForm';
 
 interface MapLocation {
   lat: number;
@@ -48,6 +49,7 @@ const Map = ({
   const [isOfflineMode, setIsOfflineMode] = useState(false);
   const [activeTourId, setActiveTourId] = useState<string | null>(null);
   const [longPressLocation, setLongPressLocation] = useState<MapLocation | null>(null);
+  const [isBookmarkFormOpen, setIsBookmarkFormOpen] = useState(false);
   const [bookmarks, setBookmarks] = useLocalStorage<Bookmark[]>('map_bookmarks', []);
   
   const { clusters, filteredPoints } = useMapClustering(points);
@@ -134,6 +136,12 @@ const Map = ({
     const lat = mapCenter.lat - (relativeY - 0.5) * (0.05 / zoom);
     
     setLongPressLocation({ lat, lng });
+    setIsBookmarkFormOpen(true);
+  };
+  
+  const handleOpenBookmarkForm = () => {
+    setLongPressLocation(mapCenter);
+    setIsBookmarkFormOpen(true);
   };
   
   const handleAddBookmark = (bookmarkData: Omit<Bookmark, 'id' | 'createdAt'>) => {
@@ -149,6 +157,9 @@ const Map = ({
       title: "Bookmark created",
       description: `${newBookmark.name} has been added to your bookmarks`,
     });
+    
+    setIsBookmarkFormOpen(false);
+    setLongPressLocation(null);
   };
   
   const handleDeleteBookmark = (id: string) => {
@@ -231,7 +242,10 @@ const Map = ({
               mapCenter={mapCenter}
               zoom={zoom}
               onClick={handlePinClick}
-              onLongPress={(point) => setLongPressLocation({ lat: point.lat, lng: point.lng })}
+              onLongPress={(point) => {
+                setLongPressLocation({ lat: point.lat, lng: point.lng });
+                setIsBookmarkFormOpen(true);
+              }}
             />
           ))}
           
@@ -251,6 +265,8 @@ const Map = ({
             interactive={interactive}
             onZoomIn={() => {/* In a real map, we would increase zoom here */}}
             onZoomOut={() => {/* In a real map, we would decrease zoom here */}}
+            onAddBookmark={handleOpenBookmarkForm}
+            showBookmarkButton={true}
           />
           
           {/* Offline mode indicator */}
@@ -269,6 +285,17 @@ const Map = ({
               }}
             />
           )}
+          
+          {/* Bookmark form dialog */}
+          <BookmarkForm
+            isOpen={isBookmarkFormOpen}
+            onClose={() => {
+              setIsBookmarkFormOpen(false);
+              setLongPressLocation(null);
+            }}
+            onSave={handleAddBookmark}
+            location={longPressLocation}
+          />
         </>
       )}
     </div>
