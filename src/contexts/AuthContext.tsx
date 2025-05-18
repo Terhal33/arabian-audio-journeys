@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
@@ -71,6 +70,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session ? 'Session exists' : 'No session');
       const isAuthenticated = !!session?.user;
+      
+      // For testing purposes only - comment out or remove in production
+      // Create a mock user for development if no session exists
+      if (!session && process.env.NODE_ENV === 'development') {
+        console.log('Creating mock user for development');
+        const mockUser = {
+          id: 'mock-user-id',
+          email: 'mock@example.com',
+          name: 'Mock User',
+          isPremium: true,
+          created_at: new Date().toISOString()
+        } as ExtendedUser;
+        
+        const mockProfile = {
+          id: 'mock-user-id',
+          full_name: 'Mock User',
+          username: 'mock@example.com',
+          preferred_language: 'en' as 'en' | 'ar',
+          avatar_url: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        setAuthState(state => ({ 
+          ...state, 
+          user: mockUser,
+          profile: mockProfile,
+          isAuthenticated: true,
+          isLoading: false
+        }));
+        
+        authCheckInProgress.current = false;
+        return;
+      }
+      
       setAuthState(state => ({ 
         ...state, 
         session, 

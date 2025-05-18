@@ -16,6 +16,14 @@ const AppInitializer: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
+  // Add debug logs
+  console.log('AppInitializer - Auth state:', { 
+    isLoading, 
+    isAuthenticated, 
+    currentPath: location.pathname,
+    hasInitialized: hasInitialized.current
+  });
+  
   // Handle initial routing based on authentication state
   useEffect(() => {
     if (isLoading || hasInitialized.current || isNavigating.current) return;
@@ -66,11 +74,7 @@ const AppInitializer: React.FC = () => {
       <Route path="/verification/*" element={<AuthNavigator showOnboarding={false} />} />
       
       {/* Protected app routes */}
-      <Route path="/*" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
+      <Route path="/*" element={<MainNavigator />} />
       
       {/* Fallback for unknown routes */}
       <Route path="*" element={<NotFound />} />

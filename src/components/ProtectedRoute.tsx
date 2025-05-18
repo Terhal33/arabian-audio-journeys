@@ -14,6 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const location = useLocation();
   const [redirecting, setRedirecting] = useState(false);
+  const [isChecking, setIsChecking] = useState(true);
   
   // Try to access auth context safely
   let isAuthenticated = false;
@@ -25,6 +26,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     isAuthenticated = auth.isAuthenticated;
     isLoading = auth.isLoading;
     user = auth.user;
+    
+    // For debugging
+    console.log("ProtectedRoute - Auth state:", { 
+      isAuthenticated, 
+      isLoading, 
+      userId: user?.id,
+      path: location.pathname
+    });
   } catch (e) {
     console.error("ProtectedRoute: Error accessing auth context:", e);
     // If we can't access the auth context, we redirect to login
@@ -35,9 +44,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <div className="flex items-center justify-center h-screen">Redirecting...</div>;
   }
   
-  // If still loading auth, show a simple loading indicator
-  if (isLoading) {
-    return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  // Finish checking once auth loading is done
+  useEffect(() => {
+    if (!isLoading) {
+      setIsChecking(false);
+    }
+  }, [isLoading]);
+  
+  // If still loading auth or checking, show a simple loading indicator
+  if (isLoading || isChecking) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-desert border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
   
   // Check authentication

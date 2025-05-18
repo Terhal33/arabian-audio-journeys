@@ -24,6 +24,10 @@ const Navbar = () => {
   const location = useLocation();
 
   const isActive = (path: string) => {
+    // Consider sub-routes of profile like settings
+    if (path === '/profile' && location.pathname === '/settings') {
+      return true;
+    }
     return location.pathname === path;
   };
 
@@ -45,6 +49,9 @@ const Navbar = () => {
       location.pathname.startsWith(path))) {
     return null;
   }
+
+  // For debugging
+  console.log('Navbar rendering. Current path:', location.pathname, 'isAuthenticated:', isAuthenticated);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
