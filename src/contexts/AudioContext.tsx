@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, ReactNode, useRef, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { toast } from '@/hooks/use-toast';
@@ -228,7 +229,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             description: "Upgrade to premium to listen to the full audio tour",
             duration: 5000,
             action: {
-              label: "Upgrade",
               onClick: () => {
                 // Navigate to upgrade page or show upgrade modal
                 console.log("Navigate to upgrade page");
@@ -306,18 +306,20 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Progress tracking functions
   const updateTrackProgress = (trackId: string, position: number, completed: boolean) => {
-    setTrackProgress(prev => ({
-      ...prev,
-      [trackId]: {
+    setTrackProgress((prev: SavedProgress) => {
+      const newProgress = { ...prev };
+      newProgress[trackId] = {
         position,
         completed,
         lastPlayed: Date.now()
-      }
-    }));
+      };
+      return newProgress;
+    });
   };
   
   const updateTourProgress = (tourId: string, segmentId: string, currentPosition: number) => {
-    setTourProgress(prev => {
+    setTourProgress((prev: TourProgress) => {
+      const newProgress = { ...prev };
       const tourData = prev[tourId] || {
         lastSegmentId: segmentId,
         completedSegments: [],
@@ -341,15 +343,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         completedSegments.push(segmentId);
       }
       
-      return {
-        ...prev,
-        [tourId]: {
-          lastSegmentId: segmentId,
-          completedSegments,
-          totalDuration: tourData.totalDuration, // This would be updated elsewhere with tour metadata
-          listenedDuration
-        }
+      newProgress[tourId] = {
+        lastSegmentId: segmentId,
+        completedSegments,
+        totalDuration: tourData.totalDuration, // This would be updated elsewhere with tour metadata
+        listenedDuration
       };
+      
+      return newProgress;
     });
   };
   
@@ -380,7 +381,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     sleepTimerRef.current = setTimeout(updateTimerDisplay, 1000);
     
     // Update settings
-    setPlaybackSettings(prev => ({
+    setPlaybackSettings((prev: PlaybackSettings) => ({
       ...prev,
       sleepTimerMinutes: minutes
     }));
@@ -397,7 +398,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setSleepTimerRemaining(null);
     
     // Update settings
-    setPlaybackSettings(prev => ({
+    setPlaybackSettings((prev: PlaybackSettings) => ({
       ...prev,
       sleepTimerMinutes: null
     }));
@@ -535,7 +536,6 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           description: "Upgrade to premium to listen to the full audio tour",
           duration: 5000,
           action: {
-            label: "Upgrade",
             onClick: () => {
               // Navigate to upgrade page or show upgrade modal
               console.log("Navigate to upgrade page");
@@ -561,7 +561,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = clampedVolume;
     }
     
-    setPlaybackSettings(prev => ({
+    setPlaybackSettings((prev: PlaybackSettings) => ({
       ...prev,
       volume: clampedVolume,
       isMuted: clampedVolume === 0
@@ -575,7 +575,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = newMuteState ? 0 : volume;
     }
     
-    setPlaybackSettings(prev => ({
+    setPlaybackSettings((prev: PlaybackSettings) => ({
       ...prev,
       isMuted: newMuteState
     }));
@@ -589,7 +589,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.playbackRate = newRate;
     }
     
-    setPlaybackSettings(prev => ({
+    setPlaybackSettings((prev: PlaybackSettings) => ({
       ...prev,
       playbackRate: newRate
     }));
@@ -703,7 +703,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Settings management
   const updatePlaybackSettings = (settings: Partial<PlaybackSettings>) => {
-    setPlaybackSettings(prev => ({
+    setPlaybackSettings((prev: PlaybackSettings) => ({
       ...prev,
       ...settings
     }));
