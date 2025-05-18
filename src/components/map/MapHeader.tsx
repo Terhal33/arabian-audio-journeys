@@ -10,6 +10,7 @@ import { BookmarkIcon, Download } from 'lucide-react';
 import MapFilterControls from '@/components/MapFilterControls';
 import WelcomeHeader from '@/components/WelcomeHeader';
 import { regions } from '@/services/categoryData';
+import SearchDialog from './SearchDialog';
 
 interface MapHeaderProps {
   isSearchExpanded: boolean;
@@ -24,6 +25,9 @@ interface MapHeaderProps {
   onOpenOfflineMaps: () => void;
   onCenterUserLocation: () => void;
   userLocation: { lat: number; lng: number } | null;
+  locations?: any[];
+  isLoading?: boolean;
+  onSelectLocation?: (location: any) => void;
 }
 
 const MapHeader: React.FC<MapHeaderProps> = ({
@@ -39,8 +43,12 @@ const MapHeader: React.FC<MapHeaderProps> = ({
   onOpenOfflineMaps,
   onCenterUserLocation,
   userLocation,
+  locations = [],
+  isLoading = false,
+  onSelectLocation = () => {},
 }) => {
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
   
   // Auto-focus the search input when expanded
   useEffect(() => {
@@ -48,6 +56,13 @@ const MapHeader: React.FC<MapHeaderProps> = ({
       searchInputRef.current.focus();
     }
   }, [isSearchExpanded]);
+
+  // Open search dialog when typing in input
+  useEffect(() => {
+    if (searchQuery && searchQuery.length > 0) {
+      setIsSearchDialogOpen(true);
+    }
+  }, [searchQuery]);
 
   return (
     <div className="absolute top-0 left-0 right-0 z-10 p-4">
@@ -77,6 +92,11 @@ const MapHeader: React.FC<MapHeaderProps> = ({
                 onBlur={onSearchBlur}
                 className="flex-1 border-none shadow-none focus-visible:ring-0 bg-transparent"
                 autoComplete="off"
+                onFocus={() => {
+                  if (searchQuery) {
+                    setIsSearchDialogOpen(true);
+                  }
+                }}
               />
               {searchQuery && (
                 <Button 
@@ -145,6 +165,17 @@ const MapHeader: React.FC<MapHeaderProps> = ({
           </Button>
         )}
       </div>
+
+      {/* Search Dialog */}
+      <SearchDialog 
+        isOpen={isSearchDialogOpen}
+        onClose={() => setIsSearchDialogOpen(false)}
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+        locations={locations}
+        isLoading={isLoading}
+        onSelectLocation={onSelectLocation}
+      />
     </div>
   );
 };

@@ -70,10 +70,10 @@ const SearchDialog = ({
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">
-                      {location.tour.title}
+                      {location.tour?.title || "Location"}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {location.tour.description.substring(0, 60)}...
+                      {location.tour?.description?.substring(0, 60) || "No description"}...
                     </span>
                   </div>
                 </div>

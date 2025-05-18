@@ -10,6 +10,7 @@ import { useTourLocations } from '@/hooks/useTourLocations';
 import { useMapInteractions } from '@/hooks/useMapInteractions';
 import MapHeader from '@/components/map/MapHeader';
 import { toast } from '@/hooks/use-toast';
+import SearchDialog from '@/components/map/SearchDialog';
 
 const MapPage = () => {
   console.log("MapPage component rendering");
@@ -42,7 +43,9 @@ const MapPage = () => {
     setIsOfflineManagerOpen,
     setIsBookmarkFormOpen,
     setLongPressLocation,
-    setUserLocation
+    setUserLocation,
+    setSelectedLocation,
+    setSelectedTour
   } = useMapInteractions();
   
   const { locations, isLoading, error } = useTourLocations(activeRegion, searchQuery);
@@ -74,6 +77,26 @@ const MapPage = () => {
     setIsBookmarkFormOpen(true);
   };
 
+  // Handle search location selection
+  const handleSelectSearchLocation = (location: any) => {
+    if (location) {
+      console.log("Selected location from search:", location);
+      setSelectedLocation(location);
+      
+      if (location.tour) {
+        setSelectedTour(location.tour);
+      }
+      
+      // Pan map to selected location
+      if (location.lat && location.lng) {
+        setUserLocation({ 
+          lat: location.lat, 
+          lng: location.lng 
+        });
+      }
+    }
+  };
+
   return (
     <div className="flex flex-col h-full relative bg-sand-light">
       <MapHeader 
@@ -89,6 +112,9 @@ const MapPage = () => {
         onOpenOfflineMaps={() => setIsOfflineManagerOpen(true)}
         onCenterUserLocation={() => userLocation && setUserLocation({ ...userLocation })}
         userLocation={userLocation}
+        locations={locations}
+        isLoading={isLoading}
+        onSelectLocation={handleSelectSearchLocation}
       />
       
       <div className="flex-1 w-full">

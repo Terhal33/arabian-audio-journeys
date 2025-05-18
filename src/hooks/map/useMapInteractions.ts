@@ -122,6 +122,8 @@ export const useMapInteractions = (
     const newRadius = Math.max(1, viewportRadius * 0.7);
     setViewportRadius(newRadius);
     
+    console.log("Zooming in - new radius:", newRadius);
+    
     // Notify region change with new radius
     if (onRegionChange) {
       const newRegion = {
@@ -139,6 +141,8 @@ export const useMapInteractions = (
     // Increase viewport radius to simulate zoom out
     const newRadius = viewportRadius * 1.5;
     setViewportRadius(newRadius);
+    
+    console.log("Zooming out - new radius:", newRadius);
     
     // Notify region change with new radius
     if (onRegionChange) {

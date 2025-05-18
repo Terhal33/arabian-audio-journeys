@@ -176,7 +176,8 @@ const MapCore = (props: MapProps) => {
           <BookmarkForm
             isOpen={isBookmarkFormOpen}
             onClose={() => {
-              handleOpenBookmarkForm(null);
+              setIsBookmarkFormOpen(false);
+              setLongPressLocation(null);
             }}
             onSave={handleAddBookmark}
             location={longPressLocation}
