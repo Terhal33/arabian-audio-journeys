@@ -17,25 +17,21 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
   const location = useLocation();
   
   // If user is authenticated and trying to access auth routes, redirect to main app
-  if (isAuthenticated && 
-      !['/onboarding'].some(route => location.pathname.startsWith(route))) {
+  if (isAuthenticated && !location.pathname.startsWith('/onboarding')) {
     // Check if there's a requested redirect
     const redirectPath = localStorage.getItem('redirectAfterLogin');
     localStorage.removeItem('redirectAfterLogin'); // Clear it after use
     return <Navigate to={redirectPath || '/home'} replace />;
   }
 
-  // Default route to show when navigating to auth
-  const initialRoute = showOnboarding ? '/onboarding' : '/login';
-
   return (
     <Routes>
-      <Route path="/onboarding" element={<Onboarding />} />
+      <Route path="/" element={showOnboarding ? <Onboarding /> : <Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verification" element={<Verification />} />
-      <Route path="*" element={<Navigate to={initialRoute} replace />} />
+      <Route path="*" element={<Navigate to={showOnboarding ? "/" : "/login"} replace />} />
     </Routes>
   );
 };

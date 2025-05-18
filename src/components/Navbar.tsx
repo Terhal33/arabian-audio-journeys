@@ -1,22 +1,25 @@
 
 import React, { useState } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { User, Menu, X } from 'lucide-react';
 
-const Navbar = () => {
-  // Add a try/catch to detect if we're outside the AuthProvider context
-  let authData;
+// Import useAuth but with error handling
+const useAuthSafe = () => {
   try {
-    authData = useAuth();
+    // Import dynamically to avoid issues when this component is used outside AuthProvider
+    const { useAuth } = require('@/contexts/AuthContext');
+    return useAuth();
   } catch (e) {
     console.error("Navbar: Error accessing auth context:", e);
-    // Provide fallback values if not within AuthProvider
-    authData = { user: null, isAuthenticated: false, logout: () => Promise.resolve() };
+    // Provide fallback values
+    return { user: null, isAuthenticated: false, logout: () => Promise.resolve() };
   }
-  
-  const { user, isAuthenticated, logout } = authData;
+};
+
+const Navbar = () => {
+  // Use the safe version of useAuth
+  const { user, isAuthenticated, logout } = useAuthSafe();
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
@@ -28,8 +31,14 @@ const Navbar = () => {
     setMenuOpen(!menuOpen);
   };
 
-  // Add debug logging
-  console.log("Navbar rendering, isAuthenticated:", isAuthenticated);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // Logout is handled by AuthContext which will redirect appropriately
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -42,7 +51,7 @@ const Navbar = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          <NavLink to="/" className={`nav-link ${isActive('/') ? 'text-foreground font-medium' : ''}`}>
+          <NavLink to="/home" className={`nav-link ${isActive('/home') ? 'text-foreground font-medium' : ''}`}>
             Home
           </NavLink>
           <NavLink to="/tours" className={`nav-link ${isActive('/tours') ? 'text-foreground font-medium' : ''}`}>
@@ -54,7 +63,7 @@ const Navbar = () => {
               <NavLink to="/profile" className={`nav-link ${isActive('/profile') ? 'text-foreground font-medium' : ''}`}>
                 Profile
               </NavLink>
-              <Button variant="ghost" onClick={logout} className="text-muted-foreground hover:text-foreground">
+              <Button variant="ghost" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
                 Sign Out
               </Button>
             </>
@@ -89,8 +98,8 @@ const Navbar = () => {
         <nav className="bg-white px-4 py-2 md:hidden border-t border-gray-100">
           <div className="flex flex-col space-y-3">
             <NavLink 
-              to="/" 
-              className={`py-2 ${isActive('/') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
+              to="/home" 
+              className={`py-2 ${isActive('/home') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
               onClick={() => setMenuOpen(false)}
             >
               Home
@@ -115,7 +124,7 @@ const Navbar = () => {
                 <Button 
                   variant="ghost" 
                   onClick={() => {
-                    logout();
+                    handleLogout();
                     setMenuOpen(false);
                   }} 
                   className="text-muted-foreground hover:text-foreground justify-start pl-0"
