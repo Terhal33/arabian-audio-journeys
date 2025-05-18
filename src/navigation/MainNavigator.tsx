@@ -14,6 +14,7 @@ import Settings from '@/pages/Settings';
 import MainLayout from '@/layouts/MainLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumRoute from '@/components/PremiumRoute';
+import Navbar from '@/components/Navbar';
 
 // Subscription Pages
 import SubscriptionPage from '@/pages/Subscription';
@@ -25,38 +26,62 @@ import SubscriptionManagementPage from '@/pages/SubscriptionManagement';
 const MainNavigator: React.FC = () => {
   const location = useLocation();
   
+  // Check if the current route is one of the main navigation routes that should use MainLayout
+  const useMainLayout = ['/home', '/map', '/search', '/library', '/profile', '/tour/', '/settings'].some(
+    path => location.pathname === path || location.pathname.startsWith(path)
+  );
+  
+  // Show debug info
+  console.log('MainNavigator - Current path:', location.pathname, 'Using MainLayout:', useMainLayout);
+  
+  // For routes that should use MainLayout
+  if (useMainLayout) {
+    return (
+      <MainLayout>
+        <Routes>
+          {/* Redirect root to home */}
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          
+          {/* Main navigation routes */}
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/search" element={<SearchPage />} />
+          <Route path="/tour/:id" element={<TourDetail />} />
+          
+          {/* Protected routes */}
+          <Route path="/library" element={
+            <ProtectedRoute>
+              <LibraryPage />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
+          
+          {/* Redirect unmatched routes within MainLayout to home */}
+          <Route path="*" element={<Navigate to="/home" replace />} />
+        </Routes>
+      </MainLayout>
+    );
+  }
+  
+  // For routes that should NOT use MainLayout (like subscription routes)
   return (
-    <MainLayout>
+    <>
+      <Navbar />
       <Routes>
-        {/* Redirect root to home */}
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        
-        {/* Main navigation routes */}
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/search" element={<SearchPage />} />
+        {/* Tours page without bottom nav */}
         <Route path="/tours" element={<Tours />} />
-        <Route path="/tour/:id" element={<TourDetail />} />
-        
-        {/* Protected routes */}
-        <Route path="/library" element={
-          <ProtectedRoute>
-            <LibraryPage />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/profile" element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
-        } />
-        
-        <Route path="/settings" element={
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        } />
-        
+          
         {/* Subscription routes */}
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/payment-method" element={
@@ -80,10 +105,10 @@ const MainNavigator: React.FC = () => {
           </ProtectedRoute>
         } />
         
-        {/* Redirect any unmatched routes to home */}
+        {/* Redirect unmatched routes outside MainLayout to home */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
-    </MainLayout>
+    </>
   );
 };
 

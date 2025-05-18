@@ -12,6 +12,9 @@ const PremiumRoute: React.FC<PremiumRouteProps> = ({ children }) => {
   const location = useLocation();
   const { isAuthenticated, isPremium, isLoading } = useAuth();
   
+  // Debug log
+  console.log('PremiumRoute check:', { isAuthenticated, isPremium, path: location.pathname });
+  
   useEffect(() => {
     if (!isLoading && isAuthenticated && !isPremium) {
       toast({

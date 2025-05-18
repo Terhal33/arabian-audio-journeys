@@ -11,6 +11,9 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
   
+  // Add debug log
+  console.log("MainLayout - Current path:", location.pathname);
+  
   const navItems = [
     { path: '/home', icon: Home, label: 'Discover' },
     { path: '/map', icon: Map, label: 'Map' },

@@ -21,6 +21,13 @@ const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
+  // Skip navbar display on pages with bottom navigation
+  const bottomNavPaths = ['/home', '/map', '/search', '/library', '/profile', '/settings'];
+  const shouldShowNavbar = !bottomNavPaths.some(path => 
+    location.pathname === path || 
+    (path === '/home' && location.pathname.startsWith('/tour/'))
+  );
+
   const isActive = (path: string) => {
     // Consider sub-routes of profile like settings
     if (path === '/profile' && location.pathname === '/settings') {
@@ -42,14 +49,14 @@ const Navbar = () => {
     }
   };
 
-  // If we're on a login or signup page, don't show the navbar at all
+  // If we're on a login or signup page, or a page with bottom navigation, don't show the navbar at all
   if (['/login', '/signup', '/forgot-password', '/verification', '/onboarding'].some(path => 
-      location.pathname.startsWith(path))) {
+      location.pathname.startsWith(path)) || !shouldShowNavbar) {
     return null;
   }
 
   // For debugging
-  console.log('Navbar rendering. Current path:', location.pathname, 'isAuthenticated:', isAuthenticated);
+  console.log('Navbar rendering. Current path:', location.pathname, 'isAuthenticated:', isAuthenticated, 'shouldShowNavbar:', shouldShowNavbar);
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
@@ -64,14 +71,11 @@ const Navbar = () => {
         <nav className="hidden md:flex items-center space-x-6">
           {isAuthenticated && (
             <>
-              <NavLink to="/home" className={`nav-link ${isActive('/home') ? 'text-foreground font-medium' : ''}`}>
-                Home
-              </NavLink>
               <NavLink to="/tours" className={`nav-link ${isActive('/tours') ? 'text-foreground font-medium' : ''}`}>
                 Tours
               </NavLink>
-              <NavLink to="/profile" className={`nav-link ${isActive('/profile') ? 'text-foreground font-medium' : ''}`}>
-                Profile
+              <NavLink to="/subscription" className={`nav-link ${isActive('/subscription') ? 'text-foreground font-medium' : ''}`}>
+                Subscription
               </NavLink>
               <Button variant="ghost" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
                 Sign Out
@@ -101,13 +105,6 @@ const Navbar = () => {
         <nav className="bg-white px-4 py-2 md:hidden border-t border-gray-100">
           <div className="flex flex-col space-y-3">
             <NavLink 
-              to="/home" 
-              className={`py-2 ${isActive('/home') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              Home
-            </NavLink>
-            <NavLink 
               to="/tours" 
               className={`py-2 ${isActive('/tours') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
               onClick={() => setMenuOpen(false)}
@@ -115,11 +112,11 @@ const Navbar = () => {
               Tours
             </NavLink>
             <NavLink 
-              to="/profile" 
-              className={`py-2 ${isActive('/profile') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
+              to="/subscription" 
+              className={`py-2 ${isActive('/subscription') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
               onClick={() => setMenuOpen(false)}
             >
-              Profile
+              Subscription
             </NavLink>
             <Button 
               variant="ghost" 
