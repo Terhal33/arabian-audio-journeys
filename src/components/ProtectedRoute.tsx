@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
@@ -13,6 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiresPremium = false
 }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [redirecting, setRedirecting] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   
@@ -36,10 +37,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     });
   } catch (e) {
     console.error("ProtectedRoute: Error accessing auth context:", e);
-    // If we can't access the auth context, we redirect to login
+    // If we can't access the auth context, we redirect to login after a short delay
     if (!redirecting) {
       setRedirecting(true);
-      return <Navigate to="/login" replace state={{ from: location }} />;
+      // Use setTimeout to avoid the React warning about navigation during render
+      setTimeout(() => {
+        navigate('/login', { replace: true, state: { from: location } });
+      }, 0);
     }
     return <div className="flex items-center justify-center h-screen">Redirecting...</div>;
   }
@@ -48,8 +52,23 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   useEffect(() => {
     if (!isLoading) {
       setIsChecking(false);
+      
+      // Check authentication within useEffect to avoid navigation during render
+      if (!isAuthenticated && !redirecting) {
+        setRedirecting(true);
+        // Save the current path for redirect after login
+        console.log('Saving redirect path:', location.pathname);
+        localStorage.setItem('redirectAfterLogin', location.pathname);
+        navigate('/login', { replace: true, state: { from: location } });
+      }
+      
+      // Check premium status if required
+      if (requiresPremium && user && !user.isPremium && !redirecting) {
+        setRedirecting(true);
+        navigate('/upgrade', { replace: true });
+      }
     }
-  }, [isLoading]);
+  }, [isLoading, isAuthenticated, user, location, navigate, redirecting, requiresPremium]);
   
   // If still loading auth or checking, show a simple loading indicator
   if (isLoading || isChecking) {
@@ -61,23 +80,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         </div>
       </div>
     );
-  }
-  
-  // Check authentication
-  if (!isAuthenticated && !redirecting) {
-    // Save the current path for redirect after login
-    console.log('Saving redirect path:', location.pathname);
-    localStorage.setItem('redirectAfterLogin', location.pathname);
-    
-    // Prevent multiple redirects
-    setRedirecting(true);
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-  
-  // Check premium status if required
-  if (requiresPremium && user && !user.isPremium && !redirecting) {
-    setRedirecting(true);
-    return <Navigate to="/upgrade" replace />;
   }
   
   // All checks passed, render the protected content

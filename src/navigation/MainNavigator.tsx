@@ -16,7 +16,6 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 
 const MainNavigator: React.FC = () => {
   const location = useLocation();
-  const currentPath = location.pathname;
   
   return (
     <MainLayout>
@@ -26,6 +25,8 @@ const MainNavigator: React.FC = () => {
         <Route path="/map" element={<MapPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/library" element={<LibraryPage />} />
+        
+        {/* Protected routes */}
         <Route path="/profile" element={
           <ProtectedRoute>
             <Profile />

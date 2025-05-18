@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,8 +33,10 @@ const DOWNLOADED_TOURS = [
 ];
 
 const Profile = () => {
-  const { user, profile, logout, isPremium = false } = useAuth();
+  const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
+  // Default to false if property doesn't exist
+  const isPremium = user?.isPremium || false;
   
   // User progress stats
   const [stats, setStats] = useState({
@@ -58,9 +59,23 @@ const Profile = () => {
     percentage: 21
   });
   
+  // Handle navigation to login if user is not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+  
+  // Show loading state while we verify authentication
   if (!user) {
-    navigate('/login');
-    return null;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-desert border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p className="text-muted-foreground">Loading profile...</p>
+        </div>
+      </div>
+    );
   }
   
   return (

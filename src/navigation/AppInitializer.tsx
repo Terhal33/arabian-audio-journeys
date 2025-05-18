@@ -5,7 +5,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import Splash from '@/pages/Splash';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import MainNavigator from '@/navigation/MainNavigator';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import NotFound from '@/pages/NotFound';
 
 const AppInitializer: React.FC = () => {
@@ -54,7 +53,7 @@ const AppInitializer: React.FC = () => {
           isNavigating.current = false;
         }, 100);
       }
-    }, 2000); // Show splash for 2 seconds
+    }, 1000); // Reduced splash time for better UX
     
     return () => clearTimeout(timer);
   }, [isLoading, isAuthenticated, navigate, location.pathname]);

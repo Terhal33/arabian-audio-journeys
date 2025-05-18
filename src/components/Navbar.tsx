@@ -3,23 +3,21 @@ import React, { useState } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, Menu, X } from 'lucide-react';
-
-// Import useAuth but with error handling
-const useAuthSafe = () => {
-  try {
-    // Import dynamically to avoid issues when this component is used outside AuthProvider
-    const { useAuth } = require('@/contexts/AuthContext');
-    return useAuth();
-  } catch (e) {
-    console.error("Navbar: Error accessing auth context:", e);
-    // Provide fallback values
-    return { user: null, isAuthenticated: false, logout: () => Promise.resolve() };
-  }
-};
+import { useAuth } from '@/contexts/AuthContext';
 
 const Navbar = () => {
-  // Use the safe version of useAuth
-  const { user, isAuthenticated, logout } = useAuthSafe();
+  // Use the auth context directly, with error handling
+  let { user, isAuthenticated, logout } = { user: null, isAuthenticated: false, logout: () => Promise.resolve() };
+  
+  try {
+    const auth = useAuth();
+    isAuthenticated = auth.isAuthenticated;
+    user = auth.user;
+    logout = auth.logout;
+  } catch (e) {
+    console.error("Navbar: Error accessing auth context:", e);
+  }
+  
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
 
