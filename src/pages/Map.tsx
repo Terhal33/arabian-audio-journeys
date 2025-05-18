@@ -66,6 +66,13 @@ const MapPage = () => {
       locationsCount: locations?.length
     });
   }, [activeRegion, searchQuery, locations?.length]);
+  
+  // Handle map long press to create bookmarks
+  const handleMapLongPress = (location: { lat: number, lng: number }) => {
+    console.log("Map long press at:", location);
+    setLongPressLocation(location);
+    setIsBookmarkFormOpen(true);
+  };
 
   return (
     <div className="flex flex-col h-full relative bg-sand-light">
@@ -93,6 +100,7 @@ const MapPage = () => {
           onPinClick={handleMapPinClick}
           onRegionChange={handleMapRegionChange}
           showUserLocation={!!userLocation}
+          onLongPress={handleMapLongPress}
         />
       </div>
       

@@ -21,4 +21,5 @@ export interface MapProps {
   onPinClick?: (location: MapLocation, tour?: Tour) => void;
   onRegionChange?: (region: MapRegion) => void;
   showUserLocation?: boolean;
+  onLongPress?: (location: MapLocation) => void;
 }
