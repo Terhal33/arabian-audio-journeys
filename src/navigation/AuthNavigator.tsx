@@ -20,8 +20,13 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
   if (isAuthenticated && !location.pathname.startsWith('/onboarding')) {
     // Check if there's a requested redirect
     const redirectPath = localStorage.getItem('redirectAfterLogin');
-    localStorage.removeItem('redirectAfterLogin'); // Clear it after use
-    return <Navigate to={redirectPath || '/home'} replace />;
+    if (redirectPath) {
+      localStorage.removeItem('redirectAfterLogin'); // Clear it after use
+      return <Navigate to={redirectPath} replace />;
+    }
+    
+    // Default redirect if no specific path was saved
+    return <Navigate to="/home" replace />;
   }
 
   return (

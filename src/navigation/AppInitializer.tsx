@@ -27,12 +27,16 @@ const AppInitializer: React.FC = () => {
       if (location.pathname === '/') {
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         
-        if (isAuthenticated) {
-          navigate('/home', { replace: true });
-        } else if (hasSeenOnboarding) {
-          navigate('/login', { replace: true });
+        if (!isAuthenticated) {
+          // If not authenticated, direct to onboarding or login
+          if (!hasSeenOnboarding) {
+            navigate('/onboarding', { replace: true });
+          } else {
+            navigate('/login', { replace: true });
+          }
         } else {
-          navigate('/onboarding', { replace: true });
+          // If authenticated, direct to home
+          navigate('/home', { replace: true });
         }
       }
     }, 2000); // Show splash for 2 seconds
@@ -92,8 +96,12 @@ const AppInitializer: React.FC = () => {
         </ProtectedRoute>
       } />
       
-      {/* Redirect root to appropriate path */}
-      <Route path="/" element={<Navigate to={isAuthenticated ? '/home' : '/login'} replace />} />
+      {/* Redirect root to appropriate path based on authentication */}
+      <Route path="/" element={
+        isAuthenticated ? 
+          <Navigate to="/home" replace /> : 
+          <Navigate to="/login" replace />
+      } />
       
       {/* Fallback for unknown routes */}
       <Route path="*" element={<NotFound />} />

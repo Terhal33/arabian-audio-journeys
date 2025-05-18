@@ -27,6 +27,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   } catch (e) {
     console.error("ProtectedRoute: Error accessing auth context:", e);
     // If we can't access the auth context, we redirect to login
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   
   // If still loading auth, show a simple loading indicator
@@ -41,11 +42,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     localStorage.setItem('redirectAfterLogin', location.pathname);
     
     // Redirect to login
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
   
   // Check premium status if required
-  if (requiresPremium && !user?.isPremium) {
+  if (requiresPremium && user && !user.isPremium) {
     return <Navigate to="/upgrade" replace />;
   }
   
