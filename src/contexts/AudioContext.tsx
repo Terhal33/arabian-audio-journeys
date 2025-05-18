@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, ReactNode, useRef, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { toast } from '@/hooks/use-toast';
@@ -305,52 +304,58 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Progress tracking functions
   const updateTrackProgress = (trackId: string, position: number, completed: boolean) => {
-    setTrackProgress((prev) => {
-      const updatedProgress: SavedProgress = {...prev};
-      updatedProgress[trackId] = {
-        position,
-        completed,
-        lastPlayed: Date.now()
-      };
-      return updatedProgress;
-    });
+    // Get current track progress
+    const currentProgress = {...trackProgress};
+    
+    // Update the specific track
+    currentProgress[trackId] = {
+      position,
+      completed,
+      lastPlayed: Date.now()
+    };
+    
+    // Set the updated progress
+    setTrackProgress(currentProgress);
   };
   
   const updateTourProgress = (tourId: string, segmentId: string, currentPosition: number) => {
-    setTourProgress((prev) => {
-      const updatedProgress: TourProgress = {...prev};
-      const tourData = prev[tourId] || {
-        lastSegmentId: segmentId,
-        completedSegments: [],
-        totalDuration: 0,
-        listenedDuration: 0
-      };
-      
-      // Calculate duration listened
-      let listenedDuration = tourData.listenedDuration;
-      if (currentTrack?.duration) {
-        // If we have track duration, use it to calculate listened duration more accurately
-        listenedDuration = Math.min(currentPosition, currentTrack.duration);
-      } else {
-        // Otherwise just use the current position
-        listenedDuration = currentPosition;
-      }
-      
-      // Update completed segments
-      let completedSegments = [...tourData.completedSegments];
-      if (!completedSegments.includes(segmentId) && currentPosition >= (currentTrack?.duration || 0) * 0.9) {
-        completedSegments.push(segmentId);
-      }
-      
-      updatedProgress[tourId] = {
-        lastSegmentId: segmentId,
-        completedSegments,
-        totalDuration: tourData.totalDuration, // This would be updated elsewhere with tour metadata
-        listenedDuration
-      };
-      
-      return updatedProgress;
-    });
+    // Get current tour progress
+    const currentTourProgress = {...tourProgress};
+    
+    // Get existing tour data or create a new one
+    const tourData = currentTourProgress[tourId] || {
+      lastSegmentId: segmentId,
+      completedSegments: [],
+      totalDuration: 0,
+      listenedDuration: 0
+    };
+    
+    // Calculate duration listened
+    let listenedDuration = tourData.listenedDuration;
+    if (currentTrack?.duration) {
+      // If we have track duration, use it to calculate listened duration more accurately
+      listenedDuration = Math.min(currentPosition, currentTrack.duration);
+    } else {
+      // Otherwise just use the current position
+      listenedDuration = currentPosition;
+    }
+    
+    // Update completed segments
+    let completedSegments = [...tourData.completedSegments];
+    if (!completedSegments.includes(segmentId) && currentPosition >= (currentTrack?.duration || 0) * 0.9) {
+      completedSegments.push(segmentId);
+    }
+    
+    // Update the tour data
+    currentTourProgress[tourId] = {
+      lastSegmentId: segmentId,
+      completedSegments,
+      totalDuration: tourData.totalDuration, // This would be updated elsewhere with tour metadata
+      listenedDuration
+    };
+    
+    // Set the updated progress
+    setTourProgress(currentTourProgress);
   };
   
   // Sleep timer functions
@@ -380,13 +385,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     sleepTimerRef.current = setTimeout(updateTimerDisplay, 1000);
     
     // Update settings
-    setPlaybackSettings((prev) => {
-      const updatedSettings: PlaybackSettings = {
-        ...prev,
-        sleepTimerMinutes: minutes
-      };
-      return updatedSettings;
-    });
+    const updatedSettings: PlaybackSettings = {
+      ...playbackSettings,
+      sleepTimerMinutes: minutes
+    };
+    setPlaybackSettings(updatedSettings);
     
     toast({
       title: "Sleep timer started",
@@ -400,13 +403,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setSleepTimerRemaining(null);
     
     // Update settings
-    setPlaybackSettings((prev) => {
-      const updatedSettings: PlaybackSettings = {
-        ...prev,
-        sleepTimerMinutes: null
-      };
-      return updatedSettings;
-    });
+    const updatedSettings: PlaybackSettings = {
+      ...playbackSettings,
+      sleepTimerMinutes: null
+    };
+    setPlaybackSettings(updatedSettings);
     
     toast({
       title: "Sleep timer cancelled",
@@ -565,14 +566,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = clampedVolume;
     }
     
-    setPlaybackSettings((prev) => {
-      const updatedSettings: PlaybackSettings = {
-        ...prev,
-        volume: clampedVolume,
-        isMuted: clampedVolume === 0
-      };
-      return updatedSettings;
-    });
+    const updatedSettings: PlaybackSettings = {
+      ...playbackSettings,
+      volume: clampedVolume,
+      isMuted: clampedVolume === 0
+    };
+    setPlaybackSettings(updatedSettings);
   };
   
   const toggleMute = () => {
@@ -582,13 +581,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = newMuteState ? 0 : volume;
     }
     
-    setPlaybackSettings((prev) => {
-      const updatedSettings: PlaybackSettings = {
-        ...prev,
-        isMuted: newMuteState
-      };
-      return updatedSettings;
-    });
+    const updatedSettings: PlaybackSettings = {
+      ...playbackSettings,
+      isMuted: newMuteState
+    };
+    setPlaybackSettings(updatedSettings);
   };
   
   const setPlaybackRate = (rate: number) => {
@@ -599,13 +596,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.playbackRate = newRate;
     }
     
-    setPlaybackSettings((prev) => {
-      const updatedSettings: PlaybackSettings = {
-        ...prev,
-        playbackRate: newRate
-      };
-      return updatedSettings;
-    });
+    const updatedSettings: PlaybackSettings = {
+      ...playbackSettings,
+      playbackRate: newRate
+    };
+    setPlaybackSettings(updatedSettings);
     
     toast({
       title: `Playback speed: ${newRate}x`,
@@ -716,13 +711,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Settings management
   const updatePlaybackSettings = (settings: Partial<PlaybackSettings>) => {
-    setPlaybackSettings((prev) => {
-      const updatedSettings: PlaybackSettings = {
-        ...prev,
-        ...settings
-      };
-      return updatedSettings;
-    });
+    const updatedSettings: PlaybackSettings = {
+      ...playbackSettings,
+      ...settings
+    };
+    setPlaybackSettings(updatedSettings);
   };
   
   // Helper functions
