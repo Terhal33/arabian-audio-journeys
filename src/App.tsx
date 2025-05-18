@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/contexts/auth/AuthProvider";
 import { AudioProvider } from "@/contexts/AudioContext";
+import SupabaseConnectionTest from "@/components/SupabaseConnectionTest";
 
 // Navigation
 import AppInitializer from "@/navigation/AppInitializer";
@@ -29,6 +30,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <AppInitializer />
+            <SupabaseConnectionTest />
           </AudioProvider>
         </AuthProvider>
       </TooltipProvider>

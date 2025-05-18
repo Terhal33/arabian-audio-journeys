@@ -43,7 +43,7 @@ const PremiumRoute: React.FC<PremiumRouteProps> = ({ children }) => {
   
   // If authenticated but not premium, redirect to subscription page
   if (!isPremium) {
-    return <Navigate to="/subscription" replace />;
+    return <Navigate to="/subscription" state={{ from: location }} replace />;
   }
   
   // User is premium, render the protected content
