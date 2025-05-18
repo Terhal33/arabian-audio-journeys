@@ -28,12 +28,17 @@ const MainNavigator: React.FC = () => {
   return (
     <MainLayout>
       <Routes>
+        {/* Redirect root to home */}
         <Route path="/" element={<Navigate to="/home" replace />} />
+        
+        {/* Main navigation routes */}
         <Route path="/home" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/tours" element={<Tours />} />
+        <Route path="/tour/:id" element={<TourDetail />} />
         
-        {/* Premium and protected routes */}
+        {/* Protected routes */}
         <Route path="/library" element={
           <ProtectedRoute>
             <LibraryPage />
@@ -45,9 +50,6 @@ const MainNavigator: React.FC = () => {
             <Profile />
           </ProtectedRoute>
         } />
-        
-        <Route path="/tours" element={<Tours />} />
-        <Route path="/tour/:id" element={<TourDetail />} />
         
         <Route path="/settings" element={
           <ProtectedRoute>
@@ -78,7 +80,7 @@ const MainNavigator: React.FC = () => {
           </ProtectedRoute>
         } />
         
-        {/* Redirect to home if no match found */}
+        {/* Redirect any unmatched routes to home */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </MainLayout>

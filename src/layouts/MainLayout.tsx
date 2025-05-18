@@ -10,8 +10,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const location = useLocation();
-  console.log("Current location in MainLayout:", location.pathname);
-
+  
   const navItems = [
     { path: '/home', icon: Home, label: 'Discover' },
     { path: '/map', icon: Map, label: 'Map' },
@@ -21,15 +20,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   ];
 
   const isActive = (path: string) => {
-    // Consider /tour/:id and other sub-routes to be part of their parent sections
-    if (path === '/home' && location.pathname.startsWith('/tour/')) {
-      return true;
-    }
-    if (path === '/profile' && location.pathname === '/settings') {
-      return true;
-    }
-    return location.pathname === path || 
-      (path === '/home' && location.pathname === '/');
+    // Check if path is active (exact match or specific subpath relations)
+    if (location.pathname === path) return true;
+    
+    // Consider /tour/:id routes to be part of home
+    if (path === '/home' && location.pathname.startsWith('/tour/')) return true;
+    
+    // Consider settings to be part of profile
+    if (path === '/profile' && location.pathname === '/settings') return true;
+    
+    return false;
   };
 
   return (
