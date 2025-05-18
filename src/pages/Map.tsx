@@ -2,10 +2,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Search, Filter, MapPin, Navigation } from 'lucide-react';
+import { Search, Filter, MapPin, Navigation, BookmarkIcon, Download, Menu } from 'lucide-react';
 import Map from '@/components/Map';
 import MapBottomSheet from '@/components/MapBottomSheet';
 import MapFilterControls from '@/components/MapFilterControls';
+import Bookmarks from '@/components/map/Bookmarks';
+import BookmarkForm from '@/components/map/BookmarkForm';
+import OfflineMapManager from '@/components/map/OfflineMapManager';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { useTourLocations } from '@/hooks/useTourLocations';
@@ -14,6 +17,9 @@ import { regions } from '@/services/categoryData';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import WelcomeHeader from '@/components/WelcomeHeader';
 import { Tour } from '@/services/toursData';
+import { Bookmark } from '@/components/map/Bookmarks';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const MapPage = () => {
   const { user } = useAuth();
@@ -23,6 +29,12 @@ const MapPage = () => {
   const [selectedTour, setSelectedTour] = useState<Tour | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [activeRegion, setActiveRegion] = useState('all');
+  const [bookmarks, setBookmarks] = useLocalStorage<Bookmark[]>('map_bookmarks', []);
+  const [isBookmarksOpen, setIsBookmarksOpen] = useState(false);
+  const [isOfflineManagerOpen, setIsOfflineManagerOpen] = useState(false);
+  const [longPressLocation, setLongPressLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [isBookmarkFormOpen, setIsBookmarkFormOpen] = useState(false);
+  
   const searchInputRef = useRef<HTMLInputElement>(null);
   
   const { locations, isLoading, error } = useTourLocations(activeRegion, searchQuery);
@@ -34,6 +46,23 @@ const MapPage = () => {
       // Default to Riyadh for demo
       setUserLocation({ lat: 24.7136, lng: 46.6753 });
     }, 1000);
+    
+    // Try to use geolocation if available
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          clearTimeout(timer);
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+        },
+        { enableHighAccuracy: true }
+      );
+    }
     
     return () => clearTimeout(timer);
   }, []);
@@ -60,9 +89,30 @@ const MapPage = () => {
     setSearchQuery('');
     setIsSearchExpanded(false);
   };
-
+  
   const handleRegionChange = (regionId: string) => {
     setActiveRegion(regionId);
+  };
+  
+  const handleAddBookmark = (bookmarkData: Omit<Bookmark, 'id' | 'createdAt'>) => {
+    const newBookmark: Bookmark = {
+      ...bookmarkData,
+      id: Date.now().toString(),
+      createdAt: new Date()
+    };
+    
+    setBookmarks([...bookmarks, newBookmark]);
+    setIsBookmarkFormOpen(false);
+    setLongPressLocation(null);
+  };
+  
+  const handleDeleteBookmark = (id: string) => {
+    setBookmarks(bookmarks.filter(b => b.id !== id));
+  };
+  
+  const handleSelectBookmark = (bookmark: Bookmark) => {
+    setIsBookmarksOpen(false);
+    setSelectedLocation({ lat: bookmark.lat, lng: bookmark.lng });
   };
 
   return (
@@ -132,6 +182,24 @@ const MapPage = () => {
             </SheetContent>
           </Sheet>
           
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-10 w-10 bg-white rounded-full shadow-lg">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setIsBookmarksOpen(true)}>
+                <BookmarkIcon className="h-4 w-4 mr-2" />
+                My Bookmarks
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsOfflineManagerOpen(true)}>
+                <Download className="h-4 w-4 mr-2" />
+                Offline Maps
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           {userLocation && (
             <Button 
               variant="ghost" 
@@ -154,6 +222,32 @@ const MapPage = () => {
           onPinClick={handleMapPinClick}
         />
       </div>
+      
+      {/* Bookmarks panel */}
+      <Bookmarks 
+        bookmarks={bookmarks}
+        onSelectBookmark={handleSelectBookmark}
+        onDeleteBookmark={handleDeleteBookmark}
+        onClose={() => setIsBookmarksOpen(false)}
+        isOpen={isBookmarksOpen}
+      />
+      
+      {/* Offline maps manager */}
+      <OfflineMapManager 
+        isOpen={isOfflineManagerOpen}
+        onClose={() => setIsOfflineManagerOpen(false)}
+      />
+      
+      {/* Bookmark form dialog */}
+      <BookmarkForm
+        isOpen={isBookmarkFormOpen}
+        onClose={() => {
+          setIsBookmarkFormOpen(false);
+          setLongPressLocation(null);
+        }}
+        onSave={handleAddBookmark}
+        location={longPressLocation}
+      />
       
       {selectedLocation && selectedTour && (
         <MapBottomSheet 

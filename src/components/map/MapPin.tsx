@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin as MapPinIcon } from 'lucide-react';
+import { MapPin as MapPinIcon, Star, Book, Building, Landmark, Mountain } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tour } from '@/services/toursData';
 
@@ -16,9 +16,16 @@ interface MapPinProps {
   mapCenter: { lat: number; lng: number };
   zoom: number;
   onClick: (point: MapPinProps['point']) => void;
+  onLongPress?: (point: MapPinProps['point']) => void;
 }
 
-const MapPin: React.FC<MapPinProps> = ({ point, mapCenter, zoom, onClick }) => {
+const MapPin: React.FC<MapPinProps> = ({ 
+  point, 
+  mapCenter, 
+  zoom, 
+  onClick, 
+  onLongPress 
+}) => {
   // Generate the pin color based on type and premium status
   const getPinColor = (type?: string, isPremium?: boolean) => {
     if (isPremium) return 'bg-gold';
@@ -34,6 +41,53 @@ const MapPin: React.FC<MapPinProps> = ({ point, mapCenter, zoom, onClick }) => {
     }
   };
 
+  // Get the appropriate icon based on type
+  const getPinIcon = (type?: string) => {
+    switch (type) {
+      case 'historic': return <Landmark className={cn("h-4 w-4", point.isPremium ? "text-black" : "text-white")} />;
+      case 'cultural': return <Book className={cn("h-4 w-4", point.isPremium ? "text-black" : "text-white")} />;
+      case 'religious': return <Building className={cn("h-4 w-4", point.isPremium ? "text-black" : "text-white")} />;
+      case 'nature': return <Mountain className={cn("h-4 w-4", point.isPremium ? "text-black" : "text-white")} />;
+      case 'modern': return <Star className={cn("h-4 w-4", point.isPremium ? "text-black" : "text-white")} />;
+      default: return <MapPinIcon className={cn("h-4 w-4", point.isPremium ? "text-black" : "text-white")} />;
+    }
+  };
+
+  // Handle long press event
+  const handleLongPress = () => {
+    if (onLongPress) {
+      onLongPress(point);
+    }
+  };
+
+  // Setup long press detection
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const longPressTimer = setTimeout(() => {
+      handleLongPress();
+    }, 800); // 800ms threshold for long press
+
+    const handleMouseUp = () => {
+      clearTimeout(longPressTimer);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  // Setup touch long press detection
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const longPressTimer = setTimeout(() => {
+      handleLongPress();
+    }, 800); // 800ms threshold for long press
+
+    const handleTouchEnd = () => {
+      clearTimeout(longPressTimer);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+
+    document.addEventListener('touchend', handleTouchEnd);
+  };
+
   return (
     <div 
       className={cn(
@@ -46,6 +100,8 @@ const MapPin: React.FC<MapPinProps> = ({ point, mapCenter, zoom, onClick }) => {
         top: `${50 - (point.lat - mapCenter.lat) * zoom * 200}%`
       }}
       onClick={() => onClick(point)}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
       <div className={cn(
         "group relative flex flex-col items-center",
@@ -60,10 +116,7 @@ const MapPin: React.FC<MapPinProps> = ({ point, mapCenter, zoom, onClick }) => {
           getPinColor(point.type, point.isPremium),
           point.isPremium ? "ring-2 ring-gold ring-opacity-50" : ""
         )}>
-          <MapPinIcon className={cn(
-            "h-4 w-4",
-            point.isPremium ? "text-black" : "text-white"
-          )} />
+          {getPinIcon(point.type)}
         </div>
         
         {/* Tooltip on hover */}
