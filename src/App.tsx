@@ -10,6 +10,7 @@ import { AudioProvider } from "@/contexts/AudioContext";
 // Navigation
 import AppInitializer from "@/navigation/AppInitializer";
 
+// Create the QueryClient outside of the component
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

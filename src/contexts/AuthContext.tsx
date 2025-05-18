@@ -1,6 +1,7 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile, AuthState, ExtendedUser } from '@/types/user';
 
