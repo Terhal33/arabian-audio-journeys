@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import AudioPlayer from '@/components/AudioPlayer';
 import UpgradePrompt from '@/components/UpgradePrompt';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
 interface MapBottomSheetProps {
   tour: Tour;
@@ -110,11 +111,18 @@ const MapBottomSheet: React.FC<MapBottomSheetProps> = ({ tour, onClose }) => {
         {tour.audioUrl && (
           <Card className="mb-4 p-3 bg-muted/50">
             <p className="text-sm font-medium mb-2">Tour Preview</p>
-            <AudioPlayer 
-              mini={true}
-              className="small"
-              onExpand={() => {}}
-            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <div>
+                  <AudioPlayer 
+                    mini={true}
+                    className="small"
+                    onExpand={() => {}}
+                  />
+                </div>
+              </DialogTrigger>
+              {/* The Dialog content is rendered by the AudioPlayer component */}
+            </Dialog>
           </Card>
         )}
         

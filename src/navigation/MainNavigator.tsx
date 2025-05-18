@@ -10,6 +10,7 @@ import LibraryPage from '@/pages/Library';
 import Profile from '@/pages/Profile';
 import Tours from '@/pages/Tours';
 import TourDetail from '@/pages/TourDetail';
+import Settings from '@/pages/Settings';
 import MainLayout from '@/layouts/MainLayout';
 
 const MainNavigator: React.FC = () => {
@@ -27,6 +28,7 @@ const MainNavigator: React.FC = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/tours" element={<Tours />} />
         <Route path="/tour/:id" element={<TourDetail />} />
+        <Route path="/settings" element={<Settings />} />
         
         {/* Redirect to home if no match found */}
         <Route path="*" element={<Navigate to="/home" replace />} />
