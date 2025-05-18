@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthProvider';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: JSX.Element;
@@ -48,7 +49,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         navigate('/login', { replace: true, state: { from: location } });
       }, 0);
     }
-    return <div className="flex items-center justify-center h-screen">Redirecting...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoadingSpinner text="Redirecting..." />
+      </div>
+    );
   }
   
   // Finish checking once auth loading is done
@@ -73,14 +78,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
   }, [isLoading, isAuthenticated, user, location, navigate, redirecting, requiresPremium, isPremium]);
   
-  // If still loading auth or checking, show a simple loading indicator
+  // If still loading auth or checking, show a loading spinner
   if (isLoading || isChecking) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="w-10 h-10 border-4 border-desert border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+        <LoadingSpinner size="large" text="Loading..." />
       </div>
     );
   }

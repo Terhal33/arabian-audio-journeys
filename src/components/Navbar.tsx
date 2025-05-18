@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, Menu, X } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthProvider';
 
 const Navbar = () => {
   // Use the auth context directly, with error handling

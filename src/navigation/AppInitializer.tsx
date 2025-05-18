@@ -6,6 +6,7 @@ import Splash from '@/pages/Splash';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import MainNavigator from '@/navigation/MainNavigator';
 import NotFound from '@/pages/NotFound';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const AppInitializer: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -44,7 +45,7 @@ const AppInitializer: React.FC = () => {
             navigate('/login', { replace: true });
           }
         } else {
-          // If authenticated, always direct to home for discovery
+          // If authenticated, always direct to home page
           console.log("User is authenticated, redirecting to home page");
           navigate('/home', { replace: true });
         }
@@ -54,7 +55,7 @@ const AppInitializer: React.FC = () => {
           isNavigating.current = false;
         }, 100);
       }
-    }, 800); // Reduced splash time for better UX
+    }, 600); // Slightly reduced splash time for better UX
     
     return () => clearTimeout(timer);
   }, [isLoading, isAuthenticated, navigate, location.pathname]);

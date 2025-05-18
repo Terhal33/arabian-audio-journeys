@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Map from '@/components/Map';
 import MapBottomSheet from '@/components/MapBottomSheet';
@@ -6,6 +5,7 @@ import Bookmarks from '@/components/map/Bookmarks';
 import BookmarkForm from '@/components/map/BookmarkForm';
 import OfflineMapManager from '@/components/map/OfflineMapManager';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { useTourLocations } from '@/hooks/useTourLocations';
 import { useMapInteractions } from '@/hooks/useMapInteractions';
 import MapHeader from '@/components/map/MapHeader';
@@ -118,21 +118,30 @@ const MapPage = () => {
       />
       
       <div className="flex-1 w-full">
-        <Map 
-          location={userLocation || { lat: 24.7136, lng: 46.6753 }} 
-          points={locations || []}
-          interactive={true}
-          className="w-full h-full"
-          onPinClick={handleMapPinClick}
-          onRegionChange={handleMapRegionChange}
-          showUserLocation={!!userLocation}
-          onLongPress={handleMapLongPress}
-        />
+        {isLoading && !locations ? (
+          <div className="flex items-center justify-center h-full">
+            <LoadingSpinner size="large" text="Loading locations..." />
+          </div>
+        ) : (
+          <Map 
+            location={userLocation || { lat: 24.7136, lng: 46.6753 }} 
+            points={locations || []}
+            interactive={true}
+            className="w-full h-full"
+            onPinClick={handleMapPinClick}
+            onRegionChange={handleMapRegionChange}
+            showUserLocation={!!userLocation}
+            onLongPress={handleMapLongPress}
+          />
+        )}
       </div>
       
-      {isLoading && (
-        <div className="absolute top-20 right-4 bg-background/90 text-foreground px-3 py-1 rounded-full text-sm animate-pulse">
-          Loading locations...
+      {isLoading && locations && (
+        <div className="absolute top-20 right-4 bg-background/90 text-foreground px-3 py-1 rounded-full text-sm">
+          <div className="flex items-center gap-2">
+            <LoadingSpinner size="small" />
+            <span>Loading locations...</span>
+          </div>
         </div>
       )}
       

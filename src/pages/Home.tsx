@@ -10,6 +10,7 @@ import TourCarousel from '@/components/TourCarousel';
 import CategoriesSection from '@/components/CategoriesSection';
 import NearbyAttractions from '@/components/NearbyAttractions';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AlertTriangle, RefreshCcw, MapPin } from 'lucide-react';
@@ -253,6 +254,15 @@ const HomePage = () => {
       }
     }, 1000);
   }, [isRefreshing, toast]);
+  
+  // Show loading spinner while data is being loaded
+  if (isLoading && !dataLoaded) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+        <LoadingSpinner size="large" text="Loading tours..." />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex flex-col">
