@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -242,6 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         ...authState,
+        isPremium: !!authState.user?.isPremium, // Add the isPremium property
         signUp,
         signIn,
         logout,

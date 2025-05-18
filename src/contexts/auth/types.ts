@@ -8,6 +8,7 @@ export interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isPremium: boolean; // Added the missing isPremium property
   language: 'en' | 'ar';
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
