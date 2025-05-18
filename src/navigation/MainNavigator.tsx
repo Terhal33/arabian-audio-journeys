@@ -16,13 +16,10 @@ const MainNavigator: React.FC = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   
-  // Extract the base route (e.g., /home, /profile, etc.)
-  const baseRoute = `/${currentPath.split('/')[1]}`;
-  
   return (
     <MainLayout>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/search" element={<SearchPage />} />
@@ -31,7 +28,7 @@ const MainNavigator: React.FC = () => {
         <Route path="/tours" element={<Tours />} />
         <Route path="/tour/:id" element={<TourDetail />} />
         
-        {/* Redirect to first tab if no match found */}
+        {/* Redirect to home if no match found */}
         <Route path="*" element={<Navigate to="/home" replace />} />
       </Routes>
     </MainLayout>

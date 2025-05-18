@@ -19,8 +19,9 @@ interface MapProps {
   showUserLocation?: boolean;
 }
 
-// A more advanced map placeholder that simulates a real map with Saudi terrain
+// Map component that delegates rendering to MapCore
 const Map = (props: MapProps) => {
+  console.log("Map component rendering with props:", props);
   return <MapCore {...props} />;
 };
 

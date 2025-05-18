@@ -65,48 +65,11 @@ const AppInitializer: React.FC = () => {
       <Route path="/forgot-password/*" element={<AuthNavigator showOnboarding={false} />} />
       <Route path="/verification/*" element={<AuthNavigator showOnboarding={false} />} />
       
-      {/* Protected app routes - all main app functionality should be under these routes */}
-      <Route path="/home/*" element={
+      {/* Protected app routes */}
+      <Route path="/*" element={
         <ProtectedRoute>
           <MainNavigator />
         </ProtectedRoute>
-      } />
-      <Route path="/map/*" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/search/*" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/library/*" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/profile/*" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/tours/*" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/tour/:id" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      
-      {/* Redirect root to appropriate path based on authentication */}
-      <Route path="/" element={
-        isAuthenticated ? 
-          <Navigate to="/home" replace /> : 
-          <Navigate to="/login" replace />
       } />
       
       {/* Fallback for unknown routes */}

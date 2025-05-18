@@ -11,6 +11,8 @@ import { useMapInteractions } from '@/hooks/useMapInteractions';
 import MapHeader from '@/components/map/MapHeader';
 
 const MapPage = () => {
+  console.log("MapPage component rendering");
+  
   const {
     isSearchExpanded,
     searchQuery,
@@ -42,6 +44,12 @@ const MapPage = () => {
   
   const { locations, isLoading, error } = useTourLocations(activeRegion, searchQuery);
 
+  console.log("MapPage data:", { 
+    hasUserLocation: !!userLocation,
+    locationsCount: locations?.length,
+    activeRegion
+  });
+
   return (
     <div className="flex flex-col h-full relative bg-sand-light">
       <MapHeader 
@@ -55,14 +63,14 @@ const MapPage = () => {
         onRegionChange={handleRegionChange}
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
         onOpenOfflineMaps={() => setIsOfflineManagerOpen(true)}
-        onCenterUserLocation={() => setUserLocation({ ...userLocation! })}
+        onCenterUserLocation={() => userLocation && setUserLocation({ ...userLocation })}
         userLocation={userLocation}
       />
       
       <div className="flex-1 w-full">
         <Map 
           location={userLocation || { lat: 24.7136, lng: 46.6753 }} 
-          points={locations}
+          points={locations || []}
           interactive={true}
           className="w-full h-full"
           onPinClick={handleMapPinClick}
