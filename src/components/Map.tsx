@@ -81,7 +81,7 @@ const Map = ({
     // Simple clustering simulation
     const newClusters = [];
     const gridSize = 0.05; // Approximately 5km grid
-    const gridMap = new Map();
+    const gridMap = new Map<string, { points: MapPin[], center: MapLocation }>();
     
     points.forEach(point => {
       // Create a grid cell key
@@ -94,11 +94,13 @@ const Map = ({
       }
       
       const cell = gridMap.get(key);
-      cell.points.push(point);
-      
-      // Recalculate center
-      cell.center.lat = cell.points.reduce((sum, p) => sum + p.lat, 0) / cell.points.length;
-      cell.center.lng = cell.points.reduce((sum, p) => sum + p.lng, 0) / cell.points.length;
+      if (cell) {
+        cell.points.push(point);
+        
+        // Recalculate center
+        cell.center.lat = cell.points.reduce((sum, p) => sum + p.lat, 0) / cell.points.length;
+        cell.center.lng = cell.points.reduce((sum, p) => sum + p.lng, 0) / cell.points.length;
+      }
     });
     
     // Convert clusters with more than 3 points
