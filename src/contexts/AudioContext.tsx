@@ -228,12 +228,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             title: "Preview ended",
             description: "Upgrade to premium to listen to the full audio tour",
             duration: 5000,
-            action: {
-              onClick: () => {
-                // Navigate to upgrade page or show upgrade modal
-                console.log("Navigate to upgrade page");
-              }
-            }
+            action: (
+              <div className="flex items-center" onClick={() => console.log("Navigate to upgrade page")}>
+                Upgrade
+              </div>
+            )
           });
         }
       }
@@ -306,20 +305,20 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Progress tracking functions
   const updateTrackProgress = (trackId: string, position: number, completed: boolean) => {
-    setTrackProgress((prev: SavedProgress) => {
-      const newProgress = { ...prev };
-      newProgress[trackId] = {
+    setTrackProgress((prev) => {
+      const updatedProgress: SavedProgress = {...prev};
+      updatedProgress[trackId] = {
         position,
         completed,
         lastPlayed: Date.now()
       };
-      return newProgress;
+      return updatedProgress;
     });
   };
   
   const updateTourProgress = (tourId: string, segmentId: string, currentPosition: number) => {
-    setTourProgress((prev: TourProgress) => {
-      const newProgress = { ...prev };
+    setTourProgress((prev) => {
+      const updatedProgress: TourProgress = {...prev};
       const tourData = prev[tourId] || {
         lastSegmentId: segmentId,
         completedSegments: [],
@@ -343,14 +342,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         completedSegments.push(segmentId);
       }
       
-      newProgress[tourId] = {
+      updatedProgress[tourId] = {
         lastSegmentId: segmentId,
         completedSegments,
         totalDuration: tourData.totalDuration, // This would be updated elsewhere with tour metadata
         listenedDuration
       };
       
-      return newProgress;
+      return updatedProgress;
     });
   };
   
@@ -381,10 +380,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     sleepTimerRef.current = setTimeout(updateTimerDisplay, 1000);
     
     // Update settings
-    setPlaybackSettings((prev: PlaybackSettings) => ({
-      ...prev,
-      sleepTimerMinutes: minutes
-    }));
+    setPlaybackSettings((prev) => {
+      const updatedSettings: PlaybackSettings = {
+        ...prev,
+        sleepTimerMinutes: minutes
+      };
+      return updatedSettings;
+    });
     
     toast({
       title: "Sleep timer started",
@@ -398,10 +400,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     setSleepTimerRemaining(null);
     
     // Update settings
-    setPlaybackSettings((prev: PlaybackSettings) => ({
-      ...prev,
-      sleepTimerMinutes: null
-    }));
+    setPlaybackSettings((prev) => {
+      const updatedSettings: PlaybackSettings = {
+        ...prev,
+        sleepTimerMinutes: null
+      };
+      return updatedSettings;
+    });
     
     toast({
       title: "Sleep timer cancelled",
@@ -535,12 +540,11 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           title: "Preview limit reached",
           description: "Upgrade to premium to listen to the full audio tour",
           duration: 5000,
-          action: {
-            onClick: () => {
-              // Navigate to upgrade page or show upgrade modal
-              console.log("Navigate to upgrade page");
-            }
-          }
+          action: (
+            <div className="flex items-center" onClick={() => console.log("Navigate to upgrade page")}>
+              Upgrade
+            </div>
+          )
         });
       }
     }
@@ -561,11 +565,14 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = clampedVolume;
     }
     
-    setPlaybackSettings((prev: PlaybackSettings) => ({
-      ...prev,
-      volume: clampedVolume,
-      isMuted: clampedVolume === 0
-    }));
+    setPlaybackSettings((prev) => {
+      const updatedSettings: PlaybackSettings = {
+        ...prev,
+        volume: clampedVolume,
+        isMuted: clampedVolume === 0
+      };
+      return updatedSettings;
+    });
   };
   
   const toggleMute = () => {
@@ -575,10 +582,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.volume = newMuteState ? 0 : volume;
     }
     
-    setPlaybackSettings((prev: PlaybackSettings) => ({
-      ...prev,
-      isMuted: newMuteState
-    }));
+    setPlaybackSettings((prev) => {
+      const updatedSettings: PlaybackSettings = {
+        ...prev,
+        isMuted: newMuteState
+      };
+      return updatedSettings;
+    });
   };
   
   const setPlaybackRate = (rate: number) => {
@@ -589,10 +599,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audioRef.current.playbackRate = newRate;
     }
     
-    setPlaybackSettings((prev: PlaybackSettings) => ({
-      ...prev,
-      playbackRate: newRate
-    }));
+    setPlaybackSettings((prev) => {
+      const updatedSettings: PlaybackSettings = {
+        ...prev,
+        playbackRate: newRate
+      };
+      return updatedSettings;
+    });
     
     toast({
       title: `Playback speed: ${newRate}x`,
@@ -703,10 +716,13 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Settings management
   const updatePlaybackSettings = (settings: Partial<PlaybackSettings>) => {
-    setPlaybackSettings((prev: PlaybackSettings) => ({
-      ...prev,
-      ...settings
-    }));
+    setPlaybackSettings((prev) => {
+      const updatedSettings: PlaybackSettings = {
+        ...prev,
+        ...settings
+      };
+      return updatedSettings;
+    });
   };
   
   // Helper functions
