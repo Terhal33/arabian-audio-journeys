@@ -2,6 +2,7 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Map, Search, Library, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -35,28 +36,36 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </div>
 
       {/* Bottom navigation */}
-      <nav className="bg-white border-t border-gray-200 h-16 fixed bottom-0 w-full z-50 shadow-md">
-        <div className="flex h-full">
-          {navItems.map(({ path, icon: Icon, label }) => (
-            <NavLink
-              key={path}
-              to={path}
-              className={({ isActive }) =>
-                `flex flex-1 flex-col items-center justify-center text-xs ${
-                  isActive
-                    ? 'text-desert-dark'
-                    : 'text-muted-foreground'
-                }`
-              }
-            >
-              <Icon
-                className={`h-6 w-6 mb-1 ${
-                  isActive(path) ? 'text-desert-dark' : 'text-muted-foreground'
-                }`}
-              />
-              <span>{label}</span>
-            </NavLink>
-          ))}
+      <nav className="bg-white border-t border-gray-200 h-16 fixed bottom-0 w-full z-40 shadow-lg">
+        <div className="flex h-full max-w-screen-lg mx-auto">
+          {navItems.map(({ path, icon: Icon, label }) => {
+            const active = isActive(path);
+            
+            return (
+              <NavLink
+                key={path}
+                to={path}
+                className="flex flex-1 flex-col items-center justify-center relative"
+              >
+                {active && (
+                  <div className="absolute -top-0 left-1/2 w-12 h-1 bg-desert rounded-b-full transform -translate-x-1/2"></div>
+                )}
+                <div className={cn(
+                  "flex flex-col items-center justify-center",
+                  active ? "text-desert-dark" : "text-muted-foreground"
+                )}>
+                  <Icon className={cn(
+                    "h-6 w-6 mb-1 transition-colors",
+                    active ? "text-desert-dark" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "text-xs transition-colors",
+                    active ? "font-medium" : ""
+                  )}>{label}</span>
+                </div>
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
     </div>
