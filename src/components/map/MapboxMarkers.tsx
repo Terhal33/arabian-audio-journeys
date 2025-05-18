@@ -35,6 +35,12 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
   useEffect(() => {
     if (!map || !isMapLoaded || !points) return;
     
+    // Ensure map is fully initialized with a container element
+    if (!map.getContainer()) {
+      console.warn('Map container not available yet');
+      return;
+    }
+    
     // Check if points have actually changed to avoid unnecessary updates
     const pointsSignature = JSON.stringify(points.map(p => p.id));
     if (pointsSignature === lastPointsSignature.current) return;
@@ -54,50 +60,60 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
     points.forEach(point => {
       if (!map) return;
       
-      const el = createMarkerElement(
-        point.tour?.isPremium, 
-        point.tour?.id === activeTourId
-      );
-      
-      const marker = new mapboxgl.Marker(el)
-        .setLngLat([point.lng, point.lat])
-        .addTo(map);
+      try {
+        const el = createMarkerElement(
+          point.tour?.isPremium, 
+          point.tour?.id === activeTourId
+        );
         
-      // Add popup with tour name
-      if (point.tour) {
-        const popup = new mapboxgl.Popup({
-          closeButton: false,
-          closeOnClick: false,
-          offset: 25,
-          className: 'mapbox-popup'
-        }).setHTML(`
-          <div class="p-2 bg-white rounded shadow-md">
-            <h3 class="font-medium text-sm">${point.tour.title}</h3>
-            ${point.tour.isPremium ? '<span class="text-xs text-amber-600">Premium</span>' : ''}
-          </div>
-        `);
+        const marker = new mapboxgl.Marker(el)
+          .setLngLat([point.lng, point.lat]);
         
-        el.addEventListener('mouseenter', () => {
-          marker.setPopup(popup);
-          popup.addTo(map);
-          popupsRef.current.push(popup);
-        });
+        // Only try to add to map if it's valid
+        if (map.getContainer()) {
+          marker.addTo(map);
+        }
+          
+        // Add popup with tour name
+        if (point.tour) {
+          const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            offset: 25,
+            className: 'mapbox-popup'
+          }).setHTML(`
+            <div class="p-2 bg-white rounded shadow-md">
+              <h3 class="font-medium text-sm">${point.tour.title}</h3>
+              ${point.tour.isPremium ? '<span class="text-xs text-amber-600">Premium</span>' : ''}
+            </div>
+          `);
+          
+          el.addEventListener('mouseenter', () => {
+            if (map.getContainer()) {
+              marker.setPopup(popup);
+              popup.addTo(map);
+              popupsRef.current.push(popup);
+            }
+          });
+          
+          el.addEventListener('mouseleave', () => {
+            popup.remove();
+            popupsRef.current = popupsRef.current.filter(p => p !== popup);
+          });
+        }
         
-        el.addEventListener('mouseleave', () => {
-          popup.remove();
-          popupsRef.current = popupsRef.current.filter(p => p !== popup);
-        });
+        // Add click handler if interactive
+        if (onPinClick) {
+          el.addEventListener('click', () => {
+            onPinClick(point, point.tour);
+            setActiveTourId(point.tour?.id || null);
+          });
+        }
+        
+        markers.current.push(marker);
+      } catch (error) {
+        console.error("Error adding marker:", error);
       }
-      
-      // Add click handler if interactive
-      if (onPinClick) {
-        el.addEventListener('click', () => {
-          onPinClick(point, point.tour);
-          setActiveTourId(point.tour?.id || null);
-        });
-      }
-      
-      markers.current.push(marker);
     });
     
   }, [points, isMapLoaded, onPinClick, activeTourId, map]);
@@ -106,27 +122,61 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
   useEffect(() => {
     if (!map || !isMapLoaded || !showUserLocation) return;
     
-    // Remove existing user marker
-    if (userMarker.current) {
-      userMarker.current.remove();
-      userMarker.current = null;
+    // Ensure map is fully initialized with a container element
+    if (!map.getContainer()) {
+      console.warn('Map container not available for user location marker');
+      return;
     }
     
-    // Create user location marker
-    const el = createUserLocationMarker();
-    
-    userMarker.current = new mapboxgl.Marker(el)
-      .setLngLat([location.lng, location.lat])
-      .addTo(map);
+    try {
+      // Remove existing user marker
+      if (userMarker.current) {
+        userMarker.current.remove();
+        userMarker.current = null;
+      }
+      
+      // Create user location marker
+      const el = createUserLocationMarker();
+      
+      userMarker.current = new mapboxgl.Marker(el)
+        .setLngLat([location.lng, location.lat]);
+      
+      // Only try to add to map if it's valid
+      if (map.getContainer()) {
+        userMarker.current.addTo(map);
+      }
+    } catch (error) {
+      console.error("Error adding user location marker:", error);
+    }
     
   }, [location, isMapLoaded, showUserLocation, map]);
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      markers.current.forEach(marker => marker.remove());
-      popupsRef.current.forEach(popup => popup.remove());
-      if (userMarker.current) userMarker.current.remove();
+      markers.current.forEach(marker => {
+        try {
+          marker.remove();
+        } catch (e) {
+          console.warn("Error removing marker:", e);
+        }
+      });
+      
+      popupsRef.current.forEach(popup => {
+        try {
+          popup.remove();
+        } catch (e) {
+          console.warn("Error removing popup:", e);
+        }
+      });
+      
+      if (userMarker.current) {
+        try {
+          userMarker.current.remove();
+        } catch (e) {
+          console.warn("Error removing user marker:", e);
+        }
+      }
     };
   }, []);
 

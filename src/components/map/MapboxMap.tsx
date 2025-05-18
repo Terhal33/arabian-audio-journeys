@@ -29,6 +29,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [currentZoom, setCurrentZoom] = useState(zoom);
   const [activeTourId, setActiveTourId] = useLocalStorage<string | null>('active_tour_id', null);
+  const [isMapReady, setIsMapReady] = useState(false);
   
   // Initialize map when component mounts
   useEffect(() => {
@@ -48,6 +49,11 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
       newMap.on('load', () => {
         console.log("Mapbox map loaded successfully");
         setIsMapLoaded(true);
+        
+        // Ensure the map is fully initialized before setting it as ready
+        if (newMap.getContainer()) {
+          setIsMapReady(true);
+        }
       });
 
       // Add navigation controls if interactive
@@ -65,6 +71,8 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
 
       return () => {
         // Clean up map
+        setIsMapReady(false);
+        setIsMapLoaded(false);
         newMap.remove();
         map.current = null;
       };
@@ -98,25 +106,29 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
     <div className={className}>
       <div ref={mapContainer} className="h-full w-full rounded-lg" />
       
-      {/* Marker handling component */}
-      <MapboxMarkers 
-        map={map.current}
-        isMapLoaded={isMapLoaded}
-        points={points}
-        location={location}
-        showUserLocation={showUserLocation}
-        activeTourId={activeTourId}
-        onPinClick={onPinClick}
-        setActiveTourId={setActiveTourId}
-      />
+      {/* Marker handling component - Only pass map when it's ready */}
+      {isMapReady && (
+        <MapboxMarkers 
+          map={map.current}
+          isMapLoaded={isMapLoaded}
+          points={points}
+          location={location}
+          showUserLocation={showUserLocation}
+          activeTourId={activeTourId}
+          onPinClick={onPinClick}
+          setActiveTourId={setActiveTourId}
+        />
+      )}
       
-      {/* Tour paths component */}
-      <MapboxTourPaths 
-        map={map.current}
-        isMapLoaded={isMapLoaded}
-        points={points}
-        activeTourId={activeTourId}
-      />
+      {/* Tour paths component - Only pass map when it's ready */}
+      {isMapReady && (
+        <MapboxTourPaths 
+          map={map.current}
+          isMapLoaded={isMapLoaded}
+          points={points}
+          activeTourId={activeTourId}
+        />
+      )}
     </div>
   );
 };
