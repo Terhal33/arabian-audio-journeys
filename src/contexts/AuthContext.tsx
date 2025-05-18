@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
@@ -35,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state changed:', event, session ? 'Session exists' : 'No session');
         const isAuthenticated = !!session?.user;
         setAuthState(state => ({ 
           ...state, 
@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session ? 'Session exists' : 'No session');
       const isAuthenticated = !!session?.user;
       setAuthState(state => ({ 
         ...state, 
@@ -89,6 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
@@ -136,7 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
       const preferred_language = authState.language || 'en';
 
-      // Create a new profile - FIX: Ensure id property is set and not optional
+      // Define the new profile with required id field
       const newProfile = {
         id: userId,
         full_name: userName,
@@ -145,31 +147,72 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar_url: null
       };
 
-      // FIX: Changed from passing an array [newProfile] to passing a single object
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .insert(newProfile)
-        .select()
-        .single();
+      // Try the insert, but don't fail if it doesn't work (profile might already exist)
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .insert(newProfile)
+          .select()
+          .single();
 
-      if (error) throw error;
+        if (error) {
+          console.log('Error creating profile, falling back to direct authentication:', error);
+          // If we can't create a profile, just continue with the user info we have
+          const extendedUser = authState.user ? {
+            ...authState.user,
+            name: userName,
+            isPremium: false
+          } : null;
 
-      // Create extended user with additional properties
-      const extendedUser = authState.user ? {
-        ...authState.user,
-        name: data.full_name,
-        isPremium: false
-      } : null;
+          setAuthState(state => ({ 
+            ...state, 
+            profile: {
+              id: userId,
+              full_name: userName,
+              username: user.email,
+              preferred_language,
+              avatar_url: null
+            } as UserProfile, 
+            user: extendedUser,
+            isLoading: false,
+            language: preferred_language
+          }));
+          
+          return null;
+        }
 
-      setAuthState(state => ({ 
-        ...state, 
-        profile: data as UserProfile, 
-        user: extendedUser,
-        isLoading: false,
-        language: preferred_language
-      }));
+        // Create extended user with additional properties
+        const extendedUser = authState.user ? {
+          ...authState.user,
+          name: data.full_name,
+          isPremium: false
+        } : null;
 
-      return data;
+        setAuthState(state => ({ 
+          ...state, 
+          profile: data as UserProfile, 
+          user: extendedUser,
+          isLoading: false,
+          language: preferred_language
+        }));
+
+        return data;
+      } catch (insertError) {
+        console.error('Error in profile insert transaction:', insertError);
+        // Even if profile creation fails, we still want to set isLoading to false
+        // and provide minimal user functionality
+        const extendedUser = authState.user ? {
+          ...authState.user,
+          name: userName,
+          isPremium: false
+        } : null;
+
+        setAuthState(state => ({ 
+          ...state, 
+          user: extendedUser,
+          isLoading: false
+        }));
+      }
     } catch (error) {
       console.error('Error creating user profile:', error);
       // Even if profile creation fails, we should still set isLoading to false

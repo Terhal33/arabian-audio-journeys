@@ -14,13 +14,14 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiresAuth = true,
   requiresPremium = false
 }) => {
-  const { isAuthenticated, isLoading, isPremium, session } = useAuth();
+  const { isAuthenticated, isLoading, user, session } = useAuth();
   const location = useLocation();
   const hasSetRedirect = useRef(false);
   
   // Save the current location to redirect back after login - only once per path
   useEffect(() => {
     if (!isAuthenticated && requiresAuth && !isLoading && !hasSetRedirect.current) {
+      console.log('Setting redirect for:', location.pathname);
       localStorage.setItem('redirectAfterLogin', location.pathname);
       hasSetRedirect.current = true;
     }
@@ -33,6 +34,16 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     };
   }, [isAuthenticated, requiresAuth, location.pathname, isLoading]);
   
+  // Add debug logs
+  console.log('ProtectedRoute state:', { 
+    isAuthenticated, 
+    isLoading, 
+    requiresAuth,
+    path: location.pathname,
+    hasUser: !!user,
+    hasSession: !!session
+  });
+  
   // Show loading state only if we're explicitly loading auth and this is a protected route
   if (isLoading && requiresAuth) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
@@ -40,12 +51,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   
   // Check authentication
   if (requiresAuth && !isAuthenticated) {
+    console.log('Redirecting to login from:', location.pathname);
     // Only redirect if there's definitely no session
     return <Navigate to="/login" replace />;
   }
   
   // Check premium status
-  if (requiresPremium && !isPremium) {
+  if (requiresPremium && !user?.isPremium) {
     return <Navigate to="/upgrade" replace />;
   }
   
