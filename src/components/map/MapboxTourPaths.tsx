@@ -46,11 +46,18 @@ const MapboxTourPaths: React.FC<MapboxTourPathsProps> = ({
     
     return () => {
       // Clean up the route layer when component unmounts
-      if (map.getLayer('tour-routes')) {
-        map.removeLayer('tour-routes');
-      }
-      if (map.getSource('routes')) {
-        map.removeSource('routes');
+      // First check if map still exists
+      if (!map) return;
+      
+      // Then safely check for layers and sources before removal
+      if (map.getStyle()) {
+        // Only attempt removal if the style is still loaded
+        if (map.getLayer('tour-routes')) {
+          map.removeLayer('tour-routes');
+        }
+        if (map.getSource('routes')) {
+          map.removeSource('routes');
+        }
       }
     };
   }, [map, isMapLoaded]);
