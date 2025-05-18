@@ -399,7 +399,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             </SheetContent>
           </Sheet>
           
-          {/* Sleep timer button - Fix: Wrap DialogTrigger within Dialog */}
+          {/* Sleep timer button */}
           <Dialog open={showSleepTimer} onOpenChange={setShowSleepTimer}>
             <DialogTrigger asChild>
               <Button
@@ -460,7 +460,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             </DialogContent>
           </Dialog>
           
-          {/* Settings button - Fix: Wrap DialogTrigger within Dialog */}
+          {/* Settings button */}
           <Dialog open={showSettings} onOpenChange={setShowSettings}>
             <DialogTrigger asChild>
               <Button
@@ -533,68 +533,8 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
         </div>
       </div>
       
-      {/* Queue sheet */}
-      <Sheet open={isQueueOpen} onOpenChange={setIsQueueOpen}>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Queue</SheetTitle>
-          </SheetHeader>
-          
-          <div className="mt-6">
-            <Tabs defaultValue="queue">
-              <TabsList className="w-full">
-                <TabsTrigger value="queue" className="flex-1">Queue</TabsTrigger>
-                <TabsTrigger value="history" className="flex-1">History</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="queue" className="mt-4">
-                {queue.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Music2 className="h-8 w-8 mx-auto opacity-30" />
-                    <p className="text-sm text-muted-foreground mt-2">
-                      No upcoming tracks
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {queue.map((track) => (
-                      <div
-                        key={track.id}
-                        className="flex items-center p-2 hover:bg-muted rounded-md"
-                      >
-                        <div className="flex-1 min-w-0 mr-2">
-                          <p className="font-medium truncate">{track.title}</p>
-                          {track.tourId && (
-                            <p className="text-xs text-muted-foreground">
-                              From: Tour Name
-                            </p>
-                          )}
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                        >
-                          <Play className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="history" className="mt-4">
-                <div className="text-center py-8">
-                  <Music2 className="h-8 w-8 mx-auto opacity-30" />
-                  <p className="text-sm text-muted-foreground mt-2">
-                    No playback history yet
-                  </p>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Remove this duplicated Queue sheet as it's causing issues */}
+      {/* The Sheet component is already defined above */}
     </div>
   );
 };

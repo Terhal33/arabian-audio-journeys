@@ -6,6 +6,7 @@ import { Tour } from '@/services/toursData';
 import { Card } from '@/components/ui/card';
 import AudioPlayer from '@/components/AudioPlayer';
 import UpgradePrompt from '@/components/UpgradePrompt';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
 interface MapBottomSheetProps {
   tour: Tour;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTour, Tour } from '@/services/toursData';
@@ -57,6 +56,7 @@ const TourDetail = () => {
   const [showTranscript, setShowTranscript] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showExpandedPlayer, setShowExpandedPlayer] = useState(false);
+  const [isReviewSheetOpen, setIsReviewSheetOpen] = useState(false);
   
   const { isAuthenticated, user } = useAuth();
   const isPremium = user?.isPremium || false;
@@ -215,7 +215,7 @@ const TourDetail = () => {
   
   // Mock transcript data
   const mockTranscript = "Welcome to this audio tour of the historic site. As we begin our journey through this magnificent location, we'll explore its rich history dating back centuries. The architecture you see around you represents a blend of traditional design elements with practical considerations for the harsh desert climate. Notice the thick walls which helped keep interiors cool during hot summer days...";
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -698,15 +698,106 @@ const TourDetail = () => {
                     />
                   )}
                   
-                  <SheetTrigger asChild>
-                    <Button
-                      variant="outline" 
-                      className="w-full flex items-center justify-center space-x-2"
-                    >
-                      <Star className="h-4 w-4" />
-                      <span>Reviews & Ratings</span>
-                    </Button>
-                  </SheetTrigger>
+                  {/* Fixed: Wrap SheetTrigger in a Sheet component */}
+                  <Sheet open={isReviewSheetOpen} onOpenChange={setIsReviewSheetOpen}>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="outline" 
+                        className="w-full flex items-center justify-center space-x-2"
+                      >
+                        <Star className="h-4 w-4" />
+                        <span>Reviews & Ratings</span>
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent className="sm:max-w-md">
+                      <SheetHeader>
+                        <SheetTitle>Reviews & Ratings</SheetTitle>
+                      </SheetHeader>
+                      
+                      <div className="mt-6 space-y-6">
+                        {/* Rating summary */}
+                        <div className="flex items-center space-x-4">
+                          <div className="text-center">
+                            <div className="text-4xl font-bold">{reviews.average}</div>
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star 
+                                  key={i}
+                                  className={cn(
+                                    "h-4 w-4", 
+                                    i < Math.round(reviews.average) 
+                                      ? "fill-gold text-gold" 
+                                      : "text-gray-200"
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{reviews.count} reviews</p>
+                          </div>
+                          
+                          <div className="flex-1">
+                            {reviews.distribution.map((item) => (
+                              <div key={item.rating} className="flex items-center space-x-2 mb-1">
+                                <div className="text-sm w-3">{item.rating}</div>
+                                <div className="flex-1 h-2 bg-gray-100 rounded-full">
+                                  <div 
+                                    className="h-full bg-gold rounded-full" 
+                                    style={{ width: `${item.percentage}%` }}
+                                  />
+                                </div>
+                                <div className="text-xs text-muted-foreground">{item.percentage}%</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Review samples */}
+                        <div className="space-y-4">
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex justify-between mb-2">
+                              <div className="flex items-center">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i}
+                                    className={cn(
+                                      "h-3 w-3", 
+                                      i < 5 ? "fill-gold text-gold" : "text-gray-200"
+                                    )}
+                                  />
+                                ))}
+                              </div>
+                              <div className="text-xs text-muted-foreground">2 days ago</div>
+                            </div>
+                            <h4 className="font-medium text-sm">Ahmed S.</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Excellent audio quality and fascinating historical insights. The narration brought the history to life.
+                            </p>
+                          </div>
+                          
+                          <div className="p-3 border rounded-lg">
+                            <div className="flex justify-between mb-2">
+                              <div className="flex items-center">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i}
+                                    className={cn(
+                                      "h-3 w-3", 
+                                      i < 4 ? "fill-gold text-gold" : "text-gray-200"
+                                    )}
+                                  />
+                                ))}
+                              </div>
+                              <div className="text-xs text-muted-foreground">1 week ago</div>
+                            </div>
+                            <h4 className="font-medium text-sm">Sarah M.</h4>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              Very informative tour with great cultural context. The map integration was helpful to navigate between points.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                 </div>
                 
                 {/* Active point info */}
@@ -762,98 +853,7 @@ const TourDetail = () => {
         </div>
       </main>
       
-      {/* Reviews sheet */}
-      <Sheet>
-        <SheetContent className="sm:max-w-md">
-          <SheetHeader>
-            <SheetTitle>Reviews & Ratings</SheetTitle>
-          </SheetHeader>
-          
-          <div className="mt-6 space-y-6">
-            {/* Rating summary */}
-            <div className="flex items-center space-x-4">
-              <div className="text-center">
-                <div className="text-4xl font-bold">{reviews.average}</div>
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i}
-                      className={cn(
-                        "h-4 w-4", 
-                        i < Math.round(reviews.average) 
-                          ? "fill-gold text-gold" 
-                          : "text-gray-200"
-                      )}
-                    />
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground">{reviews.count} reviews</p>
-              </div>
-              
-              <div className="flex-1">
-                {reviews.distribution.map((item) => (
-                  <div key={item.rating} className="flex items-center space-x-2 mb-1">
-                    <div className="text-sm w-3">{item.rating}</div>
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full">
-                      <div 
-                        className="h-full bg-gold rounded-full" 
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                    <div className="text-xs text-muted-foreground">{item.percentage}%</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Review samples */}
-            <div className="space-y-4">
-              <div className="p-3 border rounded-lg">
-                <div className="flex justify-between mb-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i}
-                        className={cn(
-                          "h-3 w-3", 
-                          i < 5 ? "fill-gold text-gold" : "text-gray-200"
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <div className="text-xs text-muted-foreground">2 days ago</div>
-                </div>
-                <h4 className="font-medium text-sm">Ahmed S.</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Excellent audio quality and fascinating historical insights. The narration brought the history to life.
-                </p>
-              </div>
-              
-              <div className="p-3 border rounded-lg">
-                <div className="flex justify-between mb-2">
-                  <div className="flex items-center">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i}
-                        className={cn(
-                          "h-3 w-3", 
-                          i < 4 ? "fill-gold text-gold" : "text-gray-200"
-                        )}
-                      />
-                    ))}
-                  </div>
-                  <div className="text-xs text-muted-foreground">1 week ago</div>
-                </div>
-                <h4 className="font-medium text-sm">Sarah M.</h4>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Very informative tour with great cultural context. The map integration was helpful to navigate between points.
-                </p>
-              </div>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-      
+      {/* Remove duplicate Reviews sheet - it's now properly included in the action buttons section */}
       {/* Audio player with expanded view functionality */}
       <div onClick={() => currentTrack && setShowExpandedPlayer(true)}>
         <AudioPlayer />
