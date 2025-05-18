@@ -35,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       </div>
 
       {/* Bottom navigation */}
-      <nav className="bg-white border-t border-gray-200 h-16 fixed bottom-0 w-full">
+      <nav className="bg-white border-t border-gray-200 h-16 fixed bottom-0 w-full z-50 shadow-md">
         <div className="flex h-full">
           {navItems.map(({ path, icon: Icon, label }) => (
             <NavLink

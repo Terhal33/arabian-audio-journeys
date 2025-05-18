@@ -3,13 +3,19 @@ import React, { useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface WelcomeHeaderProps {
   location?: string;
   isLoading?: boolean;
+  className?: string;
 }
 
-const WelcomeHeader = React.memo(({ location = "Saudi Arabia", isLoading = false }: WelcomeHeaderProps) => {
+const WelcomeHeader = React.memo(({ 
+  location = "Saudi Arabia",
+  isLoading = false,
+  className 
+}: WelcomeHeaderProps) => {
   const { user } = useAuth();
   
   // Safely extract the first name without causing refreshes
@@ -19,7 +25,7 @@ const WelcomeHeader = React.memo(({ location = "Saudi Arabia", isLoading = false
   }, [user?.name]);
 
   return (
-    <div className="mb-6">
+    <div className={cn("mb-6", className)}>
       {isLoading ? (
         <div className="space-y-2">
           <Skeleton className="h-8 w-3/4" />
@@ -32,7 +38,7 @@ const WelcomeHeader = React.memo(({ location = "Saudi Arabia", isLoading = false
           </h1>
           <div className="flex items-center text-muted-foreground">
             <MapPin className="h-4 w-4 mr-1" />
-            <p>{location}</p>
+            <p className="animate-fade-in">{location}</p>
           </div>
         </>
       )}

@@ -28,20 +28,20 @@ const EnhancedTourCard = ({
         featured ? "md:flex" : "",
         className
       )}>
-        <div className={`relative ${featured ? 'md:w-2/5' : 'h-52'}`}>
+        <div className={`relative ${featured ? 'md:w-2/5 h-full' : 'h-52'}`}>
           <img 
             src={tour.imageUrl} 
             alt={tour.title} 
-            className={`w-full object-cover ${featured ? 'h-full' : 'h-52'}`} 
+            className={`w-full object-cover ${featured ? 'h-full min-h-[200px]' : 'h-52'}`} 
           />
           <div className="absolute top-3 right-3 flex flex-col gap-2">
             {tour.isPremium && (
-              <Badge className="bg-gold hover:bg-gold-dark">
+              <Badge className="bg-gold hover:bg-gold-dark animate-fade-in">
                 Premium
               </Badge>
             )}
             {isDownloaded && (
-              <Badge className="bg-oasis hover:bg-oasis-dark">
+              <Badge className="bg-oasis hover:bg-oasis-dark animate-fade-in">
                 <Download className="h-3 w-3 mr-1" /> Downloaded
               </Badge>
             )}
@@ -83,6 +83,17 @@ const EnhancedTourCard = ({
               <span>{tour.distance} km</span>
             </div>
           </div>
+          
+          {featured && tour.isPremium && !isDownloaded && (
+            <div className="mt-4 pt-3 border-t border-muted">
+              <Badge variant="outline" className="text-gold border-gold">
+                Premium content
+              </Badge>
+              <p className="text-xs text-muted-foreground mt-2">
+                Unlock this tour with a premium subscription
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </Link>

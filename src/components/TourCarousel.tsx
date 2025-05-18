@@ -10,19 +10,22 @@ import {
   CarouselPrevious 
 } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 interface TourCarouselProps {
   title: string;
   tours: Tour[];
   viewAllLink?: string;
   isLoading?: boolean;
+  className?: string;
 }
 
 const TourCarousel = ({ 
   title, 
   tours, 
   viewAllLink,
-  isLoading = false
+  isLoading = false,
+  className
 }: TourCarouselProps) => {
   // Create skeleton placeholders for loading state
   const skeletonItems = Array(3).fill(0).map((_, i) => (
@@ -45,7 +48,7 @@ const TourCarousel = ({
   ));
 
   return (
-    <div className="mb-8">
+    <div className={`mb-8 ${className}`}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-display text-xl font-bold text-desert-dark">{title}</h2>
         {viewAllLink && (
@@ -59,7 +62,7 @@ const TourCarousel = ({
         <CarouselContent className="-ml-2 md:-ml-4">
           {isLoading ? (
             skeletonItems
-          ) : (
+          ) : tours.length > 0 ? (
             tours.map((tour) => (
               <CarouselItem key={tour.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
                 <div className="p-1">
@@ -67,12 +70,20 @@ const TourCarousel = ({
                 </div>
               </CarouselItem>
             ))
+          ) : (
+            <CarouselItem className="pl-2 md:pl-4 w-full">
+              <div className="bg-white rounded-lg p-8 text-center">
+                <p className="text-muted-foreground">No tours available</p>
+              </div>
+            </CarouselItem>
           )}
         </CarouselContent>
-        <div className="hidden md:flex">
-          <CarouselPrevious className="left-0" />
-          <CarouselNext className="right-0" />
-        </div>
+        {tours.length > 1 && !isLoading && (
+          <>
+            <CarouselPrevious className="hidden md:flex left-0" />
+            <CarouselNext className="hidden md:flex right-0" />
+          </>
+        )}
       </Carousel>
     </div>
   );

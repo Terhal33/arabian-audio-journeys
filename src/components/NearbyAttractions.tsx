@@ -7,17 +7,20 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface NearbyAttractionsProps {
   tours: Tour[];
   userLocation?: { lat: number; lng: number };
   isLoading?: boolean;
+  className?: string;
 }
 
 const NearbyAttractions = ({ 
   tours, 
   userLocation,
-  isLoading = false 
+  isLoading = false,
+  className 
 }: NearbyAttractionsProps) => {
   // Helper function to calculate distance (simplified version)
   const calculateDistance = (tourLocation: { lat: number; lng: number }) => {
@@ -39,25 +42,40 @@ const NearbyAttractions = ({
     </div>
   ));
 
+  // Sort tours by distance if user location is available
+  const sortedTours = userLocation ? 
+    [...tours].sort((a, b) => {
+      const distA = parseFloat(calculateDistance(a.location) || '1000');
+      const distB = parseFloat(calculateDistance(b.location) || '1000');
+      return distA - distB;
+    }) : 
+    tours;
+
   return (
-    <div className="mb-8">
+    <div className={cn("mb-8", className)}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-display text-xl font-bold text-desert-dark">Nearby Attractions</h2>
+        {userLocation && (
+          <Badge variant="outline" className="flex items-center">
+            <MapPin className="h-3 w-3 mr-1" /> 
+            Current Location
+          </Badge>
+        )}
       </div>
       
       <ScrollArea className="w-full">
         <div className="flex pb-4 px-1">
           {isLoading ? (
             skeletonItems
-          ) : tours.length > 0 ? (
-            tours.map((tour) => {
+          ) : sortedTours.length > 0 ? (
+            sortedTours.map((tour) => {
               const distance = calculateDistance(tour.location);
               
               return (
                 <Link 
                   to={`/tour/${tour.id}`} 
                   key={tour.id}
-                  className="min-w-[250px] mr-4"
+                  className="min-w-[250px] mr-4 animate-fade-in"
                 >
                   <Card className="overflow-hidden h-full hover:shadow-md transition-shadow">
                     <div className="relative h-32">
@@ -81,7 +99,7 @@ const NearbyAttractions = ({
                       <h3 className="font-medium text-sm line-clamp-1">{tour.title}</h3>
                       <div className="flex items-center mt-1 text-xs text-muted-foreground">
                         <MapPin className="h-3 w-3 mr-1" />
-                        <span>Location coordinates: {tour.location.lat.toFixed(2)}, {tour.location.lng.toFixed(2)}</span>
+                        <span className="line-clamp-1">Located in {tour.id.replace('-', ' ')}</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -91,6 +109,9 @@ const NearbyAttractions = ({
           ) : (
             <div className="text-center w-full py-10">
               <p className="text-muted-foreground">No nearby attractions found</p>
+              {!userLocation && (
+                <p className="text-xs text-muted-foreground mt-2">Enable location services to see attractions near you</p>
+              )}
             </div>
           )}
         </div>
