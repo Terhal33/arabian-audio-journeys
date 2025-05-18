@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         const isAuthenticated = !!session?.user;
         setAuthState(state => ({ 
           ...state, 
@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAuthState(state => ({ 
             ...state, 
             profile: null, 
-            isAuthenticated: false 
+            isAuthenticated: false,
+            isLoading: false
           }));
         }
       }
@@ -94,6 +95,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error) {
+        // If user profile doesn't exist, create one instead of throwing an error
+        if (error.code === 'PGRST116') {
+          console.log('User profile not found, creating new profile...');
+          return createUserProfile(userId);
+        }
         throw error;
       }
 
@@ -115,6 +121,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Error fetching user profile:', error);
       setAuthState(state => ({ ...state, isLoading: false }));
+    }
+  };
+
+  // New function to create user profile if it doesn't exist
+  const createUserProfile = async (userId: string) => {
+    try {
+      // Get user data from auth
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      const user = userData.user;
+      const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
+      const preferred_language = authState.language || 'en';
+
+      // Create a new profile
+      const newProfile: Partial<UserProfile> = {
+        id: userId,
+        full_name: userName,
+        username: user.email,
+        preferred_language,
+        avatar_url: null
+      };
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert([newProfile])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Create extended user with additional properties
+      const extendedUser = authState.user ? {
+        ...authState.user,
+        name: data.full_name,
+        isPremium: false
+      } : null;
+
+      setAuthState(state => ({ 
+        ...state, 
+        profile: data as UserProfile, 
+        user: extendedUser,
+        isLoading: false,
+        language: preferred_language
+      }));
+
+      return data;
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      // Even if profile creation fails, we should still set isLoading to false
+      setAuthState(state => ({ ...state, isLoading: false }));
+      return null;
     }
   };
 

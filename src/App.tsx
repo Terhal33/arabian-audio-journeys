@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioProvider } from "@/contexts/AudioContext";
 
@@ -16,13 +16,15 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 // Pages
 import Splash from "./pages/Splash";
 import NotFound from "./pages/NotFound";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import ForgotPassword from "./pages/ForgotPassword";
-import Verification from "./pages/Verification";
-import Onboarding from "./pages/Onboarding";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -34,27 +36,43 @@ const App = () => (
           <BrowserRouter>
             <AppInitializer>
               <Routes>
-                {/* Auth routes - accessible when logged out */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/verification" element={<Verification />} />
-                <Route path="/onboarding" element={<Onboarding />} />
+                {/* Auth routes */}
+                <Route path="/*" element={<AuthNavigator showOnboarding={!localStorage.getItem('aaj_onboarded')} />} />
                 
-                {/* Protected routes - require authentication */}
+                {/* Protected app routes */}
                 <Route path="/home/*" element={
                   <ProtectedRoute>
                     <MainNavigator />
                   </ProtectedRoute>
                 } />
-                <Route path="/*" element={
+                <Route path="/tours/*" element={
+                  <ProtectedRoute>
+                    <MainNavigator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/map/*" element={
+                  <ProtectedRoute>
+                    <MainNavigator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/search/*" element={
+                  <ProtectedRoute>
+                    <MainNavigator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/library/*" element={
+                  <ProtectedRoute>
+                    <MainNavigator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile/*" element={
                   <ProtectedRoute>
                     <MainNavigator />
                   </ProtectedRoute>
                 } />
                 
-                {/* 404 page */}
-                <Route path="*" element={<NotFound />} />
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/login" replace />} />
               </Routes>
             </AppInitializer>
           </BrowserRouter>

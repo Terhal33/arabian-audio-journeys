@@ -14,7 +14,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiresAuth = true,
   requiresPremium = false
 }) => {
-  const { isAuthenticated, isLoading, isPremium } = useAuth();
+  const { isAuthenticated, isLoading, isPremium, session } = useAuth();
   const location = useLocation();
   const hasSetRedirect = useRef(false);
   
@@ -26,18 +26,21 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
     
     return () => {
-      // Reset the ref when component unmounts or path changes
-      hasSetRedirect.current = false;
+      // Only reset the ref when component unmounts, not on path changes
+      if (location.pathname.includes('login') || location.pathname.includes('signup')) {
+        hasSetRedirect.current = false;
+      }
     };
   }, [isAuthenticated, requiresAuth, location.pathname, isLoading]);
   
-  // Show loading state only if we're explicitly loading auth
-  if (isLoading) {
+  // Show loading state only if we're explicitly loading auth and this is a protected route
+  if (isLoading && requiresAuth) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
   
   // Check authentication
   if (requiresAuth && !isAuthenticated) {
+    // Only redirect if there's definitely no session
     return <Navigate to="/login" replace />;
   }
   
