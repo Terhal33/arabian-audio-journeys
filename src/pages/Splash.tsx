@@ -1,33 +1,8 @@
 
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import React from 'react';
 import { cn } from '@/lib/utils';
 
 const Splash = () => {
-  const navigate = useNavigate();
-  const { isLoading, user } = useAuth();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isLoading) {
-        if (user) {
-          navigate('/tours');
-        } else {
-          // Check if user has seen onboarding
-          const hasSeenOnboarding = localStorage.getItem('aaj_onboarded');
-          if (hasSeenOnboarding === 'true') {
-            navigate('/login');
-          } else {
-            navigate('/onboarding');
-          }
-        }
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [isLoading, user, navigate]);
-
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-sand-light">
       <div className="animate-pulse">

@@ -2,7 +2,6 @@
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Home, Map, Search, Library, User } from 'lucide-react';
 
 // Pages
 import HomePage from '@/pages/Home';
@@ -28,6 +27,7 @@ const MainNavigator: React.FC = () => {
   return (
     <MainLayout>
       <Routes>
+        <Route path="/" element={<HomePage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/map" element={<MapPage />} />
         <Route path="/search" element={<SearchPage />} />

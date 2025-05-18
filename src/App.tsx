@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioProvider } from "@/contexts/AudioContext";
 
@@ -16,84 +16,13 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 // Pages
 import Splash from "./pages/Splash";
 import NotFound from "./pages/NotFound";
-
-// Auth check function
-import { useAuth } from "./contexts/AuthContext";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import Verification from "./pages/Verification";
+import Onboarding from "./pages/Onboarding";
 
 const queryClient = new QueryClient();
-
-// App Routes component
-const AppRoutes = () => {
-  const { isAuthenticated, isLoading } = useAuth();
-  const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
-  
-  // Show splash screen while loading
-  if (isLoading) {
-    return <Splash />;
-  }
-  
-  return (
-    <Routes>
-      {/* Root path decides where to redirect based on auth status */}
-      <Route path="/" element={
-        isAuthenticated ? (
-          <Navigate to="/home" replace />
-        ) : (
-          <Navigate to={hasSeenOnboarding ? "/login" : "/onboarding"} replace />
-        )
-      } />
-      
-      {/* Auth routes - accessible when logged out */}
-      <Route path="/login" element={
-        isAuthenticated ? <Navigate to="/home" replace /> : <AuthNavigator showOnboarding={!hasSeenOnboarding} />
-      } />
-      <Route path="/signup" element={<AuthNavigator showOnboarding={!hasSeenOnboarding} />} />
-      <Route path="/forgot-password" element={<AuthNavigator showOnboarding={!hasSeenOnboarding} />} />
-      <Route path="/verification" element={<AuthNavigator showOnboarding={!hasSeenOnboarding} />} />
-      <Route path="/onboarding" element={<AuthNavigator showOnboarding={true} />} />
-      
-      {/* Protected routes - require authentication */}
-      <Route path="/home" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/map" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/search" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/library" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/tours" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      <Route path="/tour/:id" element={
-        <ProtectedRoute>
-          <MainNavigator />
-        </ProtectedRoute>
-      } />
-      
-      {/* 404 page */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
-  );
-};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -104,7 +33,29 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <AppInitializer>
-              <AppRoutes />
+              <Routes>
+                {/* Auth routes - accessible when logged out */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/verification" element={<Verification />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                
+                {/* Protected routes - require authentication */}
+                <Route path="/home/*" element={
+                  <ProtectedRoute>
+                    <MainNavigator />
+                  </ProtectedRoute>
+                } />
+                <Route path="/*" element={
+                  <ProtectedRoute>
+                    <MainNavigator />
+                  </ProtectedRoute>
+                } />
+                
+                {/* 404 page */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </AppInitializer>
           </BrowserRouter>
         </AudioProvider>

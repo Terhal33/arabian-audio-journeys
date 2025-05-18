@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import Splash from '@/pages/Splash';
 
@@ -11,31 +11,36 @@ interface AppInitializerProps {
 const AppInitializer: React.FC<AppInitializerProps> = ({ children }) => {
   const { isLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showSplash, setShowSplash] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
   
   useEffect(() => {
-    if (isLoading) return;
+    // Only run initialization logic once
+    if (hasInitialized || isLoading) return;
     
     const timer = setTimeout(() => {
       setShowSplash(false);
+      setHasInitialized(true);
       
-      // Check if user has seen onboarding
-      const hasSeenOnboarding = localStorage.getItem('aaj_onboarded');
+      // Skip navigation if already on the correct route
+      const currentPath = location.pathname;
+      const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
       
-      if (isAuthenticated) {
-        // Redirect to the main app
-        navigate('/home');
-      } else if (hasSeenOnboarding === 'true') {
-        // Returning user but not logged in
-        navigate('/login');
-      } else {
-        // First-time user
-        navigate('/onboarding');
+      // Only navigate if we're on the root path or need to redirect
+      if (currentPath === '/') {
+        if (isAuthenticated) {
+          navigate('/home', { replace: true });
+        } else if (hasSeenOnboarding) {
+          navigate('/login', { replace: true });
+        } else {
+          navigate('/onboarding', { replace: true });
+        }
       }
     }, 2000); // Show splash for 2 seconds
     
     return () => clearTimeout(timer);
-  }, [isLoading, isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate, location.pathname, hasInitialized]);
   
   if (showSplash || isLoading) {
     return <Splash />;

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,11 +9,11 @@ interface WelcomeHeaderProps {
   isLoading?: boolean;
 }
 
-const WelcomeHeader = ({ location = "Saudi Arabia", isLoading = false }: WelcomeHeaderProps) => {
+const WelcomeHeader = React.memo(({ location = "Saudi Arabia", isLoading = false }: WelcomeHeaderProps) => {
   const { user } = useAuth();
   
   // Safely extract the first name without causing refreshes
-  const userName = React.useMemo(() => {
+  const userName = useMemo(() => {
     if (!user || !user.name) return '';
     return user.name.split(' ')[0];
   }, [user?.name]);
@@ -38,6 +38,8 @@ const WelcomeHeader = ({ location = "Saudi Arabia", isLoading = false }: Welcome
       )}
     </div>
   );
-};
+});
+
+WelcomeHeader.displayName = 'WelcomeHeader';
 
 export default WelcomeHeader;

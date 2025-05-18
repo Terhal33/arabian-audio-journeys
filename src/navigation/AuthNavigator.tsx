@@ -17,11 +17,11 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
 
   return (
     <Routes>
-      <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/verification" element={<Verification />} />
+      <Route path="onboarding" element={<Onboarding />} />
+      <Route path="login" element={<Login />} />
+      <Route path="signup" element={<Signup />} />
+      <Route path="forgot-password" element={<ForgotPassword />} />
+      <Route path="verification" element={<Verification />} />
       <Route path="*" element={<Navigate to={initialRoute} replace />} />
     </Routes>
   );
