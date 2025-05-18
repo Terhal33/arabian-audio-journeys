@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin as MapPinIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tour } from '@/services/toursData';
 
@@ -60,7 +60,7 @@ const MapPin: React.FC<MapPinProps> = ({ point, mapCenter, zoom, onClick }) => {
           getPinColor(point.type, point.isPremium),
           point.isPremium ? "ring-2 ring-gold ring-opacity-50" : ""
         )}>
-          <MapPin className={cn(
+          <MapPinIcon className={cn(
             "h-4 w-4",
             point.isPremium ? "text-black" : "text-white"
           )} />
