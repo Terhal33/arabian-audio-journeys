@@ -12,6 +12,7 @@ import Tours from '@/pages/Tours';
 import TourDetail from '@/pages/TourDetail';
 import Settings from '@/pages/Settings';
 import MainLayout from '@/layouts/MainLayout';
+import ProtectedRoute from '@/components/ProtectedRoute';
 
 const MainNavigator: React.FC = () => {
   const location = useLocation();
@@ -25,10 +26,18 @@ const MainNavigator: React.FC = () => {
         <Route path="/map" element={<MapPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/library" element={<LibraryPage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
         <Route path="/tours" element={<Tours />} />
         <Route path="/tour/:id" element={<TourDetail />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings" element={
+          <ProtectedRoute>
+            <Settings />
+          </ProtectedRoute>
+        } />
         
         {/* Redirect to home if no match found */}
         <Route path="*" element={<Navigate to="/home" replace />} />

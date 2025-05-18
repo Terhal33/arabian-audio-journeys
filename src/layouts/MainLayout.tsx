@@ -25,6 +25,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     if (path === '/home' && location.pathname.startsWith('/tour/')) {
       return true;
     }
+    if (path === '/profile' && location.pathname === '/settings') {
+      return true;
+    }
     return location.pathname === path || 
       (path === '/home' && location.pathname === '/');
   };
