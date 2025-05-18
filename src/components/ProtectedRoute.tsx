@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -13,6 +13,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiresPremium = false
 }) => {
   const location = useLocation();
+  const [redirecting, setRedirecting] = useState(false);
   
   // Try to access auth context safely
   let isAuthenticated = false;
@@ -27,7 +28,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   } catch (e) {
     console.error("ProtectedRoute: Error accessing auth context:", e);
     // If we can't access the auth context, we redirect to login
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    if (!redirecting) {
+      setRedirecting(true);
+      return <Navigate to="/login" replace state={{ from: location }} />;
+    }
+    return <div className="flex items-center justify-center h-screen">Redirecting...</div>;
   }
   
   // If still loading auth, show a simple loading indicator
@@ -36,17 +41,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
   
   // Check authentication
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !redirecting) {
     // Save the current path for redirect after login
     console.log('Saving redirect path:', location.pathname);
     localStorage.setItem('redirectAfterLogin', location.pathname);
     
-    // Redirect to login
+    // Prevent multiple redirects
+    setRedirecting(true);
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
   
   // Check premium status if required
-  if (requiresPremium && user && !user.isPremium) {
+  if (requiresPremium && user && !user.isPremium && !redirecting) {
+    setRedirecting(true);
     return <Navigate to="/upgrade" replace />;
   }
   

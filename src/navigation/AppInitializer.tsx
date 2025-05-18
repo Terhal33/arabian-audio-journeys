@@ -12,12 +12,13 @@ const AppInitializer: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
   const [showSplash, setShowSplash] = useState(true);
   const hasInitialized = useRef(false);
+  const isNavigating = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
   
   // Handle initial routing based on authentication state
   useEffect(() => {
-    if (isLoading || hasInitialized.current) return;
+    if (isLoading || hasInitialized.current || isNavigating.current) return;
     
     const timer = setTimeout(() => {
       setShowSplash(false);
@@ -25,6 +26,7 @@ const AppInitializer: React.FC = () => {
       
       // Only redirect if we're on the root path
       if (location.pathname === '/') {
+        isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         
         if (!isAuthenticated) {
@@ -38,6 +40,11 @@ const AppInitializer: React.FC = () => {
           // If authenticated, direct to home
           navigate('/home', { replace: true });
         }
+        
+        // Reset navigation flag after a delay
+        setTimeout(() => {
+          isNavigating.current = false;
+        }, 100);
       }
     }, 2000); // Show splash for 2 seconds
     

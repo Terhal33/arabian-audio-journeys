@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,9 +28,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>(initialState);
+  const authCheckInProgress = useRef(false); // Add a ref to track if auth check is in progress
 
   // Update auth state based on session changes
   useEffect(() => {
+    // Prevent multiple simultaneous auth checks
+    if (authCheckInProgress.current) return;
+    
+    authCheckInProgress.current = true;
+    console.log('Setting up auth listener...');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -75,6 +82,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setAuthState(state => ({ ...state, isLoading: false }));
       }
+      
+      // Reset the auth check flag
+      authCheckInProgress.current = false;
     });
 
     // Load language preference
@@ -85,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       subscription.unsubscribe();
+      authCheckInProgress.current = false;
     };
   }, []);
 
