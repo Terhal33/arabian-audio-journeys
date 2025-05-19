@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import { CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import LanguageSelector from '@/components/LanguageSelector';
 
@@ -68,14 +68,14 @@ const ForgotPassword = () => {
         </div>
         
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-6">
-          <h1 className="text-2xl font-display font-semibold text-center mb-6">
+          <h1 className="text-2xl font-display font-semibold text-center mb-2">
             {language === 'ar' ? 'استعادة كلمة المرور' : 'Reset Password'}
           </h1>
           
           <p className="text-muted-foreground text-center mb-6">
             {language === 'ar' 
               ? 'أدخل بريدك الإلكتروني وسنرسل لك رابطا لإعادة تعيين كلمة المرور' 
-              : 'Enter your email and we will send you a password reset link'}
+              : 'Enter your email address and we will send you a link to reset your password'}
           </p>
           
           {error && (
@@ -91,7 +91,7 @@ const ForgotPassword = () => {
               <AlertDescription>
                 {language === 'ar' 
                   ? 'تم إرسال رابط إعادة تعيين كلمة المرور. يرجى التحقق من بريدك الإلكتروني' 
-                  : 'Password reset link sent. Please check your email'}
+                  : 'Password reset link sent. Please check your email inbox for instructions.'}
               </AlertDescription>
             </Alert>
           )}
@@ -105,32 +105,36 @@ const ForgotPassword = () => {
                 id="email"
                 name="email"
                 type="email"
-                placeholder={language === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
+                placeholder={language === 'ar' ? 'أدخل بريدك الإلكتروني' : 'Enter your email address'}
                 value={values.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                disabled={isLoading}
+                disabled={isLoading || isSuccess}
                 className={touched.email && errors.email ? 'border-red-500' : ''}
+                autoComplete="email"
               />
               {touched.email && errors.email && (
                 <p className="text-sm text-red-500">{errors.email}</p>
               )}
             </div>
             
-            <Button 
-              type="submit" 
-              className="w-full bg-desert hover:bg-desert-dark text-white" 
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                language === 'ar' ? 'جاري الإرسال...' : 'Sending...'
-              ) : (
-                language === 'ar' ? 'إرسال رابط إعادة التعيين' : 'Send Reset Link'
-              )}
-            </Button>
+            {!isSuccess && (
+              <Button 
+                type="submit" 
+                className="w-full bg-desert hover:bg-desert-dark text-white" 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  language === 'ar' ? 'جاري الإرسال...' : 'Sending...'
+                ) : (
+                  language === 'ar' ? 'إرسال رابط إعادة التعيين' : 'Send Reset Link'
+                )}
+              </Button>
+            )}
             
             <div className="text-center">
-              <Link to="/login" className="text-oasis hover:underline text-sm">
+              <Link to="/login" className="text-oasis hover:underline text-sm inline-flex items-center">
+                <ArrowLeft className="h-4 w-4 mr-1" />
                 {language === 'ar' ? 'العودة إلى تسجيل الدخول' : 'Back to Login'}
               </Link>
             </div>
