@@ -4,6 +4,7 @@ import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import Login from '@/pages/Login';
 import Signup from '@/pages/Signup';
+import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import Verification from '@/pages/Verification';
 import Onboarding from '@/pages/Onboarding';
@@ -35,6 +36,7 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
       <Route path="/" element={showOnboarding ? <Onboarding /> : <Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/verification" element={<Verification />} />
       <Route path="*" element={<Navigate to={showOnboarding ? "/" : "/login"} replace />} />

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthProvider';
@@ -252,7 +251,7 @@ const Login = () => {
               <p className="text-sm text-muted-foreground">
                 {language === 'ar' ? 'ليس لديك حساب؟' : "Don't have an account?"}
                 {' '}
-                <Link to="/signup" className="text-oasis hover:underline">
+                <Link to="/register" className="text-oasis hover:underline">
                   {language === 'ar' ? 'إنشاء حساب' : 'Create an account'}
                 </Link>
               </p>
