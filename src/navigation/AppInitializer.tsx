@@ -33,37 +33,43 @@ const AppInitializer: React.FC = () => {
       setShowSplash(false);
       hasInitialized.current = true;
       
-      // Define auth paths including /register to avoid redirect issues
-      const isAuthPath = location.pathname === '/' || 
-                         location.pathname === '/login' || 
-                         location.pathname === '/signup' ||
-                         location.pathname === '/register';
+      // Always allow access to auth-related pages
+      const publicPaths = [
+        '/register', 
+        '/verification', 
+        '/forgot-password',
+        '/signup',
+        '/login'
+      ];
       
-      // Only redirect if on an auth path and not already on register
-      if (isAuthPath && location.pathname !== '/register') {
+      const isPublicPath = publicPaths.some(path => 
+        location.pathname === path || location.pathname.startsWith(path)
+      );
+      
+      // Root path handling
+      const isRootPath = location.pathname === '/';
+      
+      // Only redirect if not on a public path
+      if (!isPublicPath && !isRootPath) {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         const hasSelectedLanguage = localStorage.getItem('aaj_language');
         
         if (!isAuthenticated) {
-          // If not authenticated, check language selection first
+          // If not authenticated and not on a public path, follow the onboarding flow
           if (!hasSelectedLanguage) {
             navigate('/language-selection', { replace: true });
           } else if (!hasSeenOnboarding) {
-            // Then check onboarding
             navigate('/onboarding', { replace: true });
             toast({
               title: "Welcome to Arabian Audio",
               description: "Let's get you started with a quick tour",
             });
           } else {
-            // Don't auto-redirect to login if user is explicitly trying to register
-            if (location.pathname !== '/register') {
-              navigate('/login', { replace: true });
-            }
+            navigate('/login', { replace: true });
           }
         } else {
-          // If authenticated, always direct to home page
+          // If authenticated and not on a public path, go to home
           console.log("User is authenticated, redirecting to home page");
           navigate('/home', { replace: true });
           toast({
