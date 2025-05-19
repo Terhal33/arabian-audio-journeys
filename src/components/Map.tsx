@@ -7,6 +7,7 @@ import MapboxMap from './map/MapboxMap';
 import MapboxTokenInput from './map/MapboxTokenInput';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import ProgressIndicator from '@/components/ProgressIndicator';
+import { useMapVirtualization } from '@/hooks/useMapVirtualization';
 
 interface MapProps {
   location: MapLocation;
@@ -25,8 +26,15 @@ const Map = (props: MapProps) => {
   const [useMapbox, setUseMapbox] = useState<boolean>(false);
   const [isMapLoading, setIsMapLoading] = useState(true);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const visiblePointsCount = useRef(0);
-
+  
+  // Use the new map virtualization hook
+  const { visiblePoints, pointsInView, totalPoints } = useMapVirtualization(
+    props.points || [],
+    props.location,
+    props.zoom || 14,
+    { maxPoints: 150, buffer: 0.3 }
+  );
+  
   // Performance monitoring
   useEffect(() => {
     // Log performance metrics
@@ -34,41 +42,20 @@ const Map = (props: MapProps) => {
     
     return () => {
       const endTime = performance.now();
-      console.log(`Map render time: ${endTime - startTime}ms with ${visiblePointsCount.current} points`);
+      console.log(`Map render time: ${endTime - startTime}ms with ${pointsInView}/${totalPoints} points`);
     };
-  }, [props.points]);
-
-  // Points virtualization - only render points in the current viewport
-  const visiblePoints = useCallback(() => {
-    if (!props.points || !props.location) return props.points || [];
-    
-    // Create a bounding box around the center point
-    // This simulates only loading points that would be visible
-    const range = props.zoom ? 0.1 / props.zoom : 0.01; // Adjust based on zoom level
-    
-    const filtered = props.points.filter(point => {
-      return (
-        point.lat >= props.location.lat - range &&
-        point.lat <= props.location.lat + range &&
-        point.lng >= props.location.lng - range &&
-        point.lng <= props.location.lng + range
-      );
-    });
-    
-    visiblePointsCount.current = filtered.length;
-    return filtered;
-  }, [props.points, props.location, props.zoom]);
+  }, [pointsInView, totalPoints]);
   
   useEffect(() => {
     console.log("Map component rendering with props:", {
       location: props.location,
       pointsCount: props.points?.length,
-      visiblePointsCount: visiblePointsCount.current,
+      visiblePointsCount: pointsInView,
       interactive: props.interactive,
       showUserLocation: props.showUserLocation,
       useMapbox: useMapbox
     });
-  }, [props.location, props.points, props.interactive, props.showUserLocation, useMapbox]);
+  }, [props.location, props.points, props.interactive, props.showUserLocation, useMapbox, pointsInView]);
   
   // Use Mapbox if token is available
   useEffect(() => {
@@ -116,14 +103,14 @@ const Map = (props: MapProps) => {
       {useMapbox ? (
         <MapboxMap 
           {...props} 
-          points={visiblePoints()}
+          points={visiblePoints}
           mapboxToken={mapboxToken}
         />
       ) : (
         <>
           <MapCore 
             {...props} 
-            points={visiblePoints()}
+            points={visiblePoints}
           />
           <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
         </>
@@ -131,7 +118,7 @@ const Map = (props: MapProps) => {
       
       {useMapbox && (
         <div className="absolute bottom-4 right-4 text-xs text-white bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
-          Powered by Mapbox
+          Powered by Mapbox | {pointsInView}/{totalPoints} points
         </div>
       )}
     </div>
