@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -62,50 +61,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Initial session check:', session ? 'Session exists' : 'No session');
       const isAuthenticated = !!session?.user;
       
-      // For testing purposes only - comment out or remove in production
-      if (!session && process.env.NODE_ENV === 'development') {
-        console.log('Creating mock user for development');
-        const mockUser = {
-          id: 'mock-user-id',
-          email: 'mock@example.com',
-          name: 'Mock User',
-          isPremium: true,
-          created_at: new Date().toISOString()
-        } as ExtendedUser;
-        
-        const mockProfile = {
-          id: 'mock-user-id',
-          full_name: 'Mock User',
-          username: 'mock@example.com',
-          preferred_language: 'en' as 'en' | 'ar',
-          avatar_url: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-        
-        setAuthState(state => ({ 
-          ...state, 
-          user: mockUser,
-          profile: mockProfile,
-          isAuthenticated: true,
-          isLoading: false
-        }));
-        
-        authCheckInProgress.current = false;
-        return;
-      }
-      
       setAuthState(state => ({ 
         ...state, 
         session, 
         user: session?.user as ExtendedUser || null,
-        isAuthenticated
+        isAuthenticated,
+        isLoading: false
       }));
       
       if (session?.user) {
         handleFetchUserProfile(session.user.id);
-      } else {
-        setAuthState(state => ({ ...state, isLoading: false }));
       }
       
       // Reset the auth check flag
@@ -243,11 +208,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         ...authState,
-        isPremium: !!authState.user?.isPremium, // Add the isPremium property
+        isPremium: !!authState.user?.isPremium,
         signUp,
         signIn,
         logout,
-        signOut: logout, // Alias for backward compatibility
+        signOut: logout,
         resetPassword,
         updateProfile,
         setLanguage,

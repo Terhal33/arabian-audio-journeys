@@ -49,7 +49,7 @@ const AppInitializer: React.FC = () => {
       // Root path handling
       const isRootPath = location.pathname === '/';
       
-      // Only redirect if not on a public path
+      // Check if we're already on a route that should take precedence
       if (!isPublicPath && !isRootPath) {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
@@ -68,6 +68,9 @@ const AppInitializer: React.FC = () => {
           } else {
             navigate('/login', { replace: true });
           }
+        } else if (location.pathname === '/profile') {
+          // If authenticated and on profile page, let it be (don't redirect)
+          isNavigating.current = false;
         } else {
           // If authenticated and not on a public path, go to home
           console.log("User is authenticated, redirecting to home page");

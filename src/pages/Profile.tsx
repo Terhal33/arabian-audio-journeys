@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, LogOut, Settings, Crown, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/auth/AuthProvider';
@@ -11,14 +10,32 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 
 const Profile = () => {
-  const { user, profile, logout, isPremium } = useAuth();
+  const { user, profile, logout, isPremium, isAuthenticated } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
+
+  // Redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please login to access your profile",
+        variant: "destructive",
+      });
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
       await logout();
       // Navigation will be handled by the auth state change
+      toast({
+        title: "Logged out successfully",
+        description: "You have been signed out",
+      });
+      navigate('/login');
     } catch (error) {
       console.error('Logout error:', error);
       toast({
@@ -38,6 +55,21 @@ const Profile = () => {
       .join('')
       .toUpperCase();
   };
+
+  // If not authenticated, show minimal UI while redirecting
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-sand-light">
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold mb-2">Authentication Required</h1>
+          <p className="mb-4">Please login to access your profile</p>
+          <Button onClick={() => navigate('/login')}>
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-sand-light">
