@@ -33,11 +33,12 @@ const AppInitializer: React.FC = () => {
       setShowSplash(false);
       hasInitialized.current = true;
       
-      // Only redirect if we're on the root path or an auth path that is not register
-      if (location.pathname === '/' || 
-          location.pathname === '/login' || 
-          location.pathname === '/signup') {
-        
+      // Only redirect if we're on the root path or certain auth paths
+      const isAuthPath = location.pathname === '/' || 
+                         location.pathname === '/login' || 
+                         location.pathname === '/signup';
+      
+      if (isAuthPath) {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         const hasSelectedLanguage = localStorage.getItem('aaj_language');
@@ -54,6 +55,7 @@ const AppInitializer: React.FC = () => {
               description: "Let's get you started with a quick tour",
             });
           } else if (location.pathname !== '/register') {
+            // Fixed type error by restructuring the conditional logic
             navigate('/login', { replace: true });
           }
         } else {
