@@ -1,7 +1,8 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { tours as initialTours, Tour } from '@/services/toursData';
 import { useToast } from '@/hooks/use-toast';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface ToursState {
   featuredTours: Tour[];
@@ -12,6 +13,14 @@ interface ToursState {
   dataLoaded: boolean;
   isRefreshing: boolean;
 }
+
+interface ToursCache {
+  timestamp: number;
+  data: ToursState;
+}
+
+// Cache expiration time (1 hour)
+const CACHE_EXPIRATION = 60 * 60 * 1000;
 
 export const useToursData = () => {
   const { toast } = useToast();
@@ -25,12 +34,27 @@ export const useToursData = () => {
     isRefreshing: false
   });
   
+  const [cachedData, setCachedData] = useLocalStorage<ToursCache | null>('tours_cache', null);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   
+  // Use cached data if available and not expired
+  useEffect(() => {
+    if (cachedData && (Date.now() - cachedData.timestamp < CACHE_EXPIRATION)) {
+      setState(cachedData.data);
+      console.log("Using cached tour data");
+    }
+  }, [cachedData]);
+  
   // Initial data load
   const loadData = useCallback(async () => {
-    if (state.dataLoaded) return;
+    // Check if we already have valid cached data
+    if (cachedData && (Date.now() - cachedData.timestamp < CACHE_EXPIRATION)) {
+      if (!state.dataLoaded) {
+        setState(cachedData.data);
+      }
+      return;
+    }
     
     setState(prev => ({ ...prev, isLoading: true }));
     
@@ -38,15 +62,25 @@ export const useToursData = () => {
       // Simulate API call with timeout
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setState(prev => ({
-        ...prev,
+      // For demo purposes, we're using local data, but in a real app,
+      // this would fetch from an API and possibly incorporate IndexedDB for offline access
+      const newState: ToursState = {
         featuredTours: initialTours.slice(0, 3),
         recentTours: [initialTours[2], initialTours[0], initialTours[1]],
         nearbyTours: initialTours.slice(0, 2),
         recommendedTours: initialTours.slice(1, 3),
         isLoading: false,
-        dataLoaded: true
-      }));
+        dataLoaded: true,
+        isRefreshing: false
+      };
+      
+      setState(newState);
+      
+      // Cache the data with timestamp
+      setCachedData({
+        timestamp: Date.now(),
+        data: newState
+      });
       
       console.log("Tours data loaded successfully");
     } catch (error) {
@@ -58,7 +92,7 @@ export const useToursData = () => {
       });
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [state.dataLoaded, toast]);
+  }, [setCachedData, state.dataLoaded, toast, cachedData]);
   
   // Handle refresh
   const handleRefresh = useCallback(async () => {
@@ -76,13 +110,23 @@ export const useToursData = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Shuffle the order of tours to simulate new data
-      setState(prev => ({
-        ...prev,
+      const newState = {
         featuredTours: [...initialTours].sort(() => Math.random() - 0.5).slice(0, 3),
         recentTours: [...initialTours].sort(() => Math.random() - 0.5).slice(0, 3),
         nearbyTours: [...initialTours].sort(() => Math.random() - 0.5).slice(0, 2),
+        recommendedTours: [...initialTours].slice(1, 3),
+        isLoading: false,
+        dataLoaded: true,
         isRefreshing: false
-      }));
+      };
+      
+      setState(newState);
+      
+      // Update cache
+      setCachedData({
+        timestamp: Date.now(),
+        data: newState
+      });
       
       toast({
         title: "Content updated",
@@ -97,9 +141,9 @@ export const useToursData = () => {
       });
       setState(prev => ({ ...prev, isRefreshing: false }));
     }
-  }, [state.isRefreshing, toast]);
+  }, [state.isRefreshing, toast, setCachedData]);
   
-  // Category selection handler
+  // Category selection handler with debounce
   const handleCategorySelect = useCallback((categoryId: string) => {
     setSelectedCategory(categoryId === selectedCategory ? '' : categoryId);
     setState(prev => ({ ...prev, isLoading: true }));
@@ -121,10 +165,10 @@ export const useToursData = () => {
           isLoading: false
         }));
       }
-    }, 500);
+    }, 300); // Reduced timeout for better UX
   }, [selectedCategory]);
   
-  // Region selection handler
+  // Region selection handler with debounce
   const handleRegionSelect = useCallback((regionId: string) => {
     setSelectedRegion(regionId === selectedRegion ? '' : regionId);
     setState(prev => ({ ...prev, isLoading: true }));
@@ -146,10 +190,11 @@ export const useToursData = () => {
           isLoading: false
         }));
       }
-    }, 500);
+    }, 300); // Reduced timeout for better UX
   }, [selectedRegion]);
-  
-  return {
+
+  // Memoize tour data to prevent unnecessary re-renders
+  const memoizedData = useMemo(() => ({
     ...state,
     loadData,
     handleRefresh,
@@ -157,5 +202,15 @@ export const useToursData = () => {
     selectedRegion,
     handleCategorySelect,
     handleRegionSelect
-  };
+  }), [
+    state,
+    loadData,
+    handleRefresh,
+    selectedCategory,
+    selectedRegion,
+    handleCategorySelect,
+    handleRegionSelect
+  ]);
+  
+  return memoizedData;
 };

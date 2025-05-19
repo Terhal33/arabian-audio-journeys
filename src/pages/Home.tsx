@@ -1,12 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import { categories, regions } from '@/services/categoryData';
 import { Button } from '@/components/ui/button';
 import WelcomeHeader from '@/components/WelcomeHeader';
 import TourCarousel from '@/components/TourCarousel';
 import NearbyAttractions from '@/components/NearbyAttractions';
-import UpgradePrompt from '@/components/UpgradePrompt';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 // Custom hooks
@@ -18,9 +17,12 @@ import { useToursData } from '@/hooks/useToursData';
 import PullToRefresh from '@/components/home/PullToRefresh';
 import OfflineAlert from '@/components/home/OfflineAlert';
 import RecentlyAddedTours from '@/components/home/RecentlyAddedTours';
-import RecommendedTours from '@/components/home/RecommendedTours';
-import ContinueListening from '@/components/home/ContinueListening';
 import ExploreByTabs from '@/components/home/ExploreByTabs';
+
+// Lazy load non-critical components
+const RecommendedTours = lazy(() => import('@/components/home/RecommendedTours'));
+const ContinueListening = lazy(() => import('@/components/home/ContinueListening'));
+const UpgradePrompt = lazy(() => import('@/components/UpgradePrompt'));
 
 const HomePage = () => {
   const { user, isPremium } = useAuth();
@@ -42,6 +44,20 @@ const HomePage = () => {
     handleCategorySelect,
     handleRegionSelect
   } = useToursData();
+  
+  // Check last tour from local storage
+  const [lastTour, setLastTour] = React.useState<{id: string, title: string, progress: number} | null>(null);
+  
+  useEffect(() => {
+    const storedLastTour = localStorage.getItem('last_tour');
+    if (storedLastTour) {
+      try {
+        setLastTour(JSON.parse(storedLastTour));
+      } catch (e) {
+        console.error("Error parsing last tour data", e);
+      }
+    }
+  }, []);
   
   // Load data on component mount
   useEffect(() => {
@@ -99,27 +115,30 @@ const HomePage = () => {
               isLoading={isLoading}
             />
             
-            {/* Premium Upgrade Prompt */}
-            {!isPremium && (
-              <div className="mb-8">
-                <UpgradePrompt
-                  title="Unlock Premium Tours"
-                  description="Get unlimited access to all 50+ premium tours and exclusive content!"
-                  buttonText="Upgrade to Premium"
-                  onUpgrade={() => console.log("Upgrade clicked")}
-                />
-              </div>
-            )}
-            
-            {/* Personalized Recommendations */}
-            <RecommendedTours 
-              tours={recommendedTours} 
-              isPremium={isPremium || false} 
-              isLoading={isLoading} 
-            />
-            
-            {/* Continue Listening Section */}
-            <ContinueListening />
+            {/* Suspense fallback for non-critical components */}
+            <Suspense fallback={<div className="h-20 flex items-center justify-center"><LoadingSpinner size="small" /></div>}>
+              {/* Premium Upgrade Prompt */}
+              {!isPremium && (
+                <div className="mb-8">
+                  <UpgradePrompt
+                    title="Unlock Premium Tours"
+                    description="Get unlimited access to all 50+ premium tours and exclusive content!"
+                    buttonText="Upgrade to Premium"
+                    onUpgrade={() => console.log("Upgrade clicked")}
+                  />
+                </div>
+              )}
+              
+              {/* Personalized Recommendations */}
+              <RecommendedTours 
+                tours={recommendedTours} 
+                isPremium={isPremium || false} 
+                isLoading={isLoading} 
+              />
+              
+              {/* Continue Listening Section */}
+              <ContinueListening isLoading={isLoading} lastTour={lastTour} />
+            </Suspense>
           </div>
         </PullToRefresh>
       </main>

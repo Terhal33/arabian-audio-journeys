@@ -11,6 +11,8 @@ import {
 } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 interface TourCarouselProps {
   title: string;
@@ -37,7 +39,8 @@ const TourCarousel = ({
             <Skeleton className="h-6 w-3/4 mb-2" />
             <Skeleton className="h-4 w-1/2 mb-4" />
             <Skeleton className="h-4 w-full mb-2" />
-            <div className="flex justify-between">
+            <Skeleton className="h-4 w-full mb-2" />
+            <div className="flex justify-between mt-4">
               <Skeleton className="h-4 w-1/4" />
               <Skeleton className="h-4 w-1/4" />
             </div>
@@ -48,13 +51,18 @@ const TourCarousel = ({
   ));
 
   return (
-    <div className={`mb-8 ${className}`}>
+    <motion.div 
+      className={`mb-8 ${className}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex justify-between items-center mb-4">
         <h2 className="font-display text-xl font-bold text-desert-dark">{title}</h2>
         {viewAllLink && (
-          <a href={viewAllLink} className="text-oasis text-sm font-medium">
+          <Link to={viewAllLink} className="text-oasis text-sm font-medium hover:underline transition-colors">
             View All
-          </a>
+          </Link>
         )}
       </div>
       
@@ -63,11 +71,16 @@ const TourCarousel = ({
           {isLoading ? (
             skeletonItems
           ) : tours.length > 0 ? (
-            tours.map((tour) => (
+            tours.map((tour, index) => (
               <CarouselItem key={tour.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
-                <div className="p-1">
+                <motion.div 
+                  className="p-1"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
                   <TourCard tour={tour} />
-                </div>
+                </motion.div>
               </CarouselItem>
             ))
           ) : (
@@ -85,8 +98,8 @@ const TourCarousel = ({
           </>
         )}
       </Carousel>
-    </div>
+    </motion.div>
   );
 };
 
-export default TourCarousel;
+export default React.memo(TourCarousel);

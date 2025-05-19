@@ -1,11 +1,12 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, memo, useCallback } from 'react';
 import { Tour } from '@/services/toursData';
 import { MapLocation } from '@/types/map';
 import MapCore from './map/MapCore';
 import MapboxMap from './map/MapboxMap';
 import MapboxTokenInput from './map/MapboxTokenInput';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { ProgressIndicator } from '@/components/ProgressIndicator';
 
 interface MapProps {
   location: MapLocation;
@@ -22,12 +23,47 @@ interface MapProps {
 const Map = (props: MapProps) => {
   const [mapboxToken, setMapboxToken] = useLocalStorage<string | undefined>('mapbox_token', undefined);
   const [useMapbox, setUseMapbox] = useState<boolean>(false);
+  const [isMapLoading, setIsMapLoading] = useState(true);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const visiblePointsCount = useRef(0);
 
+  // Performance monitoring
+  useEffect(() => {
+    // Log performance metrics
+    const startTime = performance.now();
+    
+    return () => {
+      const endTime = performance.now();
+      console.log(`Map render time: ${endTime - startTime}ms with ${visiblePointsCount.current} points`);
+    };
+  }, [props.points]);
+
+  // Points virtualization - only render points in the current viewport
+  const visiblePoints = useCallback(() => {
+    if (!props.points || !props.location) return props.points || [];
+    
+    // Create a bounding box around the center point
+    // This simulates only loading points that would be visible
+    const range = props.zoom ? 0.1 / props.zoom : 0.01; // Adjust based on zoom level
+    
+    const filtered = props.points.filter(point => {
+      return (
+        point.lat >= props.location.lat - range &&
+        point.lat <= props.location.lat + range &&
+        point.lng >= props.location.lng - range &&
+        point.lng <= props.location.lng + range
+      );
+    });
+    
+    visiblePointsCount.current = filtered.length;
+    return filtered;
+  }, [props.points, props.location, props.zoom]);
+  
   useEffect(() => {
     console.log("Map component rendering with props:", {
       location: props.location,
       pointsCount: props.points?.length,
+      visiblePointsCount: visiblePointsCount.current,
       interactive: props.interactive,
       showUserLocation: props.showUserLocation,
       useMapbox: useMapbox
@@ -47,12 +83,16 @@ const Map = (props: MapProps) => {
     setMapboxToken(token);
   };
   
+  const handleMapLoaded = useCallback(() => {
+    setIsMapLoading(false);
+  }, []);
+  
   // Handler for long press events from Mapbox map
-  const handleMapLongPress = (e: CustomEvent) => {
+  const handleMapLongPress = useCallback((e: CustomEvent) => {
     if (props.onLongPress && e.detail?.location) {
       props.onLongPress(e.detail.location);
     }
-  };
+  }, [props.onLongPress]);
 
   // Add event listener for custom long press event
   useEffect(() => {
@@ -67,15 +107,26 @@ const Map = (props: MapProps) => {
         container.removeEventListener('maplongpress', handleMapLongPress as EventListener);
       }
     };
-  }, [props.onLongPress]);
+  }, [handleMapLongPress]);
 
   return (
     <div ref={mapContainerRef} className={`relative ${props.className || ''}`}>
+      <ProgressIndicator isLoading={isMapLoading} className="bg-transparent" />
+    
       {useMapbox ? (
-        <MapboxMap {...props} mapboxToken={mapboxToken} />
+        <MapboxMap 
+          {...props} 
+          points={visiblePoints()}
+          mapboxToken={mapboxToken}
+          onMapLoaded={handleMapLoaded} 
+        />
       ) : (
         <>
-          <MapCore {...props} />
+          <MapCore 
+            {...props} 
+            points={visiblePoints()} 
+            onMapLoaded={handleMapLoaded}
+          />
           <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
         </>
       )}
@@ -89,4 +140,5 @@ const Map = (props: MapProps) => {
   );
 };
 
-export default Map;
+// Memoize Map component to prevent unnecessary re-renders
+export default memo(Map);
