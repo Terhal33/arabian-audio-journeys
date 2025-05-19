@@ -24,7 +24,7 @@ const queryClient = new QueryClient({
       retry: 1,
       refetchOnWindowFocus: false,
       refetchOnMount: true,
-      suspense: false,
+      // suspense option removed from here as it's no longer supported in global config
     },
   },
   queryCache: new QueryCache({
