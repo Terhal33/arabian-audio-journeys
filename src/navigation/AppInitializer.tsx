@@ -33,10 +33,10 @@ const AppInitializer: React.FC = () => {
       setShowSplash(false);
       hasInitialized.current = true;
       
-      // Only redirect if we're on the root path or an auth path
+      // Only redirect if we're on the root path or an auth path that is not register
       if (location.pathname === '/' || 
-          location.pathname.startsWith('/login') || 
-          location.pathname.startsWith('/signup')) {
+          location.pathname === '/login' || 
+          location.pathname === '/signup') {
         
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
@@ -53,7 +53,7 @@ const AppInitializer: React.FC = () => {
               title: "Welcome to Arabian Audio",
               description: "Let's get you started with a quick tour",
             });
-          } else {
+          } else if (location.pathname !== '/register') {
             navigate('/login', { replace: true });
           }
         } else {
@@ -81,6 +81,9 @@ const AppInitializer: React.FC = () => {
   if (showSplash || isLoading) {
     return <Splash />;
   }
+  
+  // Log the route information
+  console.log('AppInitializer rendering routes. Current path:', location.pathname);
   
   return (
     <Routes>

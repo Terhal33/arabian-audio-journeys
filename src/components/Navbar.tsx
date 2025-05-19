@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { NavLink, useLocation, Link } from 'react-router-dom';
+import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, Menu, X, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
@@ -20,6 +20,7 @@ const Navbar = () => {
   
   const [menuOpen, setMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Skip navbar display on pages with bottom navigation
   const bottomNavPaths = ['/home', '/map', '/search', '/library', '/profile', '/tours', '/settings'];
@@ -47,6 +48,12 @@ const Navbar = () => {
     } catch (error) {
       console.error("Logout failed:", error);
     }
+  };
+  
+  const handleCreateAccount = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("Create account button clicked, navigating to /register");
+    navigate('/register');
   };
 
   // If we're on a login or signup page, or a page with bottom navigation, don't show the navbar at all
@@ -89,8 +96,11 @@ const Navbar = () => {
               <Button variant="outline" asChild>
                 <Link to="/login">Sign In</Link>
               </Button>
-              <Button asChild className="bg-desert hover:bg-desert-dark">
-                <Link to="/register">Create Account</Link>
+              <Button 
+                className="bg-desert hover:bg-desert-dark" 
+                onClick={handleCreateAccount}
+              >
+                Create Account
               </Button>
             </>
           )}
@@ -153,11 +163,14 @@ const Navbar = () => {
                   Sign In
                 </Link>
                 <Button 
-                  asChild
                   className="bg-desert hover:bg-desert-dark w-full justify-center mt-2"
-                  onClick={() => setMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setMenuOpen(false);
+                    navigate('/register');
+                  }}
                 >
-                  <Link to="/register">Create Account</Link>
+                  Create Account
                 </Button>
               </>
             )}
