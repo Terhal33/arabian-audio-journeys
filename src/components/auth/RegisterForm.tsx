@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,10 +9,11 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Eye, EyeOff, Apple, Mail } from 'lucide-react';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import PasswordStrength from './PasswordStrength';
+import { getUserFriendlyErrorMessage } from '@/contexts/auth/authUtils';
 
 interface RegisterFormProps {
   language: 'en' | 'ar';
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<any>;
 }
 
 const RegisterForm = ({ language, signUp }: RegisterFormProps) => {
@@ -102,10 +102,19 @@ const RegisterForm = ({ language, signUp }: RegisterFormProps) => {
     setIsLoading(true);
     
     try {
-      await signUp(values.email, values.password, values.fullName);
-      navigate('/verification');
+      // Sign up the user and get the result
+      const result = await signUp(values.email, values.password, values.fullName);
+      
+      // Redirect to the verification page with the email
+      navigate('/verification', { 
+        state: { 
+          email: values.email,
+          emailJustSent: true 
+        }
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create account');
+      // Use our helper to get user-friendly error messages
+      setError(getUserFriendlyErrorMessage(err, language));
     } finally {
       setIsLoading(false);
     }

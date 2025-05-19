@@ -56,35 +56,109 @@ export const fetchUserProfile = async (userId: string) => {
 };
 
 /**
+ * Helper to get user-friendly error message from Supabase error codes
+ */
+export const getUserFriendlyErrorMessage = (error: any, language: 'en' | 'ar') => {
+  // Common Supabase error codes
+  const errorMap: Record<string, { en: string; ar: string }> = {
+    'auth/email-already-in-use': {
+      en: 'This email is already registered. Please sign in or use a different email.',
+      ar: 'البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استخدام بريد إلكتروني آخر.'
+    },
+    'auth/invalid-email': {
+      en: 'The email address is not valid.',
+      ar: 'البريد الإلكتروني غير صالح.'
+    },
+    'auth/weak-password': {
+      en: 'The password is too weak. Please choose a stronger password.',
+      ar: 'كلمة المرور ضعيفة. يرجى اختيار كلمة مرور أقوى.'
+    },
+    'auth/user-not-found': {
+      en: 'No account found with this email address.',
+      ar: 'لم يتم العثور على حساب بهذا البريد الإلكتروني.'
+    },
+    'auth/wrong-password': {
+      en: 'Incorrect password. Please try again.',
+      ar: 'كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.'
+    },
+    '23505': {
+      en: 'This email is already registered. Please sign in or use a different email.',
+      ar: 'البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استخدام بريد إلكتروني آخر.'
+    }
+  };
+
+  // Check if we have a specific error code
+  const errorCode = error?.code || '';
+  const message = errorMap[errorCode];
+  
+  if (message) {
+    return language === 'ar' ? message.ar : message.en;
+  }
+  
+  // Handle specific Supabase error messages
+  if (error?.message?.includes('duplicate key')) {
+    return language === 'ar' 
+      ? 'البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول أو استخدام بريد إلكتروني آخر.' 
+      : 'This email is already registered. Please sign in or use a different email.';
+  }
+
+  // Default error message
+  return error instanceof Error 
+    ? error.message 
+    : (language === 'ar' ? 'حدث خطأ. يرجى المحاولة مرة أخرى.' : 'An error occurred. Please try again.');
+};
+
+/**
  * Authentication methods
  */
 export const authMethods = {
   signUp: async (email: string, password: string, fullName: string, language: 'en' | 'ar') => {
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting signup with:', { email, fullName });
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             full_name: fullName,
             preferred_language: language
-          }
+          },
+          emailRedirectTo: `${window.location.origin}/verification`
         }
       });
 
-      if (error) throw error;
-
-      toast({
-        title: "Verification email sent",
-        description: "Please check your email to verify your account.",
-      });
-
+      if (error) {
+        console.error('Signup error:', error);
+        throw error;
+      }
+      
+      if (data?.user) {
+        console.log('Signup successful, user:', data.user);
+        
+        // Return data to allow caller to use the email for redirect
+        return {
+          user: data.user,
+          email: email,
+          emailJustSent: true
+        };
+      } else {
+        throw new Error(language === 'ar' 
+          ? 'فشل إنشاء الحساب. يرجى المحاولة مرة أخرى.' 
+          : 'Account creation failed. Please try again.');
+      }
     } catch (error) {
+      // Get user-friendly message based on error code
+      const message = getUserFriendlyErrorMessage(error, language);
+      
+      console.error('Error in signUp method:', error);
+      
       toast({
         variant: "destructive",
-        title: "Error creating account",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        title: language === 'ar' ? "خطأ في إنشاء الحساب" : "Error creating account",
+        description: message
       });
+      
       throw error;
     }
   },
@@ -179,5 +253,52 @@ export const authMethods = {
       });
       throw error;
     }
+  },
+  
+  resendVerificationEmail: async (email: string, language: 'en' | 'ar') => {
+    try {
+      // First, check if the user exists and is verified
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/verification`
+        }
+      });
+      
+      if (signInError) throw signInError;
+      
+      toast({
+        title: language === 'ar' ? "تم إرسال البريد الإلكتروني" : "Email sent",
+        description: language === 'ar' 
+          ? "تم إعادة إرسال رابط التحقق. يرجى التحقق من بريدك الإلكتروني." 
+          : "Verification link has been resent. Please check your email.",
+      });
+      
+      return true;
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: language === 'ar' ? "فشل في إرسال البريد الإلكتروني" : "Email sending failed",
+        description: getUserFriendlyErrorMessage(error, language)
+      });
+      throw error;
+    }
+  },
+  
+  checkEmailVerification: async () => {
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      
+      if (error) throw error;
+      
+      // Check if email is confirmed in user metadata
+      return data?.user?.email_confirmed_at ? true : false;
+      
+    } catch (error) {
+      console.error('Error checking email verification:', error);
+      return false;
+    }
   }
 };
+

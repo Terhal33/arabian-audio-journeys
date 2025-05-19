@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -132,7 +133,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
-    await authMethods.signUp(email, password, fullName, authState.language);
+    try {
+      const result = await authMethods.signUp(email, password, fullName, authState.language);
+      return result; // Return the result so we can use it for redirection
+    } catch (error) {
+      console.error('Error in signUp:', error);
+      throw error; // Re-throw the error for handling in the component
+    }
   };
 
   const signIn = async (email: string, password: string) => {

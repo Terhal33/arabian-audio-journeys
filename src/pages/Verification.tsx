@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { MailCheck, AlertCircle, RefreshCw, Mail, Edit } from 'lucide-react';
 import LanguageSelector from '@/components/LanguageSelector';
+import { authMethods } from '@/contexts/auth/authUtils';
 
 const Verification = () => {
   const location = useLocation();
@@ -19,6 +20,7 @@ const Verification = () => {
   
   const [resendCountdown, setResendCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
   
@@ -61,17 +63,7 @@ const Verification = () => {
     setError(null);
     
     try {
-      // This would call your auth provider's resend verification method
-      // await resendVerificationEmail(email);
-      
-      // For demo, we'll simulate success
-      toast({
-        title: language === 'ar' ? 'تم إرسال البريد الإلكتروني' : 'Email sent',
-        description: language === 'ar' 
-          ? 'تم إرسال رابط التحقق مرة أخرى' 
-          : 'Verification link has been resent',
-      });
-      
+      await authMethods.resendVerificationEmail(email, language);
       setResendCountdown(60); // Start 60 second countdown
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to resend verification email');
@@ -80,24 +72,44 @@ const Verification = () => {
     }
   };
   
-  const handleVerificationCheck = () => {
-    // You would typically check with your auth provider if email is verified
-    // For demo purposes, we'll just navigate to login
-    toast({
-      title: language === 'ar' ? 'جاري التحقق' : 'Checking verification',
-      description: language === 'ar' 
-        ? 'جاري التحقق من حالة البريد الإلكتروني الخاص بك' 
-        : 'Checking your email verification status',
-    });
+  const handleVerificationCheck = async () => {
+    if (!email) return;
     
-    setTimeout(() => {
-      // Simulating successful verification
-      navigate('/login', { 
-        state: { 
-          verificationSuccess: true 
-        }
+    setIsChecking(true);
+    
+    try {
+      toast({
+        title: language === 'ar' ? 'جاري التحقق' : 'Checking verification',
+        description: language === 'ar' 
+          ? 'جاري التحقق من حالة البريد الإلكتروني الخاص بك' 
+          : 'Checking your email verification status',
       });
-    }, 1500);
+      
+      const isVerified = await authMethods.checkEmailVerification();
+      
+      if (isVerified) {
+        // If verified, redirect to login with success message
+        navigate('/login', { 
+          state: { 
+            verificationSuccess: true 
+          }
+        });
+      } else {
+        // If not verified, show message
+        toast({
+          variant: "warning",
+          title: language === 'ar' ? 'لم يتم التحقق بعد' : 'Not verified yet',
+          description: language === 'ar' 
+            ? 'لم نتمكن من تأكيد التحقق من بريدك الإلكتروني بعد. يرجى التحقق من بريدك والنقر على رابط التحقق.' 
+            : 'We couldn\'t confirm your email verification yet. Please check your email and click the verification link.'
+        });
+      }
+    } catch (error) {
+      console.error('Error checking verification:', error);
+      setError(error instanceof Error ? error.message : 'Failed to check verification status');
+    } finally {
+      setIsChecking(false);
+    }
   };
 
   return (
@@ -142,8 +154,13 @@ const Verification = () => {
             <Button 
               className="w-full bg-desert hover:bg-desert-dark text-white"
               onClick={handleVerificationCheck}
+              disabled={isChecking}
             >
-              <Mail className="mr-2 h-4 w-4" />
+              {isChecking ? (
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
               {language === 'ar' ? 'لقد قمت بالتحقق بالفعل' : 'I\'ve Verified My Email'}
             </Button>
             
@@ -168,7 +185,7 @@ const Verification = () => {
               className="w-full text-oasis"
               asChild
             >
-              <Link to="/signup">
+              <Link to="/register">
                 <Edit className="mr-2 h-4 w-4" />
                 {language === 'ar' ? 'تغيير البريد الإلكتروني' : 'Change Email Address'}
               </Link>
