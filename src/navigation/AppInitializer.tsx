@@ -6,7 +6,7 @@ import Splash from '@/pages/Splash';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import MainNavigator from '@/navigation/MainNavigator';
 import NotFound from '@/pages/NotFound';
-import LoadingSpinner from '@/components/LoadingSpinner';
+import { useToast } from '@/hooks/use-toast';
 
 const AppInitializer: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -15,6 +15,7 @@ const AppInitializer: React.FC = () => {
   const isNavigating = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   
   // Add debug logs
   console.log('AppInitializer - Auth state:', { 
@@ -32,8 +33,11 @@ const AppInitializer: React.FC = () => {
       setShowSplash(false);
       hasInitialized.current = true;
       
-      // Only redirect if we're on the root path
-      if (location.pathname === '/') {
+      // Only redirect if we're on the root path or an auth path
+      if (location.pathname === '/' || 
+          location.pathname.startsWith('/login') || 
+          location.pathname.startsWith('/signup')) {
+        
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         
@@ -41,6 +45,10 @@ const AppInitializer: React.FC = () => {
           // If not authenticated, direct to onboarding or login
           if (!hasSeenOnboarding) {
             navigate('/onboarding', { replace: true });
+            toast({
+              title: "Welcome to Arabian Audio",
+              description: "Let's get you started with a quick tour",
+            });
           } else {
             navigate('/login', { replace: true });
           }
@@ -48,6 +56,11 @@ const AppInitializer: React.FC = () => {
           // If authenticated, always direct to home page
           console.log("User is authenticated, redirecting to home page");
           navigate('/home', { replace: true });
+          toast({
+            title: "Welcome back",
+            description: "Continue your journey through Saudi Arabia's history",
+            variant: "default",
+          });
         }
         
         // Reset navigation flag after a delay
@@ -55,10 +68,10 @@ const AppInitializer: React.FC = () => {
           isNavigating.current = false;
         }, 100);
       }
-    }, 600); // Slightly reduced splash time for better UX
+    }, 2500); // Show splash for 2.5 seconds
     
     return () => clearTimeout(timer);
-  }, [isLoading, isAuthenticated, navigate, location.pathname]);
+  }, [isLoading, isAuthenticated, navigate, location.pathname, toast]);
   
   // Show splash screen while loading
   if (showSplash || isLoading) {
