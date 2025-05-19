@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion, HTMLMotionProps } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fadeInVariants } from '@/utils/animation';
 
-interface ProgressiveImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface ProgressiveImageProps extends Omit<HTMLMotionProps<"img">, "src" | "alt" | "width" | "height"> {
   src: string;
   lowResSrc?: string;
   blurHash?: string;
