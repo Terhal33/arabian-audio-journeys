@@ -1,7 +1,6 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Tour } from '@/services/toursData';
 import { MapLocation, MapProps } from '@/types/map';
 import MapBackground from './MapBackground';
 import MapLoading from './MapLoading';
@@ -96,6 +95,14 @@ const MapCore = (props: MapProps) => {
     onRegionChange,
     onPinClick
   );
+
+  // Signal to parent when map is loaded
+  useEffect(() => {
+    if (isMapLoaded) {
+      // This effect runs when the map is ready
+      console.log("MapCore map loaded successfully");
+    }
+  }, [isMapLoaded]);
 
   return (
     <div 

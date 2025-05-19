@@ -6,7 +6,7 @@ import MapCore from './map/MapCore';
 import MapboxMap from './map/MapboxMap';
 import MapboxTokenInput from './map/MapboxTokenInput';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { ProgressIndicator } from '@/components/ProgressIndicator';
+import ProgressIndicator from '@/components/ProgressIndicator';
 
 interface MapProps {
   location: MapLocation;
@@ -118,14 +118,12 @@ const Map = (props: MapProps) => {
           {...props} 
           points={visiblePoints()}
           mapboxToken={mapboxToken}
-          onMapLoaded={handleMapLoaded} 
         />
       ) : (
         <>
           <MapCore 
             {...props} 
-            points={visiblePoints()} 
-            onMapLoaded={handleMapLoaded}
+            points={visiblePoints()}
           />
           <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
         </>
