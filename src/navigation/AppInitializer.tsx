@@ -91,6 +91,7 @@ const AppInitializer: React.FC = () => {
       <Route path="/onboarding/*" element={<AuthNavigator showOnboarding={true} />} />
       <Route path="/login/*" element={<AuthNavigator showOnboarding={false} />} />
       <Route path="/signup/*" element={<AuthNavigator showOnboarding={false} />} />
+      <Route path="/register/*" element={<AuthNavigator showOnboarding={false} />} />
       <Route path="/forgot-password/*" element={<AuthNavigator showOnboarding={false} />} />
       <Route path="/verification/*" element={<AuthNavigator showOnboarding={false} />} />
       

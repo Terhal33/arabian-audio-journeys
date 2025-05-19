@@ -17,6 +17,8 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
   const { isAuthenticated } = useAuth();
   const location = useLocation();
   
+  console.log("AuthNavigator rendering, path:", location.pathname, "isAuthenticated:", isAuthenticated);
+  
   // If user is authenticated and trying to access auth routes, redirect to main app
   if (isAuthenticated && !location.pathname.startsWith('/onboarding')) {
     console.log("User is authenticated in AuthNavigator, redirecting to home");

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthProvider';
@@ -244,7 +243,7 @@ const Register = () => {
                 </button>
               </div>
               
-              {/* Password strength indicator */}
+              {/* Password strength indicator - Fix the Progress component usage */}
               {values.password && (
                 <div className="mt-2">
                   <div className="flex justify-between items-center mb-1">
@@ -253,8 +252,7 @@ const Register = () => {
                   </div>
                   <Progress 
                     value={passwordStrength} 
-                    className="h-1.5"
-                    indicatorClassName={getStrengthColor()}
+                    className={`h-1.5 ${getStrengthColor()}`}
                   />
                   <div className="flex flex-wrap gap-2 mt-2">
                     <PasswordRequirement
