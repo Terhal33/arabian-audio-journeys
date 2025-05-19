@@ -39,7 +39,9 @@ const AppInitializer: React.FC = () => {
         '/verification', 
         '/forgot-password',
         '/signup',
-        '/login'
+        '/login',
+        '/language-selection',
+        '/onboarding'
       ];
       
       const isPublicPath = publicPaths.some(path => 
@@ -49,7 +51,7 @@ const AppInitializer: React.FC = () => {
       // Root path handling
       const isRootPath = location.pathname === '/';
       
-      // Check if we're already on a route that should take precedence
+      // Only redirect if we're not on a public path and not on root
       if (!isPublicPath && !isRootPath) {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';

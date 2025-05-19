@@ -50,11 +50,8 @@ const Navbar = () => {
     }
   };
   
-  const handleCreateAccount = (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log("Create account button clicked, navigating to /register");
-    
-    // Navigate directly without delay to prevent race conditions
+  const handleCreateAccount = () => {
+    // Direct navigation to register page
     navigate('/register');
   };
 
@@ -166,9 +163,7 @@ const Navbar = () => {
                 </Link>
                 <Button 
                   className="bg-desert hover:bg-desert-dark w-full justify-center mt-2"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    console.log("Mobile: Create account button clicked, navigating to /register");
+                  onClick={() => {
                     setMenuOpen(false);
                     navigate('/register');
                   }}
