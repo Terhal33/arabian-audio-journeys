@@ -89,8 +89,8 @@ const Navbar = () => {
               <Button variant="outline" asChild>
                 <Link to="/login">Sign In</Link>
               </Button>
-              <Button asChild>
-                <Link to="/register" className="bg-desert hover:bg-desert-dark">Create Account</Link>
+              <Button asChild className="bg-desert hover:bg-desert-dark">
+                <Link to="/register">Create Account</Link>
               </Button>
             </>
           )}
