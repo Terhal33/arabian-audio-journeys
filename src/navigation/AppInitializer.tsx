@@ -40,10 +40,14 @@ const AppInitializer: React.FC = () => {
         
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
+        const hasSelectedLanguage = localStorage.getItem('aaj_language');
         
         if (!isAuthenticated) {
-          // If not authenticated, direct to onboarding or login
-          if (!hasSeenOnboarding) {
+          // If not authenticated, check language selection first
+          if (!hasSelectedLanguage) {
+            navigate('/language-selection', { replace: true });
+          } else if (!hasSeenOnboarding) {
+            // Then check onboarding
             navigate('/onboarding', { replace: true });
             toast({
               title: "Welcome to Arabian Audio",
@@ -80,6 +84,9 @@ const AppInitializer: React.FC = () => {
   
   return (
     <Routes>
+      {/* Language selection - unprotected */}
+      <Route path="/language-selection/*" element={<Navigate to="/language-selection" replace />} />
+      
       {/* Auth routes - unprotected */}
       <Route path="/onboarding/*" element={<AuthNavigator showOnboarding={true} />} />
       <Route path="/login/*" element={<AuthNavigator showOnboarding={false} />} />

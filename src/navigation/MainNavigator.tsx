@@ -21,6 +21,7 @@ import PaymentMethodPage from '@/pages/PaymentMethod';
 import SubscriptionConfirmationPage from '@/pages/SubscriptionConfirmation';
 import ReceiptPage from '@/pages/Receipt';
 import SubscriptionManagementPage from '@/pages/SubscriptionManagement';
+import LanguageSelection from '@/pages/LanguageSelection';
 
 const MainNavigator: React.FC = () => {
   const location = useLocation();
@@ -74,10 +75,13 @@ const MainNavigator: React.FC = () => {
     );
   }
   
-  // For routes that should NOT use MainLayout (subscription routes only)
+  // For routes that should NOT use MainLayout (subscription and language selection routes)
   return (
     <>
       <Routes>
+        {/* Language Selection route */}
+        <Route path="/language-selection" element={<LanguageSelection />} />
+        
         {/* Subscription routes */}
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/payment-method" element={
