@@ -53,7 +53,10 @@ const Navbar = () => {
   const handleCreateAccount = (e: React.MouseEvent) => {
     e.preventDefault();
     console.log("Create account button clicked, navigating to /register");
-    navigate('/register');
+    // Added a delay to ensure React Router has time to process the navigation
+    setTimeout(() => {
+      navigate('/register');
+    }, 0);
   };
 
   // If we're on a login or signup page, or a page with bottom navigation, don't show the navbar at all
@@ -166,8 +169,12 @@ const Navbar = () => {
                   className="bg-desert hover:bg-desert-dark w-full justify-center mt-2"
                   onClick={(e) => {
                     e.preventDefault();
+                    console.log("Mobile: Create account button clicked, navigating to /register");
                     setMenuOpen(false);
-                    navigate('/register');
+                    // Added a delay to ensure React Router has time to process the navigation
+                    setTimeout(() => {
+                      navigate('/register');
+                    }, 0);
                   }}
                 >
                   Create Account

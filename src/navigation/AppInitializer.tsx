@@ -33,12 +33,16 @@ const AppInitializer: React.FC = () => {
       setShowSplash(false);
       hasInitialized.current = true;
       
-      // Only redirect if we're on the root path or certain auth paths
+      // Define auth paths including /register to avoid redirect issues
       const isAuthPath = location.pathname === '/' || 
                          location.pathname === '/login' || 
                          location.pathname === '/signup';
       
-      if (isAuthPath) {
+      // Explicitly check if we're already on the register page
+      const isOnRegisterPage = location.pathname === '/register';
+      
+      // Only redirect if on an auth path and not already on register
+      if (isAuthPath && !isOnRegisterPage) {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         const hasSelectedLanguage = localStorage.getItem('aaj_language');
@@ -54,8 +58,8 @@ const AppInitializer: React.FC = () => {
               title: "Welcome to Arabian Audio",
               description: "Let's get you started with a quick tour",
             });
-          } else if (location.pathname !== '/register') {
-            // Fixed type error by restructuring the conditional logic
+          } else {
+            // Redirect to login page if not on register already
             navigate('/login', { replace: true });
           }
         } else {
