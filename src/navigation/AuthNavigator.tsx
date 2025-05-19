@@ -23,11 +23,11 @@ const AuthNavigator: React.FC<AuthNavigatorProps> = ({ showOnboarding }) => {
     console.log("AuthNavigator mounted with path:", location.pathname);
   }, [location.pathname]);
   
-  // If user is authenticated and trying to access auth routes, redirect to main app
-  // Make sure we exclude onboarding and register from this check to allow signup flow
+  // If user is authenticated, redirect to home except in certain cases
   if (isAuthenticated && 
-      !location.pathname.startsWith('/onboarding') && 
-      !location.pathname.startsWith('/register')) {
+      !location.pathname.includes('/onboarding') && 
+      !location.pathname.includes('/register') &&
+      !location.pathname.includes('/verification')) {
     console.log("User is authenticated in AuthNavigator, redirecting to home");
     // Check if there's a requested redirect
     const redirectPath = localStorage.getItem('redirectAfterLogin');

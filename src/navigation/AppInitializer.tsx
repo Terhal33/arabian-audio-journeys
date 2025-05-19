@@ -36,13 +36,11 @@ const AppInitializer: React.FC = () => {
       // Define auth paths including /register to avoid redirect issues
       const isAuthPath = location.pathname === '/' || 
                          location.pathname === '/login' || 
-                         location.pathname === '/signup';
-      
-      // Explicitly check if we're already on the register page
-      const isOnRegisterPage = location.pathname === '/register';
+                         location.pathname === '/signup' ||
+                         location.pathname === '/register';
       
       // Only redirect if on an auth path and not already on register
-      if (isAuthPath && !isOnRegisterPage) {
+      if (isAuthPath && location.pathname !== '/register') {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         const hasSelectedLanguage = localStorage.getItem('aaj_language');
@@ -59,8 +57,10 @@ const AppInitializer: React.FC = () => {
               description: "Let's get you started with a quick tour",
             });
           } else {
-            // Redirect to login page if not on register already
-            navigate('/login', { replace: true });
+            // Don't auto-redirect to login if user is explicitly trying to register
+            if (location.pathname !== '/register') {
+              navigate('/login', { replace: true });
+            }
           }
         } else {
           // If authenticated, always direct to home page

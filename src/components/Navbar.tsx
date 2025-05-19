@@ -53,15 +53,14 @@ const Navbar = () => {
   const handleCreateAccount = (e: React.MouseEvent) => {
     e.preventDefault();
     console.log("Create account button clicked, navigating to /register");
-    // Added a delay to ensure React Router has time to process the navigation
-    setTimeout(() => {
-      navigate('/register');
-    }, 0);
+    
+    // Navigate directly without delay to prevent race conditions
+    navigate('/register');
   };
 
   // If we're on a login or signup page, or a page with bottom navigation, don't show the navbar at all
-  if (['/login', '/signup', '/register', '/forgot-password', '/verification', '/onboarding'].some(path => 
-      location.pathname.startsWith(path)) || !shouldShowNavbar) {
+  const hiddenPaths = ['/login', '/signup', '/register', '/forgot-password', '/verification', '/onboarding'];
+  if (hiddenPaths.some(path => location.pathname.startsWith(path)) || !shouldShowNavbar) {
     return null;
   }
 
@@ -171,10 +170,7 @@ const Navbar = () => {
                     e.preventDefault();
                     console.log("Mobile: Create account button clicked, navigating to /register");
                     setMenuOpen(false);
-                    // Added a delay to ensure React Router has time to process the navigation
-                    setTimeout(() => {
-                      navigate('/register');
-                    }, 0);
+                    navigate('/register');
                   }}
                 >
                   Create Account
