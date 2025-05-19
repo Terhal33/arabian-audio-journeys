@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthProvider';
@@ -97,7 +96,7 @@ const Verification = () => {
       } else {
         // If not verified, show message
         toast({
-          variant: "warning",
+          variant: "default", // Changed from "warning" to "default"
           title: language === 'ar' ? 'لم يتم التحقق بعد' : 'Not verified yet',
           description: language === 'ar' 
             ? 'لم نتمكن من تأكيد التحقق من بريدك الإلكتروني بعد. يرجى التحقق من بريدك والنقر على رابط التحقق.' 
