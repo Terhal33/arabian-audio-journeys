@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
@@ -15,17 +14,16 @@ const SupabaseConnectionTest = () => {
       setConnectionStatus('checking');
       setErrorDetails(null);
       
-      // Simple query to test the connection
-      const { data, error } = await supabase
+      // Simple query to test the connection - using proper syntax for counting records
+      const { count, error } = await supabase
         .from('user_profiles')
-        .select('count(*)', { count: 'exact' })
-        .limit(1);
+        .select('*', { count: 'exact', head: true });
       
       if (error) {
         throw error;
       }
       
-      console.log("Supabase connection successful:", data);
+      console.log("Supabase connection successful:", { count });
       setConnectionStatus('success');
       setErrorDetails(null);
       
