@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { tours } from '@/services/toursData';
 import EnhancedTourCard from '@/components/EnhancedTourCard';
-import Navbar from '@/components/Navbar';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Select,
@@ -31,8 +30,6 @@ const Tours = () => {
   
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
       <main className="flex-1 py-10 bg-sand-light">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">

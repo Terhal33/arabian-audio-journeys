@@ -14,7 +14,6 @@ import Settings from '@/pages/Settings';
 import MainLayout from '@/layouts/MainLayout';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import PremiumRoute from '@/components/PremiumRoute';
-import Navbar from '@/components/Navbar';
 
 // Subscription Pages
 import SubscriptionPage from '@/pages/Subscription';
@@ -26,8 +25,8 @@ import SubscriptionManagementPage from '@/pages/SubscriptionManagement';
 const MainNavigator: React.FC = () => {
   const location = useLocation();
   
-  // Check if the current route is one of the main navigation routes that should use MainLayout
-  const useMainLayout = ['/home', '/map', '/search', '/library', '/profile', '/tour/', '/settings'].some(
+  // Update the list to include tours in the MainLayout paths
+  const useMainLayout = ['/home', '/map', '/search', '/library', '/profile', '/tours', '/tour/', '/settings'].some(
     path => location.pathname === path || location.pathname.startsWith(path)
   );
   
@@ -46,6 +45,7 @@ const MainNavigator: React.FC = () => {
           <Route path="/home" element={<HomePage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/tours" element={<Tours />} />
           <Route path="/tour/:id" element={<TourDetail />} />
           
           {/* Protected routes */}
@@ -74,14 +74,10 @@ const MainNavigator: React.FC = () => {
     );
   }
   
-  // For routes that should NOT use MainLayout (like subscription routes)
+  // For routes that should NOT use MainLayout (subscription routes only)
   return (
     <>
-      <Navbar />
       <Routes>
-        {/* Tours page without bottom nav */}
-        <Route path="/tours" element={<Tours />} />
-          
         {/* Subscription routes */}
         <Route path="/subscription" element={<SubscriptionPage />} />
         <Route path="/payment-method" element={

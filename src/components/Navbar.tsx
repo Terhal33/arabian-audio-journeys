@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { NavLink, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ const Navbar = () => {
   const location = useLocation();
 
   // Skip navbar display on pages with bottom navigation
-  const bottomNavPaths = ['/home', '/map', '/search', '/library', '/profile', '/settings'];
+  const bottomNavPaths = ['/home', '/map', '/search', '/library', '/profile', '/tours', '/settings'];
   const shouldShowNavbar = !bottomNavPaths.some(path => 
     location.pathname === path || 
     (path === '/home' && location.pathname.startsWith('/tour/'))
