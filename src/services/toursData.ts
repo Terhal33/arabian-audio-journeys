@@ -1,4 +1,3 @@
-
 export interface Tour {
   id: string;
   title: string;
@@ -159,6 +158,172 @@ export const tours: Tour[] = [
       }
     ]
   },
+  
+  // Adding new locations from the user's request
+  {
+    id: "madain-saleh",
+    title: "Mada'in Saleh (Hegra)",
+    titleArabic: "مدائن صالح (الحجر)",
+    description: "Saudi Arabia's first UNESCO World Heritage site featuring over 100 monumental tombs carved into sandstone mountains by the Nabataean civilization.",
+    descriptionArabic: "أول موقع للتراث العالمي في المملكة العربية السعودية يضم أكثر من 100 ضريح منحوت في جبال الحجر الرملي من قبل الحضارة النبطية.",
+    imageUrl: "/placeholder.svg",
+    audioUrl: "/audio/madain-saleh-intro.mp3",
+    duration: 120,
+    distance: 5.2,
+    location: {
+      lat: 26.7917,
+      lng: 37.9542
+    },
+    isPremium: true,
+    points: [
+      {
+        id: "qasr-al-farid",
+        title: "Qasr al-Farid (The Lonely Castle)",
+        description: "Iconic unfinished tomb with a distinctive single facade, standing alone in the desert landscape.",
+        audioUrl: "/audio/qasr-al-farid.mp3",
+        duration: 15,
+        location: {
+          lat: 26.7950,
+          lng: 37.9548
+        }
+      },
+      {
+        id: "diwan",
+        title: "Diwan",
+        description: "Religious gathering space carved into sandstone rock, showcasing Nabataean architectural ingenuity.",
+        audioUrl: "/audio/diwan.mp3",
+        duration: 12,
+        location: {
+          lat: 26.7925,
+          lng: 37.9555
+        }
+      },
+      {
+        id: "jabal-al-mahjar",
+        title: "Jabal al-Mahjar",
+        description: "Collection of densely concentrated tombs with intricate facade designs and cultural significance.",
+        audioUrl: "/audio/jabal-al-mahjar.mp3",
+        duration: 18,
+        location: {
+          lat: 26.7900,
+          lng: 37.9530
+        }
+      },
+      {
+        id: "nabataean-wells",
+        title: "Ancient Nabataean Wells",
+        description: "Sophisticated water management system that allowed the Nabataean civilization to thrive in the desert.",
+        audioUrl: "/audio/nabataean-wells.mp3",
+        duration: 10,
+        location: {
+          lat: 26.7890,
+          lng: 37.9520
+        }
+      }
+    ]
+  },
+  {
+    id: "al-masjid-al-nabawi",
+    title: "Al-Masjid al-Nabawi (Prophet's Mosque)",
+    titleArabic: "المسجد النبوي",
+    description: "Islam's second holiest site, built by Prophet Muhammad in 622 CE, featuring distinctive green domes and accommodating over one million worshippers.",
+    descriptionArabic: "ثاني أقدس موقع في الإسلام، بناه النبي محمد عام 622 م، يتميز بقبابه الخضراء المميزة ويستوعب أكثر من مليون مصلي.",
+    imageUrl: "/placeholder.svg",
+    audioUrl: "/audio/masjid-nabawi-intro.mp3",
+    duration: 75,
+    distance: 1.8,
+    location: {
+      lat: 24.4672,
+      lng: 39.6112
+    },
+    isPremium: false,
+    points: [
+      {
+        id: "rawdah",
+        title: "Rawdah (Garden of Paradise)",
+        description: "Sacred area between Prophet Muhammad's house and pulpit, believed to be a piece of paradise.",
+        audioUrl: "/audio/rawdah.mp3",
+        duration: 20,
+        location: {
+          lat: 24.4675,
+          lng: 39.6115
+        }
+      },
+      {
+        id: "original-pillars",
+        title: "Original Pillars",
+        description: "Preserved pillars dating back to the Prophet's era, marking the original structure of the mosque.",
+        audioUrl: "/audio/original-pillars.mp3",
+        duration: 15,
+        location: {
+          lat: 24.4670,
+          lng: 39.6110
+        }
+      },
+      {
+        id: "ottoman-architecture",
+        title: "Ottoman Architectural Elements",
+        description: "Magnificent architectural features added during the Ottoman expansion of the mosque.",
+        audioUrl: "/audio/ottoman-architecture.mp3",
+        duration: 12,
+        location: {
+          lat: 24.4678,
+          lng: 39.6118
+        }
+      }
+    ]
+  },
+  {
+    id: "edge-of-the-world",
+    title: "Edge of the World (Jebel Fihrayn)",
+    titleArabic: "حافة العالم (جبل فهرين)",
+    description: "Dramatic cliffs rising 300 meters from the desert floor with panoramic views extending to the horizon, part of the 800km-long Tuwaiq Escarpment.",
+    descriptionArabic: "منحدرات مذهلة ترتفع 300 متر من أرض الصحراء مع إطلالات بانورامية تمتد إلى الأفق، جزء من جرف طويق الذي يبلغ طوله 800 كم.",
+    imageUrl: "/placeholder.svg",
+    audioUrl: "/audio/edge-of-world-intro.mp3",
+    duration: 180,
+    distance: 8.5,
+    location: {
+      lat: 24.5700,
+      lng: 45.9867
+    },
+    isPremium: true,
+    points: [
+      {
+        id: "main-viewpoint",
+        title: "Main Panoramic Viewpoint",
+        description: "The primary observation area offering the most spectacular views across the ancient seabed.",
+        audioUrl: "/audio/main-viewpoint.mp3",
+        duration: 25,
+        location: {
+          lat: 24.5710,
+          lng: 45.9870
+        }
+      },
+      {
+        id: "fossil-site",
+        title: "Marine Fossil Site",
+        description: "Area containing well-preserved marine fossils embedded in rock layers, evidence of the region's underwater past.",
+        audioUrl: "/audio/fossil-site.mp3",
+        duration: 20,
+        location: {
+          lat: 24.5690,
+          lng: 45.9850
+        }
+      },
+      {
+        id: "caravan-route",
+        title: "Ancient Caravan Route",
+        description: "Visible markers of historical trade routes used for centuries by traders and pilgrims crossing the Arabian Peninsula.",
+        audioUrl: "/audio/caravan-route.mp3",
+        duration: 15,
+        location: {
+          lat: 24.5720,
+          lng: 45.9880
+        }
+      }
+    ]
+  }
 ];
 
 export const getTour = (id: string): Tour | undefined => {
