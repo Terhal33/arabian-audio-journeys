@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
 
@@ -63,7 +62,7 @@ interface AudioContextType {
   skipBackward: (seconds?: number) => void;
   playNext: () => void;
   playPrevious: () => void;
-  setPlaybackRate: (rate: number) => void;
+  setPlaybackRate: () => void;
   
   // Queue management
   addToQueue: (track: AudioTrack) => void;
@@ -134,9 +133,10 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
 
   // Initialize audio element
   useEffect(() => {
+    console.log('AudioContext: Initializing audio element');
+    
     if (!audioRef.current) {
       audioRef.current = new Audio();
-      
       const audio = audioRef.current;
       
       // Set up event listeners
@@ -174,9 +174,12 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
       };
       
       const handleCanPlay = () => {
-        console.log('Audio: Can play');
+        console.log('Audio: Can play, attempting to start playback');
         if (isPlaying) {
-          audio.play().catch(console.error);
+          audio.play().catch(error => {
+            console.error('Audio: Auto-play failed:', error);
+            setIsPlaying(false);
+          });
         }
       };
       
@@ -250,7 +253,7 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
         audio.removeEventListener('error', handleError);
       };
     }
-  }, []);
+  }, [isPlaying, playbackSettings.autoplay, queue, currentTrack, volume, playbackRate]);
 
   // Update audio volume when state changes
   useEffect(() => {
@@ -271,7 +274,7 @@ export const AudioProvider = ({ children }: AudioProviderProps) => {
 
   // Play audio function
   const playAudio = useCallback((track: AudioTrack) => {
-    console.log('AudioContext: Playing track:', track.title);
+    console.log('AudioContext: Playing track:', track.title, 'URL:', track.url);
     
     if (!audioRef.current) {
       console.error('AudioContext: Audio element not initialized');

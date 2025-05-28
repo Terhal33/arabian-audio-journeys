@@ -1,129 +1,47 @@
 
-import React, { useEffect, useState, useRef, memo, useCallback } from 'react';
-import { Tour } from '@/services/toursData';
-import { MapLocation } from '@/types/map';
-import MapCore from './map/MapCore';
-import MapboxMap from './map/MapboxMap';
-import MapboxTokenInput from './map/MapboxTokenInput';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import ProgressIndicator from '@/components/ProgressIndicator';
-import { useMapVirtualization } from '@/hooks/useMapVirtualization';
+import { useEffect, useRef, useState } from 'react';
 
-interface MapProps {
-  location: MapLocation;
-  points?: any[];
-  zoom?: number;
-  interactive?: boolean;
-  className?: string;
-  onPinClick?: (location: MapLocation, tour?: Tour) => void;
-  onRegionChange?: (region: { lat: number, lng: number, radius: number }) => void;
-  showUserLocation?: boolean;
-  onLongPress?: (location: MapLocation) => void;
+interface Location {
+  lat: number;
+  lng: number;
 }
 
-const Map = (props: MapProps) => {
-  const [mapboxToken, setMapboxToken] = useLocalStorage<string | undefined>('mapbox_token', undefined);
-  const [useMapbox, setUseMapbox] = useState<boolean>(false);
-  const [isMapLoading, setIsMapLoading] = useState(true);
-  const mapContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Use the new map virtualization hook
-  const { visiblePoints, pointsInView, totalPoints } = useMapVirtualization(
-    props.points || [],
-    props.location,
-    props.zoom || 14,
-    { maxPoints: 150, buffer: 0.3 }
-  );
-  
-  // Performance monitoring
-  useEffect(() => {
-    // Log performance metrics
-    const startTime = performance.now();
-    
-    return () => {
-      const endTime = performance.now();
-      console.log(`Map render time: ${endTime - startTime}ms with ${pointsInView}/${totalPoints} points`);
-    };
-  }, [pointsInView, totalPoints]);
-  
-  useEffect(() => {
-    console.log("Map component rendering with props:", {
-      location: props.location,
-      pointsCount: props.points?.length,
-      visiblePointsCount: pointsInView,
-      interactive: props.interactive,
-      showUserLocation: props.showUserLocation,
-      useMapbox: useMapbox
-    });
-  }, [props.location, props.points, props.interactive, props.showUserLocation, useMapbox, pointsInView]);
-  
-  // Use Mapbox if token is available
-  useEffect(() => {
-    if (mapboxToken) {
-      setUseMapbox(true);
-    } else {
-      setUseMapbox(false);
-    }
-  }, [mapboxToken]);
+interface MapProps {
+  location: Location;
+  points?: Location[];
+  className?: string;
+}
 
-  const handleTokenSubmit = (token: string) => {
-    setMapboxToken(token);
-  };
-  
-  const handleMapLoaded = useCallback(() => {
-    setIsMapLoading(false);
-  }, []);
-  
-  // Handler for long press events from Mapbox map
-  const handleMapLongPress = useCallback((e: CustomEvent) => {
-    if (props.onLongPress && e.detail?.location) {
-      props.onLongPress(e.detail.location);
-    }
-  }, [props.onLongPress]);
+const Map = ({ location, points = [], className = '' }: MapProps) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Add event listener for custom long press event
   useEffect(() => {
-    const container = mapContainerRef.current;
-    
-    if (container) {
-      container.addEventListener('maplongpress', handleMapLongPress as EventListener);
+    // Simple map initialization without infinite loops
+    if (mapRef.current && !mapLoaded) {
+      console.log('Map: Initializing with location:', location);
+      setMapLoaded(true);
     }
-    
-    return () => {
-      if (container) {
-        container.removeEventListener('maplongpress', handleMapLongPress as EventListener);
-      }
-    };
-  }, [handleMapLongPress]);
+  }, [location.lat, location.lng, mapLoaded]);
 
   return (
-    <div ref={mapContainerRef} className={`relative ${props.className || ''}`}>
-      <ProgressIndicator isLoading={isMapLoading} className="bg-transparent" />
-    
-      {useMapbox ? (
-        <MapboxMap 
-          {...props} 
-          points={visiblePoints}
-          mapboxToken={mapboxToken}
-        />
-      ) : (
-        <>
-          <MapCore 
-            {...props} 
-            points={visiblePoints}
-          />
-          <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
-        </>
-      )}
-      
-      {useMapbox && (
-        <div className="absolute bottom-4 right-4 text-xs text-white bg-black/50 px-2 py-1 rounded backdrop-blur-sm">
-          Powered by Mapbox | {pointsInView}/{totalPoints} points
+    <div 
+      ref={mapRef}
+      className={`bg-gray-200 rounded-lg flex items-center justify-center ${className}`}
+    >
+      <div className="text-center p-4">
+        <div className="text-gray-600 mb-2">📍 Map View</div>
+        <div className="text-sm text-gray-500">
+          Location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
         </div>
-      )}
+        {points.length > 0 && (
+          <div className="text-xs text-gray-400 mt-1">
+            {points.length} point{points.length !== 1 ? 's' : ''} of interest
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
-// Memoize Map component to prevent unnecessary re-renders
-export default memo(Map);
+export default Map;
