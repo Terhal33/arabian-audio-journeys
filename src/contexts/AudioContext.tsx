@@ -8,6 +8,7 @@ export interface AudioTrack {
   tourId?: string;
   duration?: number;
   isPremium?: boolean;
+  thumbnail?: string;
 }
 
 export interface PlaybackSettings {
