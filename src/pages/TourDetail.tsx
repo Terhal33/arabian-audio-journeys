@@ -71,6 +71,39 @@ const TourDetail = () => {
   } = useAudio();
   const navigate = useNavigate();
   
+  // Create tracks array for AudioPlayer from tour data
+  const createTracksFromTour = (tour: Tour) => {
+    const tracks = [];
+    
+    // Add intro track
+    if (tour.audioUrl) {
+      tracks.push({
+        id: `tour-intro-${tour.id}`,
+        title: `${tour.title} - Introduction`,
+        description: tour.description,
+        url: tour.audioUrl,
+        duration: tour.duration * 60,
+        thumbnail: tour.imageUrl
+      });
+    }
+    
+    // Add point tracks
+    tour.points.forEach((point, index) => {
+      if (point.audioUrl) {
+        tracks.push({
+          id: `tour-point-${tour.id}-${point.id}`,
+          title: point.title,
+          description: point.description,
+          url: point.audioUrl,
+          duration: point.duration * 60,
+          thumbnail: tour.imageUrl
+        });
+      }
+    });
+    
+    return tracks;
+  };
+  
   useEffect(() => {
     if (id) {
       const tourData = getTour(id);
@@ -290,8 +323,11 @@ const TourDetail = () => {
     );
   }
   
+  // Get tracks for AudioPlayer
+  const audioTracks = tour ? createTracksFromTour(tour) : [];
+  
   // Expanded audio player view
-  if (showExpandedPlayer && currentTrack) {
+  if (showExpandedPlayer && currentTrack && audioTracks.length > 0) {
     return (
       <div className="min-h-screen flex flex-col bg-white">
         <div className="flex-1 flex flex-col">
@@ -363,7 +399,10 @@ const TourDetail = () => {
           <div className="h-16"></div>
         </div>
         
-        <AudioPlayer />
+        <AudioPlayer 
+          tracks={audioTracks}
+          showPlaylist={true}
+        />
       </div>
     );
   }
@@ -853,11 +892,15 @@ const TourDetail = () => {
         </div>
       </main>
       
-      {/* Remove duplicate Reviews sheet - it's now properly included in the action buttons section */}
       {/* Audio player with expanded view functionality */}
-      <div onClick={() => currentTrack && setShowExpandedPlayer(true)}>
-        <AudioPlayer />
-      </div>
+      {audioTracks.length > 0 && (
+        <div onClick={() => currentTrack && setShowExpandedPlayer(true)}>
+          <AudioPlayer 
+            tracks={audioTracks}
+            showPlaylist={true}
+          />
+        </div>
+      )}
     </div>
   );
 };

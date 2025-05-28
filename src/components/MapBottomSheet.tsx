@@ -28,6 +28,16 @@ const MapBottomSheet: React.FC<MapBottomSheetProps> = ({ tour, onClose }) => {
     }
   };
   
+  // Create tracks array for AudioPlayer
+  const audioTracks = tour.audioUrl ? [{
+    id: `tour-${tour.id}`,
+    title: tour.title,
+    description: tour.description,
+    url: tour.audioUrl,
+    duration: tour.duration * 60,
+    thumbnail: tour.imageUrl
+  }] : [];
+  
   return (
     <div className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-xl shadow-lg z-30 transition-all duration-300 transform ${expanded ? 'h-[70vh]' : 'h-auto'}`}>
       <div className="p-4">
@@ -108,16 +118,16 @@ const MapBottomSheet: React.FC<MapBottomSheetProps> = ({ tour, onClose }) => {
         </div>
         
         {/* Audio preview */}
-        {tour.audioUrl && (
+        {tour.audioUrl && audioTracks.length > 0 && (
           <Card className="mb-4 p-3 bg-muted/50">
             <p className="text-sm font-medium mb-2">Tour Preview</p>
             <Dialog>
               <DialogTrigger asChild>
                 <div>
                   <AudioPlayer 
-                    mini={true}
-                    className="small"
-                    onExpand={() => {}}
+                    tracks={audioTracks}
+                    showPlaylist={false}
+                    className="compact"
                   />
                 </div>
               </DialogTrigger>
