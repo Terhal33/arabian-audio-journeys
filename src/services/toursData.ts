@@ -34,7 +34,7 @@ export const tours: Tour[] = [
     description: "Experience the birthplace of the first Saudi state and home to the UNESCO World Heritage Site At-Turaif.",
     descriptionArabic: "استكشف مسقط رأس الدولة السعودية الأولى وموطن موقع التراث العالمي التريف.",
     imageUrl: "https://images.unsplash.com/photo-1466442929976-97f336a657be?w=800&h=600&fit=crop",
-    audioUrl: "/audio/placeholder-intro.mp3",
+    audioUrl: "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3",
     duration: 45,
     distance: 2.3,
     location: {
@@ -47,7 +47,7 @@ export const tours: Tour[] = [
         id: "turaif-district",
         title: "At-Turaif District",
         description: "The UNESCO World Heritage site featuring mud-brick structures from the original Saudi dynasty.",
-        audioUrl: "/audio/placeholder-point-1.mp3",
+        audioUrl: "https://file-examples.com/storage/fef1c90b6862e3320965004/2017/11/file_example_MP3_700KB.mp3",
         duration: 8,
         location: {
           lat: 24.7342,
@@ -58,7 +58,7 @@ export const tours: Tour[] = [
         id: "salwa-palace",
         title: "Salwa Palace",
         description: "The historic residence of the ruling Al Saud family and the seat of government during the first Saudi state.",
-        audioUrl: "/audio/placeholder-point-2.mp3",
+        audioUrl: "https://samplelib.com/lib/preview/mp3/sample-3s.mp3",
         duration: 10,
         location: {
           lat: 24.7338,
@@ -69,7 +69,7 @@ export const tours: Tour[] = [
         id: "saad-bin-saud-palace",
         title: "Saad bin Saud Palace",
         description: "One of the largest palaces in At-Turaif, known for its distinctive architecture.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        audioUrl: "https://www.learningcontainer.com/wp-content/uploads/2020/02/Kalimba.mp3",
         duration: 7,
         location: {
           lat: 24.7345,
