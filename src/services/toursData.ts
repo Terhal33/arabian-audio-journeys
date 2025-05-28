@@ -1,3 +1,4 @@
+
 export interface Tour {
   id: string;
   title: string;
@@ -158,8 +159,6 @@ export const tours: Tour[] = [
       }
     ]
   },
-  
-  // Adding new locations from the user's request
   {
     id: "madain-saleh",
     title: "Mada'in Saleh (Hegra)",
@@ -326,7 +325,12 @@ export const tours: Tour[] = [
   }
 ];
 
+// Utility functions with improved error handling
 export const getTour = (id: string): Tour | undefined => {
+  if (!id) {
+    console.warn('getTour called with empty id');
+    return undefined;
+  }
   return tours.find(tour => tour.id === id);
 };
 
@@ -340,4 +344,32 @@ export const getPremiumTours = (): Tour[] => {
 
 export const getFreeTours = (): Tour[] => {
   return tours.filter(tour => !tour.isPremium);
+};
+
+// Additional utility functions for better data validation
+export const validateTour = (tour: Partial<Tour>): boolean => {
+  return !!(
+    tour.id &&
+    tour.title &&
+    tour.description &&
+    tour.location?.lat &&
+    tour.location?.lng &&
+    typeof tour.isPremium === 'boolean'
+  );
+};
+
+export const getToursByCategory = (isPremium: boolean): Tour[] => {
+  return tours.filter(tour => tour.isPremium === isPremium);
+};
+
+export const searchTours = (query: string): Tour[] => {
+  if (!query) return tours;
+  
+  const searchTerm = query.toLowerCase();
+  return tours.filter(tour => 
+    tour.title.toLowerCase().includes(searchTerm) ||
+    tour.description.toLowerCase().includes(searchTerm) ||
+    tour.titleArabic.includes(query) ||
+    tour.descriptionArabic.includes(query)
+  );
 };

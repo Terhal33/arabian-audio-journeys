@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+
+import { useEffect, useRef, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import { Tour } from '@/services/toursData';
 import { MapLocation } from '@/types/map';
@@ -29,6 +30,46 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
   const userMarker = useRef<mapboxgl.Marker | null>(null);
   const popupsRef = useRef<mapboxgl.Popup[]>([]);
   const lastPointsSignature = useRef<string>('');
+  const cleanupTimeoutRef = useRef<number | null>(null);
+
+  // Cleanup function to safely remove markers and popups
+  const cleanup = useCallback(() => {
+    // Clear any pending cleanup
+    if (cleanupTimeoutRef.current) {
+      clearTimeout(cleanupTimeoutRef.current);
+      cleanupTimeoutRef.current = null;
+    }
+
+    // Remove markers
+    markers.current.forEach(marker => {
+      try {
+        marker.remove();
+      } catch (e) {
+        console.warn("Error removing marker:", e);
+      }
+    });
+    markers.current = [];
+    
+    // Remove popups
+    popupsRef.current.forEach(popup => {
+      try {
+        popup.remove();
+      } catch (e) {
+        console.warn("Error removing popup:", e);
+      }
+    });
+    popupsRef.current = [];
+    
+    // Remove user marker
+    if (userMarker.current) {
+      try {
+        userMarker.current.remove();
+        userMarker.current = null;
+      } catch (e) {
+        console.warn("Error removing user marker:", e);
+      }
+    }
+  }, []);
 
   // Add map markers
   useEffect(() => {
@@ -41,7 +82,7 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
     }
     
     // Check if points have actually changed to avoid unnecessary updates
-    const pointsSignature = JSON.stringify(points.map(p => p.id));
+    const pointsSignature = JSON.stringify(points.map(p => ({ id: p.id, lat: p.lat, lng: p.lng })));
     if (pointsSignature === lastPointsSignature.current) return;
     lastPointsSignature.current = pointsSignature;
     
@@ -57,7 +98,7 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
     
     // Add new markers for each point
     points.forEach(point => {
-      if (!map) return;
+      if (!map || !map.getContainer()) return;
       
       try {
         const el = createMarkerElement(
@@ -88,7 +129,7 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
           `);
           
           el.addEventListener('mouseenter', () => {
-            if (map.getContainer()) {
+            if (map && map.getContainer()) {
               marker.setPopup(popup);
               popup.addTo(map);
               popupsRef.current.push(popup);
@@ -115,7 +156,7 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
       }
     });
     
-  }, [points, isMapLoaded, onPinClick, activeTourId, map]);
+  }, [points, isMapLoaded, onPinClick, activeTourId, map, setActiveTourId]);
 
   // Handle user location marker
   useEffect(() => {
@@ -152,32 +193,8 @@ const MapboxMarkers: React.FC<MapboxMarkersProps> = ({
 
   // Cleanup on unmount
   useEffect(() => {
-    return () => {
-      markers.current.forEach(marker => {
-        try {
-          marker.remove();
-        } catch (e) {
-          console.warn("Error removing marker:", e);
-        }
-      });
-      
-      popupsRef.current.forEach(popup => {
-        try {
-          popup.remove();
-        } catch (e) {
-          console.warn("Error removing popup:", e);
-        }
-      });
-      
-      if (userMarker.current) {
-        try {
-          userMarker.current.remove();
-        } catch (e) {
-          console.warn("Error removing user marker:", e);
-        }
-      }
-    };
-  }, []);
+    return cleanup;
+  }, [cleanup]);
 
   return null; // This component doesn't render anything visually
 };

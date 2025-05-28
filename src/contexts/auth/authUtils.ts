@@ -116,6 +116,28 @@ export const authMethods = {
     try {
       console.log('Attempting signup with:', { email, fullName });
       
+      // Input validation
+      if (!email || !password || !fullName) {
+        throw new Error(language === 'ar' 
+          ? 'جميع الحقول مطلوبة' 
+          : 'All fields are required');
+      }
+
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        throw new Error(language === 'ar' 
+          ? 'البريد الإلكتروني غير صالح' 
+          : 'Invalid email address');
+      }
+
+      // Password validation
+      if (password.length < 6) {
+        throw new Error(language === 'ar' 
+          ? 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' 
+          : 'Password must be at least 6 characters');
+      }
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -165,6 +187,11 @@ export const authMethods = {
 
   signIn: async (email: string, password: string) => {
     try {
+      // Input validation
+      if (!email || !password) {
+        throw new Error("Email and password are required");
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -178,6 +205,7 @@ export const authMethods = {
       });
 
     } catch (error) {
+      console.error('Sign in error:', error);
       toast({
         variant: "destructive",
         title: "Error signing in",
@@ -212,6 +240,10 @@ export const authMethods = {
 
   resetPassword: async (email: string) => {
     try {
+      if (!email) {
+        throw new Error("Email is required");
+      }
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin + '/reset-password',
       });
@@ -223,6 +255,7 @@ export const authMethods = {
         description: "Check your email for a password reset link.",
       });
     } catch (error) {
+      console.error('Password reset error:', error);
       toast({
         variant: "destructive",
         title: "Password reset failed",
@@ -234,6 +267,10 @@ export const authMethods = {
 
   updateProfile: async (updates: Partial<UserProfile>, userId: string) => {
     try {
+      if (!userId) {
+        throw new Error("User ID is required");
+      }
+
       const { error } = await supabase
         .from('user_profiles')
         .update(updates)
@@ -246,6 +283,7 @@ export const authMethods = {
         description: "Your profile has been successfully updated.",
       });
     } catch (error) {
+      console.error('Profile update error:', error);
       toast({
         variant: "destructive",
         title: "Profile update failed",
@@ -257,16 +295,20 @@ export const authMethods = {
   
   resendVerificationEmail: async (email: string, language: 'en' | 'ar') => {
     try {
-      // First, check if the user exists and is verified
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithOtp({
+      if (!email) {
+        throw new Error(language === 'ar' ? 'البريد الإلكتروني مطلوب' : 'Email is required');
+      }
+
+      // Use the resend functionality
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
         email,
         options: {
-          shouldCreateUser: false,
           emailRedirectTo: `${window.location.origin}/verification`
         }
       });
       
-      if (signInError) throw signInError;
+      if (error) throw error;
       
       toast({
         title: language === 'ar' ? "تم إرسال البريد الإلكتروني" : "Email sent",
@@ -277,6 +319,7 @@ export const authMethods = {
       
       return true;
     } catch (error) {
+      console.error('Resend verification email error:', error);
       toast({
         variant: "destructive",
         title: language === 'ar' ? "فشل في إرسال البريد الإلكتروني" : "Email sending failed",
@@ -301,4 +344,3 @@ export const authMethods = {
     }
   }
 };
-
