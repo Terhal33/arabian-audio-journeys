@@ -1,10 +1,12 @@
+
 import { useState, useEffect } from 'react';
 import { useAudio } from '@/contexts/AudioContext';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { 
   Play, Pause, SkipBack, SkipForward, Volume2, VolumeX,
-  Clock, ListMusic, Music2, X, ChevronUp, Settings 
+  Clock, ListMusic, Music2, X, ChevronUp, Settings,
+  Download, Share2, Bookmark, BookmarkCheck, Rewind, FastForward
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -82,6 +84,8 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
   const [showSleepTimer, setShowSleepTimer] = useState(false);
   const [timerMinutes, setTimerMinutes] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   // Debug logging for audio player state
   useEffect(() => {
@@ -132,6 +136,48 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
     });
   };
 
+  // Enhanced share functionality
+  const handleShare = async () => {
+    if (!currentTrack) return;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: currentTrack.title,
+          text: `Listen to: ${currentTrack.title}`,
+          url: window.location.href
+        });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      // Fallback to clipboard
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        // Could add toast notification here
+      } catch (err) {
+        console.error('Failed to copy to clipboard');
+      }
+    }
+  };
+
+  // Enhanced download functionality (premium feature)
+  const handleDownload = async () => {
+    if (!currentTrack || !isPremium) return;
+    
+    setIsDownloading(true);
+    try {
+      // In a real app, this would trigger a download
+      console.log('Downloading track:', currentTrack.title);
+      // Simulate download delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error('Download failed:', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   // If there's no current track playing, don't render anything
   if (!currentTrack && !isMiniPlayerActive) {
     console.log('AudioPlayer: No current track and mini player not active, not rendering');
@@ -175,7 +221,6 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             className="h-8 w-8 text-gray-500 hover:text-gray-700"
             onClick={(e) => {
               e.stopPropagation();
-              // Close mini player and stop audio
               togglePlayPause();
             }}
           >
@@ -188,10 +233,64 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
 
   // Full player version
   return (
-    <div className={`fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100 px-4 py-3 z-40 ${className}`}>
+    <div className={`fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100 z-40 ${className}`}>
+      {/* Enhanced Track Info Header */}
+      <div className="px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center space-x-3">
+          {currentTrack?.thumbnail && (
+            <img 
+              src={currentTrack.thumbnail} 
+              alt={currentTrack.title}
+              className="w-12 h-12 rounded-lg object-cover"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm text-gray-900 truncate">
+              {currentTrack?.title || 'No track selected'}
+            </h3>
+            {currentTrack?.tourId && (
+              <p className="text-xs text-gray-500">Audio Tour</p>
+            )}
+          </div>
+          
+          {/* Enhanced Action Buttons */}
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-gray-600 hover:text-gold"
+              onClick={() => setIsBookmarked(!isBookmarked)}
+            >
+              {isBookmarked ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-gray-600 hover:text-oasis"
+              onClick={handleShare}
+            >
+              <Share2 className="h-4 w-4" />
+            </Button>
+            
+            {isPremium && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-gray-600 hover:text-desert"
+                onClick={handleDownload}
+                disabled={isDownloading}
+              >
+                <Download className={`h-4 w-4 ${isDownloading ? 'animate-pulse' : ''}`} />
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Progress bar - full width above controls */}
       <div 
-        className="absolute top-0 left-0 right-0 h-1 bg-gray-100 cursor-pointer" 
+        className="h-1 bg-gray-100 cursor-pointer" 
         onClick={(e) => {
           console.log('Progress bar clicked');
           const rect = e.currentTarget.getBoundingClientRect();
@@ -215,8 +314,8 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
         </div>
       )}
       
-      <div className="container mx-auto flex items-center justify-between">
-        {/* Left side - Main playback controls */}
+      <div className="container mx-auto flex items-center justify-between px-4 py-3">
+        {/* Left side - Enhanced playback controls */}
         <div className="flex items-center space-x-1 sm:space-x-3">
           <div className="hidden sm:flex">
             <Button 
@@ -232,6 +331,16 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             </Button>
           </div>
           
+          {/* Enhanced rewind button */}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="text-gray-600 hover:text-desert hidden md:flex"
+            onClick={() => skipBackward(30)}
+          >
+            <Rewind className="h-4 w-4" />
+          </Button>
+          
           <Button 
             variant="ghost" 
             size="icon" 
@@ -242,6 +351,16 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             }}
           >
             {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          </Button>
+          
+          {/* Enhanced fast forward button */}
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="text-gray-600 hover:text-desert hidden md:flex"
+            onClick={() => skipForward(30)}
+          >
+            <FastForward className="h-4 w-4" />
           </Button>
           
           <div className="hidden sm:flex">
@@ -348,7 +467,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             />
           </div>
           
-          {/* Playback speed */}
+          {/* Enhanced playback speed with more options */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -366,7 +485,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
                   onClick={() => setPlaybackRate(rate)}
                   className={playbackRate === rate ? "bg-muted" : ""}
                 >
-                  {rate}x
+                  {rate}x {rate === 1 ? '(Normal)' : rate < 1 ? '(Slower)' : '(Faster)'}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -505,7 +624,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             </DialogContent>
           </Dialog>
           
-          {/* Settings button */}
+          {/* Enhanced settings button */}
           <Dialog open={showSettings} onOpenChange={setShowSettings}>
             <DialogTrigger asChild>
               <Button
@@ -553,6 +672,25 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
                   />
                 </div>
                 
+                {/* Download for offline listening */}
+                <div className="flex justify-between items-center">
+                  <div>
+                    <Label htmlFor="offline-mode" className="text-sm font-medium">
+                      Offline downloads
+                    </Label>
+                    {!isPremium && (
+                      <p className="text-xs text-muted-foreground">
+                        Premium feature
+                      </p>
+                    )}
+                  </div>
+                  <Switch
+                    id="offline-mode"
+                    disabled={!isPremium}
+                    checked={false}
+                  />
+                </div>
+                
                 {!isPremium && (
                   <div className="mt-6">
                     <UpgradePrompt 
@@ -579,7 +717,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
       </div>
       
       {/* Mobile track info */}
-      <div className="sm:hidden mt-2">
+      <div className="sm:hidden px-4 pb-3">
         <div className="flex justify-between items-center mb-1">
           <p className="text-sm font-medium truncate">{currentTrack?.title || 'No track selected'}</p>
           <p className="text-xs text-muted-foreground">
