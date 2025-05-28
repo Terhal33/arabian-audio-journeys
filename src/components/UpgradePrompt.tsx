@@ -1,6 +1,7 @@
 
 import React, { memo } from 'react';
 import { Crown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -18,17 +19,27 @@ const UpgradePrompt = memo(({
   title = "Unlock Premium Tours",
   description = "Get unlimited access to all premium tours and exclusive content",
   buttonText = "Upgrade Now",
-  onUpgrade = () => console.log("Upgrade clicked"),
+  onUpgrade,
   className = "",
   variant = 'default'
 }: UpgradePromptProps) => {
+  const navigate = useNavigate();
+  
+  const handleUpgrade = () => {
+    if (onUpgrade) {
+      onUpgrade();
+    } else {
+      // Default behavior: navigate to subscription page
+      navigate('/subscription');
+    }
+  };
   
   if (variant === 'subtle') {
     return (
       <div className={`text-center mt-4 ${className}`}>
         <Button 
           variant="ghost" 
-          onClick={onUpgrade}
+          onClick={handleUpgrade}
           className="text-gold hover:text-gold-dark"
         >
           <Crown className="h-4 w-4 mr-2" />
@@ -47,7 +58,7 @@ const UpgradePrompt = memo(({
         <Button 
           size="sm" 
           className="bg-gold hover:bg-gold-dark text-night"
-          onClick={onUpgrade}
+          onClick={handleUpgrade}
         >
           {buttonText}
         </Button>
@@ -69,7 +80,7 @@ const UpgradePrompt = memo(({
             </p>
             <Button 
               className="bg-gold hover:bg-gold-dark text-night w-full"
-              onClick={onUpgrade}
+              onClick={handleUpgrade}
             >
               {buttonText}
             </Button>

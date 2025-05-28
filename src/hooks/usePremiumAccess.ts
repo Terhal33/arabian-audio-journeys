@@ -11,7 +11,7 @@ export interface PremiumAccessOptions {
 }
 
 const defaultOptions: PremiumAccessOptions = {
-  redirectToUpgrade: false,
+  redirectToUpgrade: true,
   showToast: true,
   toastMessage: "This content requires a premium subscription"
 };
@@ -61,7 +61,8 @@ export const usePremiumAccess = (options: PremiumAccessOptions = {}) => {
     isPremium,
     isLoading: isLoading || !hasChecked,
     canAccess: isPremium && isAuthenticated,
-    needsUpgrade: isAuthenticated && !isPremium
+    needsUpgrade: isAuthenticated && !isPremium,
+    upgrade: () => navigate('/subscription')
   };
 };
 
