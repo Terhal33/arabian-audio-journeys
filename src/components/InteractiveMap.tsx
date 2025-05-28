@@ -13,8 +13,6 @@ import {
   Minimize2,
   RotateCcw
 } from 'lucide-react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import MapboxTokenInput from '@/components/map/MapboxTokenInput';
 
 // Types
 interface TourPoint {
@@ -56,6 +54,9 @@ const CATEGORY_COLORS = {
   modern: '#4169E1'
 };
 
+// Permanent Mapbox token
+const MAPBOX_TOKEN = 'pk.eyJ1IjoidGVyaGFsIiwiYSI6ImNtYjg1djhhbDA1YXIya3M3ZTA0YmZldjMifQ.T7ipAUJ_hsN63fceNWPIpA';
+
 const InteractiveMap: React.FC<MapComponentProps> = ({
   tourPoints = [],
   center = [46.6753, 24.7136], // Riyadh coordinates
@@ -76,35 +77,18 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioElement] = useState(new Audio());
   const [mapError, setMapError] = useState<string | null>(null);
-  const [mapboxToken, setMapboxToken] = useLocalStorage<string>('mapbox_token', '');
-  const [showTokenInput, setShowTokenInput] = useState(false);
-
-  // Handle token submission
-  const handleTokenSubmit = (token: string) => {
-    setMapboxToken(token);
-    setShowTokenInput(false);
-    // Re-initialize map with new token
-    if (map.current) {
-      map.current.remove();
-      map.current = null;
-      setMapLoaded(false);
-    }
-  };
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) {
-      setShowTokenInput(true);
-      return;
-    }
+    if (!mapContainer.current) return;
 
     const initializeMap = async () => {
       try {
         // Dynamically import mapbox-gl
         const mapboxgl = await import('mapbox-gl');
         
-        // Set access token from stored value
-        mapboxgl.default.accessToken = mapboxToken;
+        // Set access token
+        mapboxgl.default.accessToken = MAPBOX_TOKEN;
 
         map.current = new mapboxgl.default.Map({
           container: mapContainer.current!,
@@ -140,7 +124,7 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
 
         map.current.on('error', (e: any) => {
           console.error('Map error:', e);
-          setMapError('Failed to load map. Please check your internet connection or Mapbox token.');
+          setMapError('Failed to load map. Please check your internet connection.');
         });
 
       } catch (error) {
@@ -156,7 +140,7 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
         map.current.remove();
       }
     };
-  }, [mapboxToken, currentStyle]);
+  }, [currentStyle]);
 
   // Add tour points to map
   const addTourPoints = () => {
@@ -379,15 +363,6 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
     };
   }, [audioElement]);
 
-  // Show token input if no token is stored
-  if (showTokenInput || !mapboxToken) {
-    return (
-      <div className={`relative ${className}`}>
-        <MapboxTokenInput onTokenSubmit={handleTokenSubmit} />
-      </div>
-    );
-  }
-
   if (mapError) {
     return (
       <div className={`flex items-center justify-center h-96 bg-gray-100 rounded-lg ${className}`}>
@@ -395,14 +370,9 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
           <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-600 mb-2">Map Error</h3>
           <p className="text-gray-500 mb-4">{mapError}</p>
-          <div className="space-x-2">
-            <Button onClick={() => window.location.reload()}>
-              Reload Page
-            </Button>
-            <Button onClick={() => setShowTokenInput(true)} variant="outline">
-              Update Token
-            </Button>
-          </div>
+          <Button onClick={() => window.location.reload()}>
+            Reload Page
+          </Button>
         </div>
       </div>
     );
@@ -412,21 +382,6 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
     <div className={`relative ${className} ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
       {/* Map Container */}
       <div ref={mapContainer} className="w-full h-full min-h-[400px] rounded-lg overflow-hidden" />
-
-      {/* Mapbox Token Management */}
-      {mapboxToken && (
-        <div className="absolute z-10 top-4 left-4 max-w-xs bg-white p-2 rounded-lg shadow-md">
-          <p className="text-xs text-muted-foreground mb-1">Using Mapbox map</p>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="h-7 text-xs"
-            onClick={() => setShowTokenInput(true)}
-          >
-            Change API Key
-          </Button>
-        </div>
-      )}
 
       {/* Map Controls */}
       <div className="absolute top-4 right-4 flex flex-col space-y-2">
@@ -531,7 +486,7 @@ const InteractiveMap: React.FC<MapComponentProps> = ({
       )}
 
       {/* Loading State */}
-      {!mapLoaded && mapboxToken && (
+      {!mapLoaded && (
         <div className="absolute inset-0 bg-gray-100 flex items-center justify-center rounded-lg">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-2 border-oasis border-t-transparent mx-auto mb-4" />
