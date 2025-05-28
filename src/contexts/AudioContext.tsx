@@ -1,8 +1,8 @@
-import React, { createContext, useState, useContext, ReactNode, useRef, useEffect } from 'react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+
+import React, { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
 
-interface AudioTrack {
+export interface AudioTrack {
   id: string;
   url: string;
   title: string;
@@ -11,825 +11,562 @@ interface AudioTrack {
   isPremium?: boolean;
 }
 
-interface SavedProgress {
-  [trackId: string]: {
-    position: number;
-    completed: boolean;
-    lastPlayed: number; // timestamp
-  }
+export interface PlaybackSettings {
+  preferredQuality: 'standard' | 'high';
+  autoplay: boolean;
 }
 
-interface TourProgress {
+export interface TourProgress {
   [tourId: string]: {
-    lastSegmentId: string;
+    lastPosition: number;
     completedSegments: string[];
     totalDuration: number;
-    listenedDuration: number;
-  }
-}
-
-interface PlaybackSettings {
-  playbackRate: number;
-  volume: number;
-  isMuted: boolean;
-  autoplay: boolean;
-  sleepTimerMinutes: number | null;
-  preferredQuality: 'standard' | 'high';
+  };
 }
 
 interface AudioContextType {
-  // Playback state
-  isPlaying: boolean;
+  // Audio state
   currentTrack: AudioTrack | null;
-  currentTime: number;
+  isPlaying: boolean;
   duration: number;
+  currentTime: number;
   progress: number;
   volume: number;
   isMuted: boolean;
   playbackRate: number;
   
-  // Playback history and queue
+  // Queue and history
   queue: AudioTrack[];
   playbackHistory: AudioTrack[];
-  
-  // Progress info
-  trackProgress: SavedProgress;
-  tourProgress: TourProgress;
-  
-  // Mini player state
-  isMiniPlayerActive: boolean;
   
   // Timer state
   sleepTimerActive: boolean;
   sleepTimerRemaining: number | null;
   
-  // Controls
-  playAudio: (track: AudioTrack, autoplay?: boolean) => void;
-  playAudioWithUrl: (url: string, title?: string, tourId?: string, isPremium?: boolean) => void;
-  pauseAudio: () => void;
-  stopAudio: () => void;
-  seekAudio: (time: number) => void;
+  // UI state
+  isMiniPlayerActive: boolean;
+  
+  // Settings
+  playbackSettings: PlaybackSettings;
+  
+  // Tour progress tracking
+  tourProgress: TourProgress;
+  trackProgress: { [trackId: string]: number };
+  
+  // Audio controls
+  playAudio: (track: AudioTrack) => void;
   togglePlayPause: () => void;
+  seekAudio: (time: number) => void;
   setVolume: (volume: number) => void;
   toggleMute: () => void;
-  setPlaybackRate: (rate: number) => void;
   skipForward: (seconds?: number) => void;
   skipBackward: (seconds?: number) => void;
   playNext: () => void;
   playPrevious: () => void;
+  setPlaybackRate: (rate: number) => void;
   
   // Queue management
   addToQueue: (track: AudioTrack) => void;
   removeFromQueue: (trackId: string) => void;
   clearQueue: () => void;
   
-  // Sleep timer
+  // Timer controls
   startSleepTimer: (minutes: number) => void;
   cancelSleepTimer: () => void;
   
-  // Mini player
+  // UI controls
   showMiniPlayer: () => void;
   hideMiniPlayer: () => void;
   
   // Settings
-  playbackSettings: PlaybackSettings;
   updatePlaybackSettings: (settings: Partial<PlaybackSettings>) => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-const DEFAULT_PLAYBACK_SETTINGS: PlaybackSettings = {
-  playbackRate: 1,
-  volume: 1,
-  isMuted: false,
-  autoplay: true,
-  sleepTimerMinutes: null,
-  preferredQuality: 'standard'
+export const useAudio = () => {
+  const context = useContext(AudioContext);
+  if (!context) {
+    throw new Error('useAudio must be used within an AudioProvider');
+  }
+  return context;
 };
 
-export function AudioProvider({ children }: { children: ReactNode }) {
-  // Core audio state
-  const [isPlaying, setIsPlaying] = useState(false);
+interface AudioProviderProps {
+  children: ReactNode;
+}
+
+export const AudioProvider = ({ children }: AudioProviderProps) => {
+  // Audio state
   const [currentTrack, setCurrentTrack] = useState<AudioTrack | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const [volume, setVolumeState] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRateState] = useState(1);
   
   // Queue and history
   const [queue, setQueue] = useState<AudioTrack[]>([]);
   const [playbackHistory, setPlaybackHistory] = useState<AudioTrack[]>([]);
   
-  // UI state
-  const [isMiniPlayerActive, setIsMiniPlayerActive] = useState(false);
-  
   // Timer state
   const [sleepTimerActive, setSleepTimerActive] = useState(false);
   const [sleepTimerRemaining, setSleepTimerRemaining] = useState<number | null>(null);
   
-  // Settings with localStorage persistence
-  const [playbackSettings, setPlaybackSettings] = useLocalStorage<PlaybackSettings>(
-    'aaj_playback_settings', 
-    DEFAULT_PLAYBACK_SETTINGS
-  );
+  // UI state
+  const [isMiniPlayerActive, setIsMiniPlayerActive] = useState(false);
   
-  // Progress tracking with localStorage persistence
-  const [trackProgress, setTrackProgress] = useLocalStorage<SavedProgress>('aaj_track_progress', {});
-  const [tourProgress, setTourProgress] = useLocalStorage<TourProgress>('aaj_tour_progress', {});
+  // Settings
+  const [playbackSettings, setPlaybackSettings] = useState<PlaybackSettings>({
+    preferredQuality: 'standard',
+    autoplay: true
+  });
   
-  // Audio element and timers refs
+  // Progress tracking
+  const [tourProgress, setTourProgress] = useState<TourProgress>({});
+  const [trackProgress, setTrackProgress] = useState<{ [trackId: string]: number }>({});
+  
+  // Audio element ref
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const sleepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const progressSaveIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  
-  // Extract current settings for easier access
-  const { volume, isMuted, playbackRate } = playbackSettings;
-  
+  const sleepTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const progressUpdateRef = useRef<NodeJS.Timeout | null>(null);
+
   // Initialize audio element
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
       
-      // Set up audio event listeners
       const audio = audioRef.current;
       
+      // Set up event listeners
+      const handleLoadedMetadata = () => {
+        console.log('Audio: Metadata loaded, duration:', audio.duration);
+        setDuration(audio.duration || 0);
+      };
+      
+      const handleTimeUpdate = () => {
+        const current = audio.currentTime || 0;
+        const dur = audio.duration || 0;
+        const prog = dur > 0 ? (current / dur) * 100 : 0;
+        
+        setCurrentTime(current);
+        
+        // Update track progress
+        if (currentTrack) {
+          setTrackProgress(prev => ({
+            ...prev,
+            [currentTrack.id]: current
+          }));
+          
+          // Update tour progress if part of a tour
+          if (currentTrack.tourId) {
+            setTourProgress(prev => ({
+              ...prev,
+              [currentTrack.tourId!]: {
+                ...prev[currentTrack.tourId!],
+                lastPosition: current,
+                totalDuration: dur
+              }
+            }));
+          }
+        }
+      };
+      
+      const handleCanPlay = () => {
+        console.log('Audio: Can play');
+        if (isPlaying) {
+          audio.play().catch(console.error);
+        }
+      };
+      
+      const handlePlay = () => {
+        console.log('Audio: Play event fired');
+        setIsPlaying(true);
+      };
+      
+      const handlePause = () => {
+        console.log('Audio: Pause event fired');
+        setIsPlaying(false);
+      };
+      
+      const handleEnded = () => {
+        console.log('Audio: Track ended');
+        setIsPlaying(false);
+        
+        // Mark segment as completed
+        if (currentTrack) {
+          if (currentTrack.tourId) {
+            setTourProgress(prev => ({
+              ...prev,
+              [currentTrack.tourId!]: {
+                ...prev[currentTrack.tourId!],
+                completedSegments: [
+                  ...(prev[currentTrack.tourId!]?.completedSegments || []),
+                  currentTrack.id
+                ].filter((id, index, arr) => arr.indexOf(id) === index) // Remove duplicates
+              }
+            }));
+          }
+          
+          // Auto-play next if enabled
+          if (playbackSettings.autoplay && queue.length > 0) {
+            playNext();
+          }
+        }
+      };
+      
+      const handleError = (e: Event) => {
+        console.error('Audio: Error occurred', e);
+        setIsPlaying(false);
+        toast({
+          title: 'Playback Error',
+          description: 'Unable to play the audio track. Please try again.',
+          variant: 'destructive',
+        });
+      };
+      
+      // Add event listeners
       audio.addEventListener('loadedmetadata', handleLoadedMetadata);
       audio.addEventListener('timeupdate', handleTimeUpdate);
+      audio.addEventListener('canplay', handleCanPlay);
+      audio.addEventListener('play', handlePlay);
+      audio.addEventListener('pause', handlePause);
       audio.addEventListener('ended', handleEnded);
       audio.addEventListener('error', handleError);
-      audio.addEventListener('play', () => setIsPlaying(true));
-      audio.addEventListener('pause', () => setIsPlaying(false));
       
-      console.log('Audio element initialized');
-    }
-    
-    // Cleanup on unmount
-    return () => {
-      if (audioRef.current) {
-        const audio = audioRef.current;
-        audio.pause();
-        audio.src = '';
-        
+      // Set initial volume and playback rate
+      audio.volume = volume;
+      audio.playbackRate = playbackRate;
+      
+      return () => {
+        // Cleanup event listeners
         audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
         audio.removeEventListener('timeupdate', handleTimeUpdate);
+        audio.removeEventListener('canplay', handleCanPlay);
+        audio.removeEventListener('play', handlePlay);
+        audio.removeEventListener('pause', handlePause);
         audio.removeEventListener('ended', handleEnded);
         audio.removeEventListener('error', handleError);
-        
-        clearSleepTimer();
-        clearProgressSaveInterval();
-      }
-    };
+      };
+    }
   }, []);
-  
-  // Apply volume and playback rate when settings change
+
+  // Update audio volume when state changes
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
+    }
+  }, [volume, isMuted]);
+
+  // Update audio playback rate when state changes
+  useEffect(() => {
+    if (audioRef.current) {
       audioRef.current.playbackRate = playbackRate;
     }
-  }, [volume, isMuted, playbackRate]);
-  
-  // Audio event handlers
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      const newDuration = audioRef.current.duration;
-      setDuration(newDuration);
-      console.log('Audio metadata loaded, duration:', newDuration);
-      
-      // Restore saved progress if available
-      if (currentTrack) {
-        const saved = trackProgress[currentTrack.id];
-        if (saved && saved.position > 0 && saved.position < newDuration - 10) {
-          audioRef.current.currentTime = saved.position;
-          setCurrentTime(saved.position);
-          setProgress((saved.position / newDuration) * 100);
-          
-          console.log('Resuming from saved position:', saved.position);
-          
-          // Notify user about resumed playback
-          toast({
-            title: "Resuming playback",
-            description: `Continuing from ${formatTime(saved.position)}`,
-            duration: 3000,
-          });
-        }
-      }
-    }
-  };
-  
-  const handleTimeUpdate = () => {
-    if (audioRef.current && duration > 0) {
-      const time = audioRef.current.currentTime;
-      const progressPercent = (time / duration) * 100;
-      
-      setCurrentTime(time);
-      setProgress(progressPercent);
-      
-      // If this is premium content and user is not premium, check for preview limit
-      if (currentTrack?.isPremium && !isPremiumUser()) {
-        const previewLimit = 120; // 2 minute preview
-        if (time >= previewLimit) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-          
-          // Show upgrade prompt
-          toast({
-            title: "Preview ended",
-            description: "Upgrade to premium to listen to the full audio tour",
-            duration: 5000,
-            action: (
-              <div className="flex items-center" onClick={() => console.log("Navigate to upgrade page")}>
-                Upgrade
-              </div>
-            )
-          });
-        }
-      }
-    }
-  };
-  
-  const handleEnded = () => {
-    setIsPlaying(false);
-    console.log('Audio playback ended');
+  }, [playbackRate]);
+
+  // Calculate progress
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  // Play audio function
+  const playAudio = useCallback((track: AudioTrack) => {
+    console.log('AudioContext: Playing track:', track.title);
     
-    // Mark track as completed
-    if (currentTrack) {
-      updateTrackProgress(currentTrack.id, audioRef.current?.duration || 0, true);
-      
-      // Update tour progress if applicable
-      if (currentTrack.tourId) {
-        updateTourProgress(currentTrack.tourId, currentTrack.id, audioRef.current?.duration || 0);
-      }
-      
-      // Auto-play next track if enabled and queue has tracks
-      if (playbackSettings.autoplay && queue.length > 0) {
-        const nextTrack = queue[0];
-        const newQueue = queue.slice(1);
-        
-        // Add current track to history
-        setPlaybackHistory(prev => [currentTrack, ...prev.slice(0, 19)]);
-        
-        // Play next track
-        setQueue(newQueue);
-        playAudio(nextTrack, true);
-      }
+    if (!audioRef.current) {
+      console.error('AudioContext: Audio element not initialized');
+      return;
     }
-  };
-  
-  const handleError = (e: Event) => {
-    console.error("Audio playback error:", e);
-    setIsPlaying(false);
+
+    // Set the new track
+    setCurrentTrack(track);
     
-    toast({
-      title: "Playback error",
-      description: "There was an error playing this audio. Please try again.",
-      variant: "destructive",
+    // Load the audio source
+    audioRef.current.src = track.url;
+    audioRef.current.load();
+    
+    // Reset current time
+    setCurrentTime(0);
+    
+    // Add to history if not already there
+    setPlaybackHistory(prev => {
+      const filtered = prev.filter(t => t.id !== track.id);
+      return [track, ...filtered].slice(0, 20); // Keep last 20 tracks
     });
-  };
-  
-  // Timer and interval management
-  const startProgressSaveInterval = () => {
-    clearProgressSaveInterval();
     
-    // Save progress every 5 seconds during playback
-    progressSaveIntervalRef.current = setInterval(() => {
-      if (isPlaying && currentTrack && audioRef.current) {
-        updateTrackProgress(currentTrack.id, audioRef.current.currentTime, false);
-        
-        // Update tour progress if applicable
-        if (currentTrack.tourId) {
-          updateTourProgress(currentTrack.tourId, currentTrack.id, audioRef.current.currentTime);
-        }
+    // Show mini player
+    setIsMiniPlayerActive(true);
+    
+    // Play when ready
+    const playWhenReady = () => {
+      if (audioRef.current) {
+        audioRef.current.play()
+          .then(() => {
+            console.log('AudioContext: Playback started successfully');
+            setIsPlaying(true);
+          })
+          .catch((error) => {
+            console.error('AudioContext: Playback failed:', error);
+            setIsPlaying(false);
+            toast({
+              title: 'Playback Error',
+              description: 'Unable to start playback. Please try again.',
+              variant: 'destructive',
+            });
+          });
       }
-    }, 5000);
-  };
-  
-  const clearProgressSaveInterval = () => {
-    if (progressSaveIntervalRef.current) {
-      clearInterval(progressSaveIntervalRef.current);
-      progressSaveIntervalRef.current = null;
-    }
-  };
-  
-  // Progress tracking functions
-  const updateTrackProgress = (trackId: string, position: number, completed: boolean) => {
-    // Get current track progress
-    const currentProgress = {...trackProgress};
-    
-    // Update the specific track
-    currentProgress[trackId] = {
-      position,
-      completed,
-      lastPlayed: Date.now()
     };
     
-    // Set the updated progress
-    setTrackProgress(currentProgress);
-  };
-  
-  const updateTourProgress = (tourId: string, segmentId: string, currentPosition: number) => {
-    // Get current tour progress
-    const currentTourProgress = {...tourProgress};
-    
-    // Get existing tour data or create a new one
-    const tourData = currentTourProgress[tourId] || {
-      lastSegmentId: segmentId,
-      completedSegments: [],
-      totalDuration: 0,
-      listenedDuration: 0
-    };
-    
-    // Calculate duration listened
-    let listenedDuration = tourData.listenedDuration;
-    if (currentTrack?.duration) {
-      // If we have track duration, use it to calculate listened duration more accurately
-      listenedDuration = Math.min(currentPosition, currentTrack.duration);
+    // Wait for the audio to be ready
+    if (audioRef.current.readyState >= 2) {
+      playWhenReady();
     } else {
-      // Otherwise just use the current position
-      listenedDuration = currentPosition;
+      audioRef.current.addEventListener('canplay', playWhenReady, { once: true });
     }
+  }, []);
+
+  // Toggle play/pause
+  const togglePlayPause = useCallback(() => {
+    console.log('AudioContext: Toggle play/pause, current state:', isPlaying);
     
-    // Update completed segments
-    let completedSegments = [...tourData.completedSegments];
-    if (!completedSegments.includes(segmentId) && currentPosition >= (currentTrack?.duration || 0) * 0.9) {
-      completedSegments.push(segmentId);
+    if (!audioRef.current || !currentTrack) {
+      console.log('AudioContext: No audio element or current track');
+      return;
     }
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play()
+        .then(() => {
+          console.log('AudioContext: Resume playback successful');
+        })
+        .catch((error) => {
+          console.error('AudioContext: Resume playback failed:', error);
+          toast({
+            title: 'Playback Error',
+            description: 'Unable to resume playback. Please try again.',
+            variant: 'destructive',
+          });
+        });
+    }
+  }, [isPlaying, currentTrack]);
+
+  // Seek audio
+  const seekAudio = useCallback((time: number) => {
+    console.log('AudioContext: Seeking to time:', time);
     
-    // Update the tour data
-    currentTourProgress[tourId] = {
-      lastSegmentId: segmentId,
-      completedSegments,
-      totalDuration: tourData.totalDuration, // This would be updated elsewhere with tour metadata
-      listenedDuration
-    };
+    if (!audioRef.current) {
+      console.log('AudioContext: No audio element for seeking');
+      return;
+    }
+
+    audioRef.current.currentTime = time;
+    setCurrentTime(time);
+  }, []);
+
+  // Set volume
+  const setVolume = useCallback((newVolume: number) => {
+    console.log('AudioContext: Setting volume to:', newVolume);
+    setVolumeState(newVolume);
+    if (audioRef.current) {
+      audioRef.current.volume = isMuted ? 0 : newVolume;
+    }
+  }, [isMuted]);
+
+  // Toggle mute
+  const toggleMute = useCallback(() => {
+    console.log('AudioContext: Toggling mute, current state:', isMuted);
+    setIsMuted(!isMuted);
+  }, [isMuted]);
+
+  // Skip forward
+  const skipForward = useCallback((seconds: number = 10) => {
+    console.log('AudioContext: Skipping forward by:', seconds, 'seconds');
     
-    // Set the updated progress
-    setTourProgress(currentTourProgress);
-  };
-  
+    if (!audioRef.current) return;
+    
+    const newTime = Math.min(audioRef.current.currentTime + seconds, duration);
+    seekAudio(newTime);
+  }, [duration, seekAudio]);
+
+  // Skip backward
+  const skipBackward = useCallback((seconds: number = 10) => {
+    console.log('AudioContext: Skipping backward by:', seconds, 'seconds');
+    
+    if (!audioRef.current) return;
+    
+    const newTime = Math.max(audioRef.current.currentTime - seconds, 0);
+    seekAudio(newTime);
+  }, [seekAudio]);
+
+  // Play next track in queue
+  const playNext = useCallback(() => {
+    console.log('AudioContext: Playing next track, queue length:', queue.length);
+    
+    if (queue.length > 0) {
+      const nextTrack = queue[0];
+      setQueue(prev => prev.slice(1));
+      playAudio(nextTrack);
+    }
+  }, [queue, playAudio]);
+
+  // Play previous track
+  const playPrevious = useCallback(() => {
+    console.log('AudioContext: Playing previous track');
+    
+    if (playbackHistory.length > 1) {
+      const previousTrack = playbackHistory[1];
+      playAudio(previousTrack);
+    }
+  }, [playbackHistory, playAudio]);
+
+  // Set playback rate
+  const setPlaybackRate = useCallback((rate: number) => {
+    console.log('AudioContext: Setting playback rate to:', rate);
+    setPlaybackRateState(rate);
+  }, []);
+
+  // Queue management
+  const addToQueue = useCallback((track: AudioTrack) => {
+    setQueue(prev => [...prev, track]);
+  }, []);
+
+  const removeFromQueue = useCallback((trackId: string) => {
+    setQueue(prev => prev.filter(track => track.id !== trackId));
+  }, []);
+
+  const clearQueue = useCallback(() => {
+    setQueue([]);
+  }, []);
+
   // Sleep timer functions
-  const startSleepTimer = (minutes: number) => {
-    clearSleepTimer();
+  const startSleepTimer = useCallback((minutes: number) => {
+    console.log('AudioContext: Starting sleep timer for:', minutes, 'minutes');
     
     setSleepTimerActive(true);
-    setSleepTimerRemaining(minutes * 60); // convert to seconds
+    setSleepTimerRemaining(minutes * 60);
     
-    const endTime = Date.now() + minutes * 60 * 1000;
+    sleepTimerRef.current = setInterval(() => {
+      setSleepTimerRemaining(prev => {
+        if (prev === null || prev <= 1) {
+          // Timer finished
+          setSleepTimerActive(false);
+          if (audioRef.current) {
+            audioRef.current.pause();
+          }
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }, []);
+
+  const cancelSleepTimer = useCallback(() => {
+    console.log('AudioContext: Cancelling sleep timer');
     
-    // Update remaining time display
-    const updateTimerDisplay = () => {
-      const remaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
-      setSleepTimerRemaining(remaining);
-      
-      if (remaining <= 0) {
-        pauseAudio();
-        setSleepTimerActive(false);
-        setSleepTimerRemaining(null);
-        return;
-      }
-      
-      sleepTimerRef.current = setTimeout(updateTimerDisplay, 1000);
-    };
-    
-    sleepTimerRef.current = setTimeout(updateTimerDisplay, 1000);
-    
-    // Update settings
-    const updatedSettings: PlaybackSettings = {
-      ...playbackSettings,
-      sleepTimerMinutes: minutes
-    };
-    setPlaybackSettings(updatedSettings);
-    
-    toast({
-      title: "Sleep timer started",
-      description: `Playback will stop in ${minutes} minute${minutes !== 1 ? 's' : ''}`,
-    });
-  };
-  
-  const cancelSleepTimer = () => {
-    clearSleepTimer();
     setSleepTimerActive(false);
     setSleepTimerRemaining(null);
     
-    // Update settings
-    const updatedSettings: PlaybackSettings = {
-      ...playbackSettings,
-      sleepTimerMinutes: null
-    };
-    setPlaybackSettings(updatedSettings);
-    
-    toast({
-      title: "Sleep timer cancelled",
-    });
-  };
-  
-  const clearSleepTimer = () => {
     if (sleepTimerRef.current) {
-      clearTimeout(sleepTimerRef.current);
+      clearInterval(sleepTimerRef.current);
       sleepTimerRef.current = null;
     }
-  };
-  
-  // Playback control functions
-  const playAudio = (track: AudioTrack, autoplay = true) => {
-    if (!audioRef.current) {
-      console.error('Audio element not initialized');
-      return;
-    }
-    
-    console.log('Playing audio:', track);
-    
-    const isSameTrack = currentTrack?.id === track.id && currentTrack?.url === track.url;
-    
-    // If trying to play a premium track and user is not premium, check for preview
-    if (track.isPremium && !isPremiumUser()) {
-      toast({
-        title: "Preview mode",
-        description: "You're listening to a 2-minute preview. Upgrade for full access.",
-        duration: 4000,
-      });
-    }
-    
-    // Set up new audio source if different track
-    if (!isSameTrack) {
-      // If already playing something else, add current track to history
-      if (currentTrack && isPlaying) {
-        setPlaybackHistory(prev => [currentTrack, ...prev.slice(0, 19)]);
-      }
-      
-      // Update audio source
-      audioRef.current.src = track.url;
-      audioRef.current.load();
-      
-      // Update state
-      setCurrentTrack(track);
-      setDuration(0);
-      setCurrentTime(0);
-      setProgress(0);
-      
-      console.log('Set new track source:', track.url);
-    }
-    
-    // Play audio and update state
-    if (autoplay) {
-      audioRef.current.play()
-        .then(() => {
-          console.log('Audio playback started');
-          setIsPlaying(true);
-          startProgressSaveInterval();
-          // Activate mini player if navigating away during playback
-          setIsMiniPlayerActive(true);
-        })
-        .catch(error => {
-          console.error("Error playing audio:", error);
-          setIsPlaying(false);
-          
-          toast({
-            title: "Playback error",
-            description: "Unable to play audio. Please try again.",
-            variant: "destructive",
-          });
-        });
-    } else {
-      setCurrentTrack(track);
-      setIsMiniPlayerActive(true);
-    }
-  };
-  
-  const playAudioWithUrl = (url: string, title = "Audio track", tourId?: string, isPremium = false) => {
-    const track: AudioTrack = {
-      id: `track-${Date.now()}`,
-      url,
-      title,
-      tourId,
-      isPremium
-    };
-    
-    playAudio(track);
-  };
-  
-  const pauseAudio = () => {
-    if (audioRef.current && isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-      clearProgressSaveInterval();
-      
-      console.log('Audio paused');
-      
-      // Save progress on pause
-      if (currentTrack && audioRef.current) {
-        updateTrackProgress(currentTrack.id, audioRef.current.currentTime, false);
-      }
-    }
-  };
-  
-  const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setProgress(0);
-      clearProgressSaveInterval();
-      
-      console.log('Audio stopped');
-      
-      // Reset current track but keep it in history
-      if (currentTrack) {
-        setPlaybackHistory(prev => [currentTrack, ...prev.filter(t => t.id !== currentTrack.id).slice(0, 19)]);
-        setCurrentTrack(null);
-      }
-    }
-  };
-  
-  const seekAudio = (time: number) => {
-    if (audioRef.current && duration > 0) {
-      // If time is a percentage, convert to actual time
-      let newTime = time;
-      if (time <= 100) {
-        newTime = (time / 100) * duration;
-      }
-      
-      console.log('Seeking to:', newTime);
-      
-      // If seeking in a premium track as non-premium user, check if beyond preview limit
-      if (currentTrack?.isPremium && !isPremiumUser() && newTime > 120) {
-        // Limit to 2 minutes
-        newTime = 120;
-        
-        if (isPlaying) {
-          audioRef.current.pause();
-          setIsPlaying(false);
-        }
-        
-        toast({
-          title: "Preview limit reached",
-          description: "Upgrade to premium to listen to the full audio tour",
-          duration: 5000,
-          action: (
-            <div className="flex items-center" onClick={() => console.log("Navigate to upgrade page")}>
-              Upgrade
-            </div>
-          )
-        });
-      }
-      
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      setProgress((newTime / duration) * 100);
-    }
-  };
-  
-  const togglePlayPause = () => {
-    console.log('Toggle play/pause. Current state:', { isPlaying, currentTrack });
-    
-    if (isPlaying) {
-      pauseAudio();
-    } else if (currentTrack) {
-      playAudio(currentTrack);
-    } else {
-      console.log('No current track to play');
-    }
-  };
-  
-  const setVolume = (newVolume: number) => {
-    const clampedVolume = Math.max(0, Math.min(1, newVolume));
-    
-    if (audioRef.current) {
-      audioRef.current.volume = clampedVolume;
-    }
-    
-    const updatedSettings: PlaybackSettings = {
-      ...playbackSettings,
-      volume: clampedVolume,
-      isMuted: clampedVolume === 0
-    };
-    setPlaybackSettings(updatedSettings);
-  };
-  
-  const toggleMute = () => {
-    const newMuteState = !isMuted;
-    
-    if (audioRef.current) {
-      audioRef.current.volume = newMuteState ? 0 : volume;
-    }
-    
-    const updatedSettings: PlaybackSettings = {
-      ...playbackSettings,
-      isMuted: newMuteState
-    };
-    setPlaybackSettings(updatedSettings);
-  };
-  
-  const setPlaybackRate = (rate: number) => {
-    const validRates = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-    const newRate = validRates.includes(rate) ? rate : 1;
-    
-    if (audioRef.current) {
-      audioRef.current.playbackRate = newRate;
-    }
-    
-    const updatedSettings: PlaybackSettings = {
-      ...playbackSettings,
-      playbackRate: newRate
-    };
-    setPlaybackSettings(updatedSettings);
-    
-    toast({
-      title: `Playback speed: ${newRate}x`,
-      duration: 1500,
-    });
-  };
-  
-  const skipForward = (seconds = 10) => {
-    if (audioRef.current && currentTrack && duration > 0) {
-      const newTime = Math.min(duration, audioRef.current.currentTime + seconds);
-      
-      console.log('Skipping forward to:', newTime);
-      
-      // Check premium limits
-      if (currentTrack.isPremium && !isPremiumUser() && newTime > 120) {
-        // Show upgrade message
-        toast({
-          title: "Preview limit reached",
-          description: "Upgrade to premium to listen to the full audio tour",
-        });
-        return;
-      }
-      
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      setProgress((newTime / duration) * 100);
-    }
-  };
-  
-  const skipBackward = (seconds = 10) => {
-    if (audioRef.current && duration > 0) {
-      const newTime = Math.max(0, audioRef.current.currentTime - seconds);
-      
-      console.log('Skipping backward to:', newTime);
-      
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      setProgress((newTime / duration) * 100);
-    }
-  };
-  
-  const playNext = () => {
-    if (queue.length > 0) {
-      const nextTrack = queue[0];
-      const newQueue = queue.slice(1);
-      
-      // Add current track to history
-      if (currentTrack) {
-        setPlaybackHistory(prev => [currentTrack, ...prev.slice(0, 19)]);
-      }
-      
-      // Play next track
-      setQueue(newQueue);
-      playAudio(nextTrack, true);
-    } else {
-      toast({
-        title: "No more tracks",
-        description: "The queue is empty",
-      });
-    }
-  };
-  
-  const playPrevious = () => {
-    if (playbackHistory.length > 0) {
-      const prevTrack = playbackHistory[0];
-      const newHistory = playbackHistory.slice(1);
-      
-      // Add current track to queue if playing
-      if (currentTrack) {
-        setQueue(prev => [currentTrack, ...prev]);
-      }
-      
-      // Play previous track
-      setPlaybackHistory(newHistory);
-      playAudio(prevTrack, true);
-    } else {
-      // Restart current track if no history
-      if (audioRef.current) {
-        audioRef.current.currentTime = 0;
-        setCurrentTime(0);
-        setProgress(0);
-      }
-    }
-  };
-  
-  // Queue management
-  const addToQueue = (track: AudioTrack) => {
-    setQueue(prev => [...prev, track]);
-    
-    toast({
-      title: "Added to queue",
-      description: track.title,
-      duration: 2000,
-    });
-  };
-  
-  const removeFromQueue = (trackId: string) => {
-    setQueue(prev => prev.filter(track => track.id !== trackId));
-  };
-  
-  const clearQueue = () => {
-    setQueue([]);
-  };
-  
-  // Mini player controls
-  const showMiniPlayer = () => {
+  }, []);
+
+  // UI controls
+  const showMiniPlayer = useCallback(() => {
     setIsMiniPlayerActive(true);
-  };
-  
-  const hideMiniPlayer = () => {
+  }, []);
+
+  const hideMiniPlayer = useCallback(() => {
     setIsMiniPlayerActive(false);
-  };
-  
-  // Settings management
-  const updatePlaybackSettings = (settings: Partial<PlaybackSettings>) => {
-    const updatedSettings: PlaybackSettings = {
-      ...playbackSettings,
-      ...settings
+  }, []);
+
+  // Settings
+  const updatePlaybackSettings = useCallback((settings: Partial<PlaybackSettings>) => {
+    setPlaybackSettings(prev => ({ ...prev, ...settings }));
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (sleepTimerRef.current) {
+        clearInterval(sleepTimerRef.current);
+      }
+      if (progressUpdateRef.current) {
+        clearInterval(progressUpdateRef.current);
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
     };
-    setPlaybackSettings(updatedSettings);
-  };
-  
-  // Helper functions
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
-  
-  const isPremiumUser = () => {
-    // This would typically check user subscription status from your auth context
-    // For now we'll return false as a placeholder
-    return false;
-  };
-  
-  // Context value
-  const value: AudioContextType = {
-    isPlaying,
+  }, []);
+
+  const contextValue: AudioContextType = {
+    // Audio state
     currentTrack,
-    currentTime,
+    isPlaying,
     duration,
+    currentTime,
     progress,
     volume,
     isMuted,
     playbackRate,
+    
+    // Queue and history
     queue,
     playbackHistory,
-    isMiniPlayerActive,
+    
+    // Timer state
     sleepTimerActive,
     sleepTimerRemaining,
-    trackProgress,
-    tourProgress,
+    
+    // UI state
+    isMiniPlayerActive,
+    
+    // Settings
     playbackSettings,
     
-    // Playback controls
+    // Progress tracking
+    tourProgress,
+    trackProgress,
+    
+    // Audio controls
     playAudio,
-    playAudioWithUrl,
-    pauseAudio,
-    stopAudio,
-    seekAudio,
     togglePlayPause,
+    seekAudio,
     setVolume,
     toggleMute,
-    setPlaybackRate,
     skipForward,
     skipBackward,
     playNext,
     playPrevious,
+    setPlaybackRate,
     
     // Queue management
     addToQueue,
     removeFromQueue,
     clearQueue,
     
-    // Sleep timer
+    // Timer controls
     startSleepTimer,
     cancelSleepTimer,
     
-    // Mini player
+    // UI controls
     showMiniPlayer,
     hideMiniPlayer,
     
     // Settings
-    updatePlaybackSettings
+    updatePlaybackSettings,
   };
-  
+
   return (
-    <AudioContext.Provider value={value}>
+    <AudioContext.Provider value={contextValue}>
       {children}
     </AudioContext.Provider>
   );
-}
-
-export const useAudio = () => {
-  const context = useContext(AudioContext);
-  if (context === undefined) {
-    throw new Error('useAudio must be used within an AudioProvider');
-  }
-  return context;
 };
+
+export default AudioProvider;

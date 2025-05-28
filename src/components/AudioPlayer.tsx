@@ -84,10 +84,25 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
   const [timerMinutes, setTimerMinutes] = useState(15);
   const [showSettings, setShowSettings] = useState(false);
   
+  // Debug logging for audio player state
+  useEffect(() => {
+    console.log('AudioPlayer: State update:', {
+      hasCurrentTrack: !!currentTrack,
+      currentTrackTitle: currentTrack?.title,
+      isPlaying,
+      duration,
+      currentTime,
+      progress,
+      isMiniPlayerActive
+    });
+  }, [currentTrack, isPlaying, duration, currentTime, progress, isMiniPlayerActive]);
+  
   // Handle slider change for seeking
   const handleSeek = (value: number[]) => {
+    console.log('AudioPlayer: Seeking to:', value[0], '%');
     if (duration > 0) {
       const newTime = (value[0] / 100) * duration;
+      console.log('AudioPlayer: Calculated seek time:', newTime, 'seconds');
       seekAudio(newTime);
     }
   };
@@ -118,21 +133,9 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
     });
   };
 
-  // Log current state for debugging
-  useEffect(() => {
-    console.log('AudioPlayer state:', {
-      currentTrack,
-      isPlaying,
-      duration,
-      currentTime,
-      progress,
-      isMiniPlayerActive
-    });
-  }, [currentTrack, isPlaying, duration, currentTime, progress, isMiniPlayerActive]);
-
   // If there's no current track playing, don't render anything
   if (!currentTrack && !isMiniPlayerActive) {
-    console.log('AudioPlayer: No current track, not rendering');
+    console.log('AudioPlayer: No current track and mini player not active, not rendering');
     return null;
   }
   
@@ -150,6 +153,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             className="h-8 w-8 rounded-full bg-desert/80 text-white hover:bg-desert-dark shrink-0"
             onClick={(e) => {
               e.stopPropagation();
+              console.log('Mini player: Play/pause clicked');
               togglePlayPause();
             }}
           >
@@ -187,12 +191,17 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
   return (
     <div className={`fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100 px-4 py-3 z-40 ${className}`}>
       {/* Progress bar - full width above controls */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100 cursor-pointer" onClick={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const percentage = (clickX / rect.width) * 100;
-        handleSeek([percentage]);
-      }}>
+      <div 
+        className="absolute top-0 left-0 right-0 h-1 bg-gray-100 cursor-pointer" 
+        onClick={(e) => {
+          console.log('Progress bar clicked');
+          const rect = e.currentTarget.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const percentage = (clickX / rect.width) * 100;
+          console.log('Click percentage:', percentage);
+          handleSeek([percentage]);
+        }}
+      >
         <div 
           className="h-full bg-desert transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
@@ -215,7 +224,10 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
               variant="ghost" 
               size="icon"
               className="text-gray-600 hover:text-desert"
-              onClick={playPrevious}
+              onClick={() => {
+                console.log('Previous track clicked');
+                playPrevious();
+              }}
             >
               <SkipBack className="h-5 w-5" />
             </Button>
@@ -225,7 +237,10 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             variant="ghost" 
             size="icon" 
             className="h-10 w-10 rounded-full bg-desert text-white hover:bg-desert-dark"
-            onClick={togglePlayPause}
+            onClick={() => {
+              console.log('Main play/pause clicked, current state:', isPlaying);
+              togglePlayPause();
+            }}
           >
             {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
           </Button>
@@ -235,7 +250,10 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
               variant="ghost" 
               size="icon"
               className="text-gray-600 hover:text-desert"
-              onClick={playNext}
+              onClick={() => {
+                console.log('Next track clicked');
+                playNext();
+              }}
             >
               <SkipForward className="h-5 w-5" />
             </Button>
@@ -246,7 +264,10 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-1 text-xs"
-              onClick={() => skipBackward(10)}
+              onClick={() => {
+                console.log('Skip backward 10s clicked');
+                skipBackward(10);
+              }}
             >
               -10s
             </Button>
@@ -254,7 +275,10 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
               variant="ghost"
               size="sm"
               className="h-8 w-8 p-1 text-xs"
-              onClick={() => skipForward(10)}
+              onClick={() => {
+                console.log('Skip forward 10s clicked');
+                skipForward(10);
+              }}
             >
               +10s
             </Button>
