@@ -12,6 +12,7 @@ interface Props {
 interface State {
   hasError: boolean;
   error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -25,10 +26,20 @@ class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    
+    // Log specific error types for better debugging
+    if (error.message.includes('Maximum update depth exceeded')) {
+      console.error('Infinite loop detected in component rendering');
+    }
+    
+    this.setState({
+      error,
+      errorInfo
+    });
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   private handleReload = () => {
@@ -41,13 +52,18 @@ class ErrorBoundary extends Component<Props, State> {
         return this.props.fallback;
       }
 
+      const isInfiniteLoop = this.state.error?.message.includes('Maximum update depth exceeded');
+
       return (
         <div className="min-h-screen flex items-center justify-center p-4 bg-sand-light">
           <div className="max-w-md w-full">
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Something went wrong. Please try refreshing the page or contact support if the problem persists.
+                {isInfiniteLoop 
+                  ? "A component is stuck in an infinite loop. Please reload the page to continue."
+                  : "Something went wrong. Please try refreshing the page or contact support if the problem persists."
+                }
               </AlertDescription>
             </Alert>
             
@@ -56,9 +72,10 @@ class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleReset} 
                 className="w-full"
                 variant="outline"
+                disabled={isInfiniteLoop}
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Try Again
+                {isInfiniteLoop ? 'Reset Disabled' : 'Try Again'}
               </Button>
               
               <Button 
@@ -73,6 +90,9 @@ class ErrorBoundary extends Component<Props, State> {
               <details className="mt-4 p-2 bg-gray-100 rounded text-xs">
                 <summary className="cursor-pointer">Error Details</summary>
                 <pre className="mt-2 whitespace-pre-wrap">{this.state.error.stack}</pre>
+                {this.state.errorInfo && (
+                  <pre className="mt-2 whitespace-pre-wrap">{this.state.errorInfo.componentStack}</pre>
+                )}
               </details>
             )}
           </div>
