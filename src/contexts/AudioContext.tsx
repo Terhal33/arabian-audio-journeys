@@ -62,7 +62,7 @@ interface AudioContextType {
   skipBackward: (seconds?: number) => void;
   playNext: () => void;
   playPrevious: () => void;
-  setPlaybackRate: () => void;
+  setPlaybackRate: (rate: number) => void;
   
   // Queue management
   addToQueue: (track: AudioTrack) => void;
