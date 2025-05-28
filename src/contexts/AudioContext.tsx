@@ -158,6 +158,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       audio.addEventListener('error', handleError);
       audio.addEventListener('play', () => setIsPlaying(true));
       audio.addEventListener('pause', () => setIsPlaying(false));
+      
+      console.log('Audio element initialized');
     }
     
     // Cleanup on unmount
@@ -189,15 +191,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   // Audio event handlers
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
-      setDuration(audioRef.current.duration);
+      const newDuration = audioRef.current.duration;
+      setDuration(newDuration);
+      console.log('Audio metadata loaded, duration:', newDuration);
       
       // Restore saved progress if available
       if (currentTrack) {
         const saved = trackProgress[currentTrack.id];
-        if (saved && saved.position > 0 && saved.position < audioRef.current.duration - 10) {
+        if (saved && saved.position > 0 && saved.position < newDuration - 10) {
           audioRef.current.currentTime = saved.position;
           setCurrentTime(saved.position);
-          setProgress((saved.position / audioRef.current.duration) * 100);
+          setProgress((saved.position / newDuration) * 100);
+          
+          console.log('Resuming from saved position:', saved.position);
           
           // Notify user about resumed playback
           toast({
@@ -211,14 +217,17 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
   
   const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      setCurrentTime(audioRef.current.currentTime);
-      setProgress((audioRef.current.currentTime / audioRef.current.duration) * 100);
+    if (audioRef.current && duration > 0) {
+      const time = audioRef.current.currentTime;
+      const progressPercent = (time / duration) * 100;
+      
+      setCurrentTime(time);
+      setProgress(progressPercent);
       
       // If this is premium content and user is not premium, check for preview limit
       if (currentTrack?.isPremium && !isPremiumUser()) {
         const previewLimit = 120; // 2 minute preview
-        if (audioRef.current.currentTime >= previewLimit) {
+        if (time >= previewLimit) {
           audioRef.current.pause();
           setIsPlaying(false);
           
@@ -240,6 +249,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   const handleEnded = () => {
     setIsPlaying(false);
+    console.log('Audio playback ended');
     
     // Mark track as completed
     if (currentTrack) {
@@ -256,9 +266,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
         const newQueue = queue.slice(1);
         
         // Add current track to history
-        if (currentTrack) {
-          setPlaybackHistory(prev => [currentTrack, ...prev.slice(0, 19)]);
-        }
+        setPlaybackHistory(prev => [currentTrack, ...prev.slice(0, 19)]);
         
         // Play next track
         setQueue(newQueue);
@@ -267,7 +275,7 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     }
   };
   
-  const handleError = (e: ErrorEvent) => {
+  const handleError = (e: Event) => {
     console.error("Audio playback error:", e);
     setIsPlaying(false);
     
@@ -423,7 +431,12 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   
   // Playback control functions
   const playAudio = (track: AudioTrack, autoplay = true) => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      console.error('Audio element not initialized');
+      return;
+    }
+    
+    console.log('Playing audio:', track);
     
     const isSameTrack = currentTrack?.id === track.id && currentTrack?.url === track.url;
     
@@ -452,12 +465,15 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setDuration(0);
       setCurrentTime(0);
       setProgress(0);
+      
+      console.log('Set new track source:', track.url);
     }
     
     // Play audio and update state
     if (autoplay) {
       audioRef.current.play()
         .then(() => {
+          console.log('Audio playback started');
           setIsPlaying(true);
           startProgressSaveInterval();
           // Activate mini player if navigating away during playback
@@ -473,6 +489,9 @@ export function AudioProvider({ children }: { children: ReactNode }) {
             variant: "destructive",
           });
         });
+    } else {
+      setCurrentTrack(track);
+      setIsMiniPlayerActive(true);
     }
   };
   
@@ -494,6 +513,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setIsPlaying(false);
       clearProgressSaveInterval();
       
+      console.log('Audio paused');
+      
       // Save progress on pause
       if (currentTrack && audioRef.current) {
         updateTrackProgress(currentTrack.id, audioRef.current.currentTime, false);
@@ -510,6 +531,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       setProgress(0);
       clearProgressSaveInterval();
       
+      console.log('Audio stopped');
+      
       // Reset current track but keep it in history
       if (currentTrack) {
         setPlaybackHistory(prev => [currentTrack, ...prev.filter(t => t.id !== currentTrack.id).slice(0, 19)]);
@@ -519,18 +542,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
   
   const seekAudio = (time: number) => {
-    if (audioRef.current) {
-      const newTime = (time / 100) * duration;
-      audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
-      setProgress(time);
+    if (audioRef.current && duration > 0) {
+      // If time is a percentage, convert to actual time
+      let newTime = time;
+      if (time <= 100) {
+        newTime = (time / 100) * duration;
+      }
+      
+      console.log('Seeking to:', newTime);
       
       // If seeking in a premium track as non-premium user, check if beyond preview limit
       if (currentTrack?.isPremium && !isPremiumUser() && newTime > 120) {
         // Limit to 2 minutes
-        audioRef.current.currentTime = 120;
-        setCurrentTime(120);
-        setProgress((120 / duration) * 100);
+        newTime = 120;
         
         if (isPlaying) {
           audioRef.current.pause();
@@ -548,14 +572,22 @@ export function AudioProvider({ children }: { children: ReactNode }) {
           )
         });
       }
+      
+      audioRef.current.currentTime = newTime;
+      setCurrentTime(newTime);
+      setProgress((newTime / duration) * 100);
     }
   };
   
   const togglePlayPause = () => {
+    console.log('Toggle play/pause. Current state:', { isPlaying, currentTrack });
+    
     if (isPlaying) {
       pauseAudio();
     } else if (currentTrack) {
       playAudio(currentTrack);
+    } else {
+      console.log('No current track to play');
     }
   };
   
@@ -609,8 +641,10 @@ export function AudioProvider({ children }: { children: ReactNode }) {
   };
   
   const skipForward = (seconds = 10) => {
-    if (audioRef.current && currentTrack) {
-      const newTime = Math.min(audioRef.current.duration, audioRef.current.currentTime + seconds);
+    if (audioRef.current && currentTrack && duration > 0) {
+      const newTime = Math.min(duration, audioRef.current.currentTime + seconds);
+      
+      console.log('Skipping forward to:', newTime);
       
       // Check premium limits
       if (currentTrack.isPremium && !isPremiumUser() && newTime > 120) {
@@ -624,16 +658,19 @@ export function AudioProvider({ children }: { children: ReactNode }) {
       
       audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
-      setProgress((newTime / audioRef.current.duration) * 100);
+      setProgress((newTime / duration) * 100);
     }
   };
   
   const skipBackward = (seconds = 10) => {
-    if (audioRef.current) {
+    if (audioRef.current && duration > 0) {
       const newTime = Math.max(0, audioRef.current.currentTime - seconds);
+      
+      console.log('Skipping backward to:', newTime);
+      
       audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
-      setProgress((newTime / audioRef.current.duration) * 100);
+      setProgress((newTime / duration) * 100);
     }
   };
   

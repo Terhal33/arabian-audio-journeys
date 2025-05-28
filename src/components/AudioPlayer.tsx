@@ -76,7 +76,8 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
     updatePlaybackSettings,
   } = useAudio();
   
-  const { isAuthenticated, isPremium } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+  const isPremium = user?.isPremium || false;
   
   const [isQueueOpen, setIsQueueOpen] = useState(false);
   const [showSleepTimer, setShowSleepTimer] = useState(false);
@@ -85,7 +86,10 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
   
   // Handle slider change for seeking
   const handleSeek = (value: number[]) => {
-    seekAudio(value[0]);
+    if (duration > 0) {
+      const newTime = (value[0] / 100) * duration;
+      seekAudio(newTime);
+    }
   };
 
   // Handle volume change
@@ -114,8 +118,21 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
     });
   };
 
+  // Log current state for debugging
+  useEffect(() => {
+    console.log('AudioPlayer state:', {
+      currentTrack,
+      isPlaying,
+      duration,
+      currentTime,
+      progress,
+      isMiniPlayerActive
+    });
+  }, [currentTrack, isPlaying, duration, currentTime, progress, isMiniPlayerActive]);
+
   // If there's no current track playing, don't render anything
   if (!currentTrack && !isMiniPlayerActive) {
+    console.log('AudioPlayer: No current track, not rendering');
     return null;
   }
   
@@ -143,7 +160,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             <p className="text-sm font-medium truncate">{currentTrack?.title}</p>
             <div className="h-1 bg-gray-200 rounded-full mt-1">
               <div 
-                className="h-full bg-desert rounded-full"
+                className="h-full bg-desert rounded-full transition-all duration-300"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -170,7 +187,12 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
   return (
     <div className={`fixed bottom-0 left-0 right-0 bg-white shadow-lg border-t border-gray-100 px-4 py-3 z-40 ${className}`}>
       {/* Progress bar - full width above controls */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gray-100 cursor-pointer" onClick={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const percentage = (clickX / rect.width) * 100;
+        handleSeek([percentage]);
+      }}>
         <div 
           className="h-full bg-desert transition-all duration-300 ease-out"
           style={{ width: `${progress}%` }}
@@ -223,7 +245,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-1"
+              className="h-8 w-8 p-1 text-xs"
               onClick={() => skipBackward(10)}
             >
               -10s
@@ -231,7 +253,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
             <Button
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-1"
+              className="h-8 w-8 p-1 text-xs"
               onClick={() => skipForward(10)}
             >
               +10s
@@ -243,7 +265,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
         <div className="flex-1 max-w-xl mx-4 hidden sm:block">
           <div className="flex flex-col space-y-1">
             <div className="flex justify-between items-center">
-              <p className="text-sm font-medium line-clamp-1">{currentTrack?.title}</p>
+              <p className="text-sm font-medium line-clamp-1">{currentTrack?.title || 'No track selected'}</p>
               <p className="text-xs text-muted-foreground">
                 {formatTime(currentTime)} / {formatTime(duration)}
               </p>
@@ -253,7 +275,7 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
               max={100}
               step={0.1}
               onValueChange={handleSeek}
-              className="h-1.5"
+              className="h-1.5 cursor-pointer"
             />
           </div>
         </div>
@@ -533,8 +555,22 @@ const AudioPlayer = ({ mini = false, className = '', onExpand }: AudioPlayerProp
         </div>
       </div>
       
-      {/* Remove this duplicated Queue sheet as it's causing issues */}
-      {/* The Sheet component is already defined above */}
+      {/* Mobile track info */}
+      <div className="sm:hidden mt-2">
+        <div className="flex justify-between items-center mb-1">
+          <p className="text-sm font-medium truncate">{currentTrack?.title || 'No track selected'}</p>
+          <p className="text-xs text-muted-foreground">
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </p>
+        </div>
+        <Slider
+          value={[progress]}
+          max={100}
+          step={0.1}
+          onValueChange={handleSeek}
+          className="h-1.5"
+        />
+      </div>
     </div>
   );
 };
