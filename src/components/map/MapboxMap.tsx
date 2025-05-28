@@ -8,9 +8,6 @@ import MapboxMarkers from './MapboxMarkers';
 import MapboxTourPaths from './MapboxTourPaths';
 import { useToast } from '@/hooks/use-toast';
 
-// Mapbox access token - in production, this should be in environment variables
-mapboxgl.accessToken = 'pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbTRtd21zNWowNG50MmtzZGF0dmdreGd5In0.DBTF7zfUDjyZ7EGHgmODRQ';
-
 interface MapboxMapProps {
   location: MapLocation;
   points?: any[];
@@ -21,6 +18,7 @@ interface MapboxMapProps {
   onRegionChange?: (region: any) => void;
   showUserLocation?: boolean;
   onMapLoad?: () => void;
+  mapboxToken?: string;
 }
 
 const MapboxMap: React.FC<MapboxMapProps> = ({
@@ -32,7 +30,8 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   onPinClick,
   onRegionChange,
   showUserLocation = true,
-  onMapLoad
+  onMapLoad,
+  mapboxToken
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -55,7 +54,12 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   useEffect(() => {
     if (!mapContainer.current || isInitializedRef.current) return;
 
+    // Use provided token or fallback to hardcoded one
+    const accessToken = mapboxToken || 'pk.eyJ1IjoibG92YWJsZSIsImEiOiJjbTRtd21zNWowNG50MmtzZGF0dmdreGd5In0.DBTF7zfUDjyZ7EGHgmODRQ';
+    
     try {
+      mapboxgl.accessToken = accessToken;
+      
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/outdoors-v12',
@@ -119,7 +123,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
         isInitializedRef.current = false;
       }
     };
-  }, []); // Empty dependency array - only run once
+  }, [mapboxToken]); // Add mapboxToken to dependencies
 
   // Update map center when location changes (but only if significantly different)
   useEffect(() => {
