@@ -1,95 +1,70 @@
 
-import { useEffect, useRef, useState } from 'react';
-
-interface Location {
-  lat: number;
-  lng: number;
-}
+import React from 'react';
+import { MapLocation } from '@/types/map';
+import { Tour } from '@/services/toursData';
+import InteractiveMap from './InteractiveMap';
+import MapCore from './map/MapCore';
 
 interface MapProps {
-  location: Location;
-  points?: Location[];
-  className?: string;
+  location: MapLocation;
+  points?: any[];
+  zoom?: number;
   interactive?: boolean;
-  onPinClick?: (location: Location, tour?: any) => void;
+  className?: string;
+  onPinClick?: (location: MapLocation, tour?: Tour) => void;
   onRegionChange?: (region: any) => void;
   showUserLocation?: boolean;
-  onLongPress?: (location: { lat: number; lng: number }) => void;
+  onLongPress?: (location: MapLocation) => void;
 }
 
-const Map = ({ 
-  location, 
-  points = [], 
-  className = '',
+const Map: React.FC<MapProps> = ({
+  location,
+  points = [],
+  zoom = 14,
   interactive = true,
+  className = 'h-64 w-full',
   onPinClick,
   onRegionChange,
   showUserLocation = true,
   onLongPress
-}: MapProps) => {
-  const mapRef = useRef<HTMLDivElement>(null);
-  const [mapLoaded, setMapLoaded] = useState(false);
+}) => {
+  // Convert tour locations to tour points for InteractiveMap
+  const tourPoints = points.map(point => ({
+    id: point.id,
+    coordinates: [point.lng, point.lat] as [number, number],
+    title: point.tour?.title || point.title || 'Unknown Location',
+    description: point.tour?.description || point.description || 'No description available',
+    audioUrl: point.tour?.audioUrl,
+    imageUrl: point.tour?.imageUrl,
+    category: point.type === 'historic' ? 'historical' as const :
+              point.type === 'cultural' ? 'cultural' as const :
+              point.type === 'nature' ? 'natural' as const :
+              'modern' as const,
+    duration: point.tour?.duration
+  }));
 
-  useEffect(() => {
-    // Simple map initialization without infinite loops
-    if (mapRef.current && !mapLoaded) {
-      console.log('Map: Initializing with location:', location);
-      setMapLoaded(true);
-    }
-  }, [location.lat, location.lng, mapLoaded]);
-
-  const handleClick = (e: React.MouseEvent) => {
-    if (!interactive || !onPinClick) return;
+  const handlePointSelect = (point: any) => {
+    // Convert back to the expected format for onPinClick
+    const mapLocation: MapLocation = {
+      lat: point.coordinates[1],
+      lng: point.coordinates[0]
+    };
     
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Simple click handling - you can enhance this
-    console.log('Map clicked at:', x, y);
-  };
-
-  const handleLongPress = (e: React.MouseEvent) => {
-    if (!interactive || !onLongPress) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Convert screen coordinates to lat/lng (simplified)
-    const lat = location.lat + (y - rect.height / 2) * 0.0001;
-    const lng = location.lng + (x - rect.width / 2) * 0.0001;
-    
-    onLongPress({ lat, lng });
+    // Find the original tour data
+    const originalPoint = points.find(p => p.id === point.id);
+    onPinClick?.(mapLocation, originalPoint?.tour);
   };
 
   return (
-    <div 
-      ref={mapRef}
-      className={`bg-gray-200 rounded-lg flex items-center justify-center cursor-pointer ${className}`}
-      onClick={handleClick}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        handleLongPress(e);
-      }}
-    >
-      <div className="text-center p-4">
-        <div className="text-gray-600 mb-2">📍 Map View</div>
-        <div className="text-sm text-gray-500">
-          Location: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-        </div>
-        {points.length > 0 && (
-          <div className="text-xs text-gray-400 mt-1">
-            {points.length} point{points.length !== 1 ? 's' : ''} of interest
-          </div>
-        )}
-        {interactive && (
-          <div className="text-xs text-gray-300 mt-2">
-            Right-click to add bookmark
-          </div>
-        )}
-      </div>
-    </div>
+    <InteractiveMap
+      tourPoints={tourPoints}
+      center={[location.lng, location.lat]}
+      zoom={zoom}
+      onPointSelect={handlePointSelect}
+      showAudioControls={true}
+      enableLocationTracking={showUserLocation}
+      className={className}
+    />
   );
 };
 
