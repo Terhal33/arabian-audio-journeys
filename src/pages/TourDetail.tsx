@@ -58,8 +58,7 @@ const TourDetail = () => {
   const [showExpandedPlayer, setShowExpandedPlayer] = useState(false);
   const [isReviewSheetOpen, setIsReviewSheetOpen] = useState(false);
   
-  const { isAuthenticated, user } = useAuth();
-  const isPremium = user?.isPremium || false;
+  const { isAuthenticated, user, isPremium } = useAuth();
   const { 
     playAudio, 
     currentTrack, 

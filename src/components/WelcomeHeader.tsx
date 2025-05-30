@@ -16,13 +16,21 @@ const WelcomeHeader = React.memo(({
   isLoading = false,
   className 
 }: WelcomeHeaderProps) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   
-  // Safely extract the first name without causing refreshes
+  // Safely extract the first name from profile or user metadata
   const userName = useMemo(() => {
-    if (!user || !user.name) return '';
-    return user.name.split(' ')[0];
-  }, [user?.name]);
+    if (profile?.full_name) {
+      return profile.full_name.split(' ')[0];
+    }
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name.split(' ')[0];
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return '';
+  }, [profile?.full_name, user?.user_metadata?.full_name, user?.email]);
 
   return (
     <div className={cn("mb-6", className)}>
