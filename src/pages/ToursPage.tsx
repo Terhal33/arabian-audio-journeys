@@ -3,9 +3,16 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Clock, Play } from 'lucide-react';
-import { tours, Tour } from '@/services/toursData';
+import { tours } from '@/services/toursData';
+import { useAppState } from '@/contexts/AppStateContext';
 
 const ToursPage: React.FC = () => {
+  const { navigateTo } = useAppState();
+
+  const handleTourClick = (tourId: string) => {
+    navigateTo(`tour/${tourId}`);
+  };
+
   return (
     <div className="min-h-screen bg-sand-light py-8">
       <div className="container mx-auto px-4">
@@ -20,7 +27,7 @@ const ToursPage: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {tours.map((tour) => (
-            <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={tour.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer" onClick={() => handleTourClick(tour.id)}>
               <div className="aspect-video bg-gradient-to-br from-desert-light to-gold-light relative">
                 <img 
                   src={tour.imageUrl} 
