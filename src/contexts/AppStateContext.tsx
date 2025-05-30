@@ -1,9 +1,17 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+interface Message {
+  text: string;
+  type: 'success' | 'error' | 'info';
+}
+
 interface AppStateContextType {
   currentPage: string;
   navigateTo: (page: string, params?: any) => void;
+  message: Message | null;
+  showMessage: (text: string, type: 'success' | 'error' | 'info') => void;
+  clearMessage: () => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
@@ -22,6 +30,7 @@ interface AppStateProviderProps {
 
 export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
   const [currentPage, setCurrentPage] = useState('index');
+  const [message, setMessage] = useState<Message | null>(null);
 
   const navigateTo = (page: string, params?: any) => {
     // Handle tour detail navigation
@@ -36,9 +45,24 @@ export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) 
     setCurrentPage(cleanPage);
   };
 
+  const showMessage = (text: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setMessage({ text, type });
+    // Auto-clear message after 5 seconds
+    setTimeout(() => {
+      setMessage(null);
+    }, 5000);
+  };
+
+  const clearMessage = () => {
+    setMessage(null);
+  };
+
   const value = {
     currentPage,
-    navigateTo
+    navigateTo,
+    message,
+    showMessage,
+    clearMessage
   };
 
   return (
