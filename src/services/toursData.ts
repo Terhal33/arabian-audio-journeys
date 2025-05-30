@@ -28,142 +28,11 @@ export interface Tour {
 
 export const tours: Tour[] = [
   {
-    id: "diriyah-main",
-    title: "Diriyah Historic District",
-    titleArabic: "حي الدرعية التاريخي",
-    description: "Experience the birthplace of the first Saudi state and home to the UNESCO World Heritage Site At-Turaif.",
-    descriptionArabic: "استكشف مسقط رأس الدولة السعودية الأولى وموطن موقع التراث العالمي التريف.",
-    imageUrl: "https://images.unsplash.com/photo-1466442929976-97f336a657be?w=800&h=600&fit=crop",
-    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-    duration: 45,
-    distance: 2.3,
-    location: {
-      lat: 24.7336,
-      lng: 46.5722
-    },
-    isPremium: false,
-    points: [
-      {
-        id: "turaif-district",
-        title: "At-Turaif District",
-        description: "The UNESCO World Heritage site featuring mud-brick structures from the original Saudi dynasty.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 8,
-        location: {
-          lat: 24.7342,
-          lng: 46.5728
-        }
-      },
-      {
-        id: "salwa-palace",
-        title: "Salwa Palace",
-        description: "The historic residence of the ruling Al Saud family and the seat of government during the first Saudi state.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 10,
-        location: {
-          lat: 24.7338,
-          lng: 46.5725
-        }
-      },
-      {
-        id: "saad-bin-saud-palace",
-        title: "Saad bin Saud Palace",
-        description: "One of the largest palaces in At-Turaif, known for its distinctive architecture.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 7,
-        location: {
-          lat: 24.7345,
-          lng: 46.5730
-        }
-      }
-    ]
-  },
-  {
-    id: "al-ula",
-    title: "AlUla Ancient City",
-    titleArabic: "مدينة العلا القديمة",
-    description: "Discover the 2,000-year-old city of Hegra, Saudi Arabia's first UNESCO World Heritage Site.",
-    descriptionArabic: "اكتشف مدينة الحجر التي يبلغ عمرها 2000 عام، أول موقع للتراث العالمي في المملكة العربية السعودية.",
-    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop",
-    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-    duration: 90,
-    distance: 4.7,
-    location: {
-      lat: 26.6088,
-      lng: 37.9154
-    },
-    isPremium: true,
-    points: [
-      {
-        id: "hegra",
-        title: "Hegra Archaeological Site",
-        description: "Explore the ancient Nabataean city with over 100 well-preserved monumental tombs with elaborate facades.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 15,
-        location: {
-          lat: 26.7902,
-          lng: 37.9542
-        }
-      },
-      {
-        id: "elephant-rock",
-        title: "Elephant Rock",
-        description: "A natural sandstone formation resembling an elephant, one of AlUla's most iconic landmarks.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 5,
-        location: {
-          lat: 26.6302,
-          lng: 37.9920
-        }
-      }
-    ]
-  },
-  {
-    id: "jeddah-historical",
-    title: "Historic Jeddah",
-    titleArabic: "جدة التاريخية",
-    description: "Walk through Al-Balad, the historic district of Jeddah with its distinctive coral houses and ancient merchant quarters.",
-    descriptionArabic: "تجول في البلد، الحي التاريخي بجدة مع بيوته المرجانية المميزة وأحياء التجار القديمة.",
-    imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop",
-    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-    duration: 60,
-    distance: 3.1,
-    location: {
-      lat: 21.4858,
-      lng: 39.1925
-    },
-    isPremium: true,
-    points: [
-      {
-        id: "naseef-house",
-        title: "Naseef House",
-        description: "A traditional coral merchant house where King Abdulaziz stayed after conquering Jeddah in 1925.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 10,
-        location: {
-          lat: 21.4861,
-          lng: 39.1911
-        }
-      },
-      {
-        id: "bab-makkah",
-        title: "Bab Makkah",
-        description: "The historic eastern gate of Old Jeddah that marked the beginning of the pilgrimage route to Mecca.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 8,
-        location: {
-          lat: 21.4872,
-          lng: 39.1935
-        }
-      }
-    ]
-  },
-  {
-    id: "madain-saleh",
-    title: "Mada'in Saleh (Hegra)",
-    titleArabic: "مدائن صالح (الحجر)",
-    description: "Saudi Arabia's first UNESCO World Heritage site featuring over 100 monumental tombs carved into sandstone mountains by the Nabataean civilization.",
-    descriptionArabic: "أول موقع للتراث العالمي في المملكة العربية السعودية يضم أكثر من 100 ضريح منحوت في جبال الحجر الرملي من قبل الحضارة النبطية.",
+    id: "hegra-archaeological-site",
+    title: "Hegra Archaeological Site (Al-Hijr / Madā'in Ṣāliḥ)",
+    titleArabic: "موقع الحجر الأثري (الحجر / مدائن صالح)",
+    description: "Saudi Arabia's first UNESCO World Heritage Site. Hegra represents the largest preserved site of the Nabatean civilization outside of Petra, featuring over 130 monumental tombs carved into sandstone outcrops.",
+    descriptionArabic: "أول موقع للتراث العالمي في المملكة العربية السعودية. يمثل الحجر أكبر موقع محفوظ للحضارة النبطية خارج البتراء، ويضم أكثر من 130 قبرًا أثريًا منحوتًا في الصخور الرملية.",
     imageUrl: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=600&fit=crop",
     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
     duration: 120,
@@ -186,138 +55,382 @@ export const tours: Tour[] = [
         }
       },
       {
-        id: "diwan",
-        title: "Diwan",
-        description: "Religious gathering space carved into sandstone rock, showcasing Nabataean architectural ingenuity.",
+        id: "nabatean-tombs",
+        title: "Monumental Nabatean Tombs",
+        description: "Over 130 elaborately carved tombs showcasing the architectural mastery of the Nabatean civilization.",
         audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 12,
+        duration: 20,
         location: {
           lat: 26.7925,
           lng: 37.9555
         }
       },
       {
-        id: "jabal-al-mahjar",
-        title: "Jabal al-Mahjar",
-        description: "Collection of densely concentrated tombs with intricate facade designs and cultural significance.",
+        id: "ancient-inscriptions",
+        title: "Ancient Inscriptions and Cave Drawings",
+        description: "Discover wells, inscriptions, and cave drawings that tell the story of ancient desert life.",
         audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 18,
+        duration: 12,
         location: {
           lat: 26.7900,
           lng: 37.9530
         }
-      },
-      {
-        id: "nabataean-wells",
-        title: "Ancient Nabataean Wells",
-        description: "Sophisticated water management system that allowed the Nabataean civilization to thrive in the desert.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 10,
-        location: {
-          lat: 26.7890,
-          lng: 37.9520
-        }
       }
     ]
   },
   {
-    id: "al-masjid-al-nabawi",
-    title: "Al-Masjid al-Nabawi (Prophet's Mosque)",
-    titleArabic: "المسجد النبوي",
-    description: "Islam's second holiest site, built by Prophet Muhammad in 622 CE, featuring distinctive green domes and accommodating over one million worshippers.",
-    descriptionArabic: "ثاني أقدس موقع في الإسلام، بناه النبي محمد عام 622 م، يتميز بقبابه الخضراء المميزة ويستوعب أكثر من مليون مصلي.",
-    imageUrl: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?w=800&h=600&fit=crop",
+    id: "at-turaif-diriyah",
+    title: "At-Turaif District in Ad-Dir'iyah",
+    titleArabic: "حي الطريف في الدرعية",
+    description: "The birthplace of the Saudi kingdom and UNESCO World Heritage Site. This historic district features mud-brick palaces and defensive walls representing the architectural style of central Arabia.",
+    descriptionArabic: "مسقط رأس المملكة السعودية وموقع التراث العالمي. يضم هذا الحي التاريخي قصورًا من الطوب اللبن وأسوارًا دفاعية تمثل الطراز المعماري لوسط الجزيرة العربية.",
+    imageUrl: "https://images.unsplash.com/photo-1466442929976-97f336a657be?w=800&h=600&fit=crop",
     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-    duration: 75,
-    distance: 1.8,
+    duration: 90,
+    distance: 3.5,
     location: {
-      lat: 24.4672,
-      lng: 39.6112
+      lat: 24.7336,
+      lng: 46.5722
     },
     isPremium: false,
     points: [
       {
-        id: "rawdah",
-        title: "Rawdah (Garden of Paradise)",
-        description: "Sacred area between Prophet Muhammad's house and pulpit, believed to be a piece of paradise.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 20,
-        location: {
-          lat: 24.4675,
-          lng: 39.6115
-        }
-      },
-      {
-        id: "original-pillars",
-        title: "Original Pillars",
-        description: "Preserved pillars dating back to the Prophet's era, marking the original structure of the mosque.",
+        id: "salwa-palace",
+        title: "Salwa Palace",
+        description: "The historic residence of the ruling Al Saud family and the seat of government during the first Saudi state.",
         audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
         duration: 15,
         location: {
-          lat: 24.4670,
-          lng: 39.6110
+          lat: 24.7338,
+          lng: 46.5725
         }
       },
       {
-        id: "ottoman-architecture",
-        title: "Ottoman Architectural Elements",
-        description: "Magnificent architectural features added during the Ottoman expansion of the mosque.",
+        id: "defensive-walls",
+        title: "Historic Defensive Walls",
+        description: "Explore the mud-brick defensive structures that protected the first Saudi capital.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 10,
+        location: {
+          lat: 24.7342,
+          lng: 46.5728
+        }
+      },
+      {
+        id: "royal-quarters",
+        title: "Royal Residential Quarters",
+        description: "Visit the traditional residential areas that housed the Saudi royal family and officials.",
         audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
         duration: 12,
         location: {
-          lat: 24.4678,
-          lng: 39.6118
+          lat: 24.7345,
+          lng: 46.5730
         }
       }
     ]
   },
   {
-    id: "edge-of-the-world",
-    title: "Edge of the World (Jebel Fihrayn)",
-    titleArabic: "حافة العالم (جبل فهرين)",
-    description: "Dramatic cliffs rising 300 meters from the desert floor with panoramic views extending to the horizon, part of the 800km-long Tuwaiq Escarpment.",
-    descriptionArabic: "منحدرات مذهلة ترتفع 300 متر من أرض الصحراء مع إطلالات بانورامية تمتد إلى الأفق، جزء من جرف طويق الذي يبلغ طوله 800 كم.",
-    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop",
+    id: "historic-jeddah",
+    title: "Historic Jeddah, the Gate to Makkah",
+    titleArabic: "جدة التاريخية، بوابة مكة المكرمة",
+    description: "The Al-Balad district represents one of the last remaining examples of Red Sea architectural tradition, featuring distinctive coral stone construction and traditional roshan balconies.",
+    descriptionArabic: "يمثل حي البلد أحد آخر الأمثلة المتبقية على تقاليد العمارة في البحر الأحمر، ويتميز ببناء الحجر المرجاني المميز والشرفات التقليدية (الرواشين).",
+    imageUrl: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=600&fit=crop",
     audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-    duration: 180,
-    distance: 8.5,
+    duration: 75,
+    distance: 2.8,
     location: {
-      lat: 24.5700,
-      lng: 45.9867
+      lat: 21.4858,
+      lng: 39.1925
     },
     isPremium: true,
     points: [
       {
-        id: "main-viewpoint",
-        title: "Main Panoramic Viewpoint",
-        description: "The primary observation area offering the most spectacular views across the ancient seabed.",
-        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
-        duration: 25,
-        location: {
-          lat: 24.5710,
-          lng: 45.9870
-        }
-      },
-      {
-        id: "fossil-site",
-        title: "Marine Fossil Site",
-        description: "Area containing well-preserved marine fossils embedded in rock layers, evidence of the region's underwater past.",
+        id: "al-balad-district",
+        title: "Al-Balad Historic District",
+        description: "Walk through the ancient commercial hub with its coral stone and wood construction.",
         audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
         duration: 20,
         location: {
-          lat: 24.5690,
-          lng: 45.9850
+          lat: 21.4861,
+          lng: 39.1911
         }
       },
       {
-        id: "caravan-route",
-        title: "Ancient Caravan Route",
-        description: "Visible markers of historical trade routes used for centuries by traders and pilgrims crossing the Arabian Peninsula.",
+        id: "roshan-balconies",
+        title: "Traditional Roshan Balconies",
+        description: "Admire the intricate wooden balconies that are iconic to Jeddah's architecture.",
         audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
         duration: 15,
         location: {
-          lat: 24.5720,
-          lng: 45.9880
+          lat: 21.4872,
+          lng: 39.1935
+        }
+      },
+      {
+        id: "historic-souks",
+        title: "Historic Souks and Markets",
+        description: "Experience the traditional markets that served pilgrims on their way to Makkah.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 18,
+        location: {
+          lat: 21.4850,
+          lng: 39.1920
+        }
+      }
+    ]
+  },
+  {
+    id: "hail-rock-art",
+    title: "Rock Art in the Hail Region",
+    titleArabic: "الفن الصخري في منطقة حائل",
+    description: "This UNESCO site encompasses Jebel Umm Sinman at Jubbah and Shuwaymas at Thaqab, containing extensive petroglyphs dating from the Neolithic period to the early Islamic era.",
+    descriptionArabic: "يشمل هذا الموقع جبل أم سنمان في جبة والشويمس في ثقب، ويحتوي على نقوش صخرية واسعة تعود من العصر النيوليتي إلى بداية العصر الإسلامي.",
+    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&h=600&fit=crop",
+    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+    duration: 100,
+    distance: 4.2,
+    location: {
+      lat: 28.0339,
+      lng: 40.2151
+    },
+    isPremium: true,
+    points: [
+      {
+        id: "jebel-umm-sinman",
+        title: "Jebel Umm Sinman at Jubbah",
+        description: "Explore ancient petroglyphs showing the lives of prehistoric communities including camels and human figures.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 25,
+        location: {
+          lat: 28.0350,
+          lng: 40.2160
+        }
+      },
+      {
+        id: "shuwaymas-thaqab",
+        title: "Shuwaymas at Thaqab",
+        description: "Discover ancient Arabic script and rock art panels providing evidence of environmental changes.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 20,
+        location: {
+          lat: 28.0320,
+          lng: 40.2140
+        }
+      },
+      {
+        id: "neolithic-inscriptions",
+        title: "Neolithic to Islamic Era Inscriptions",
+        description: "Witness the evolution of human activity in the Arabian Peninsula through rock art spanning millennia.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 15,
+        location: {
+          lat: 28.0360,
+          lng: 40.2170
+        }
+      }
+    ]
+  },
+  {
+    id: "al-ahsa-oasis",
+    title: "Al-Ahsa Oasis, an Evolving Cultural Landscape",
+    titleArabic: "واحة الأحساء، المشهد الثقافي المتطور",
+    description: "The world's largest oasis featuring 2.3 million date palms, springs, canals, and historical buildings demonstrating sustainable water management practices developed over millennia.",
+    descriptionArabic: "أكبر واحة في العالم تضم 2.3 مليون نخلة، وينابيع، وقنوات، ومباني تاريخية تظهر ممارسات إدارة المياه المستدامة المطورة عبر آلاف السنين.",
+    imageUrl: "https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=600&fit=crop",
+    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+    duration: 110,
+    distance: 6.8,
+    location: {
+      lat: 25.3547,
+      lng: 49.5578
+    },
+    isPremium: false,
+    points: [
+      {
+        id: "date-palm-gardens",
+        title: "Historic Date Palm Gardens",
+        description: "Walk through groves containing 2.3 million date palms in the world's largest oasis.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 25,
+        location: {
+          lat: 25.3560,
+          lng: 49.5590
+        }
+      },
+      {
+        id: "ancient-springs",
+        title: "Ancient Natural Springs",
+        description: "Discover the natural springs that have sustained this oasis for over 6,000 years.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 20,
+        location: {
+          lat: 25.3540,
+          lng: 49.5570
+        }
+      },
+      {
+        id: "irrigation-canals",
+        title: "Traditional Irrigation System",
+        description: "Learn about the sophisticated water management network that makes this oasis possible.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 18,
+        location: {
+          lat: 25.3550,
+          lng: 49.5580
+        }
+      }
+    ]
+  },
+  {
+    id: "hima-cultural-area",
+    title: "Ḥimā Cultural Area",
+    titleArabic: "منطقة حمى الثقافية",
+    description: "Located in Najran region, this site contains one of the largest collections of rock art in Saudi Arabia, with petroglyphs spanning thousands of years depicting hunting scenes and ancient trade routes.",
+    descriptionArabic: "تقع في منطقة نجران، وتحتوي على واحدة من أكبر مجموعات الفن الصخري في المملكة العربية السعودية، مع نقوش صخرية تمتد لآلاف السنين تصور مشاهد الصيد وطرق التجارة القديمة.",
+    imageUrl: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800&h=600&fit=crop",
+    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+    duration: 95,
+    distance: 5.5,
+    location: {
+      lat: 19.1951,
+      lng: 44.2271
+    },
+    isPremium: true,
+    points: [
+      {
+        id: "hunting-scenes",
+        title: "Ancient Hunting Scene Petroglyphs",
+        description: "View detailed rock art depicting hunting practices of ancient Arabian communities.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 22,
+        location: {
+          lat: 19.1960,
+          lng: 44.2280
+        }
+      },
+      {
+        id: "trade-route-evidence",
+        title: "Ancient Trade Route Markers",
+        description: "Discover evidence of ancient trade routes that connected southern Arabian Peninsula.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 18,
+        location: {
+          lat: 19.1940,
+          lng: 44.2260
+        }
+      },
+      {
+        id: "cultural-practices",
+        title: "Cultural Practice Depictions",
+        description: "Explore rock art showing the cultural practices and daily life of ancient civilizations.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 15,
+        location: {
+          lat: 19.1970,
+          lng: 44.2290
+        }
+      }
+    ]
+  },
+  {
+    id: "uruq-bani-maarid",
+    title: "'Uruq Bani Ma'arid",
+    titleArabic: "عروق بني معارض",
+    description: "This natural World Heritage site protects a vast area of the Rub' al Khali (Empty Quarter) desert ecosystem, representing one of the world's largest continuous sand desert systems.",
+    descriptionArabic: "يحمي هذا الموقع الطبيعي للتراث العالمي منطقة شاسعة من النظام البيئي الصحراوي للربع الخالي، ويمثل واحدًا من أكبر أنظمة الصحراء الرملية المتواصلة في العالم.",
+    imageUrl: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800&h=600&fit=crop",
+    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+    duration: 150,
+    distance: 12.0,
+    location: {
+      lat: 22.4833,
+      lng: 49.1167
+    },
+    isPremium: true,
+    points: [
+      {
+        id: "empty-quarter-dunes",
+        title: "Rub' al Khali Sand Dunes",
+        description: "Experience the vastness of the Empty Quarter, one of the world's largest sand desert systems.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 30,
+        location: {
+          lat: 22.4850,
+          lng: 49.1180
+        }
+      },
+      {
+        id: "arabian-wildlife",
+        title: "Endangered Arabian Species Habitat",
+        description: "Discover the crucial habitat for endangered Arabian species in this protected ecosystem.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 25,
+        location: {
+          lat: 22.4820,
+          lng: 49.1150
+        }
+      },
+      {
+        id: "desert-ecosystem",
+        title: "Desert Ecosystem Conservation",
+        description: "Learn about the natural heritage and conservation efforts in the Arabian Peninsula.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 20,
+        location: {
+          lat: 22.4840,
+          lng: 49.1170
+        }
+      }
+    ]
+  },
+  {
+    id: "trajan-kharax-farasan",
+    title: "Trajan's Kharax, Farasan Al-Kabir",
+    titleArabic: "خراكس تراجان، فرسان الكبير",
+    description: "The most recently inscribed UNESCO site, featuring Roman military installations and harbor facilities on Farasan Island, representing the southernmost extent of Roman influence in Arabia.",
+    descriptionArabic: "أحدث موقع مدرج في قائمة اليونسكو، يضم منشآت عسكرية رومانية ومرافق مرفأ في جزيرة فرسان، ويمثل أقصى امتداد جنوبي للنفوذ الروماني في الجزيرة العربية.",
+    imageUrl: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop",
+    audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+    duration: 85,
+    distance: 3.2,
+    location: {
+      lat: 16.7000,
+      lng: 42.1167
+    },
+    isPremium: true,
+    points: [
+      {
+        id: "roman-installations",
+        title: "Roman Military Installations",
+        description: "Explore the remains of Roman military structures at the edge of their Arabian influence.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 20,
+        location: {
+          lat: 16.7010,
+          lng: 42.1170
+        }
+      },
+      {
+        id: "ancient-harbor",
+        title: "Ancient Harbor Facilities",
+        description: "Discover the harbor installations that facilitated ancient maritime trade networks.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 18,
+        location: {
+          lat: 16.6990,
+          lng: 42.1160
+        }
+      },
+      {
+        id: "red-sea-trade",
+        title: "Red Sea Maritime Trade",
+        description: "Learn about the ancient trade networks that connected Arabia with the Roman Empire.",
+        audioUrl: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+        duration: 15,
+        location: {
+          lat: 16.7020,
+          lng: 42.1180
         }
       }
     ]
@@ -334,7 +447,7 @@ export const getTour = (id: string): Tour | undefined => {
 };
 
 export const getFeaturedTours = (): Tour[] => {
-  return tours.slice(0, 2);
+  return tours.slice(0, 3);
 };
 
 export const getPremiumTours = (): Tour[] => {
