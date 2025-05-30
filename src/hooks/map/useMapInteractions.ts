@@ -3,6 +3,7 @@ import { Tour } from '@/services/toursData';
 import { MapLocation, MapRegion } from '@/types/map';
 import { Bookmark } from '@/components/map/Bookmarks';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Hook for handling map interactions like clicks, zooms, and bookmarks
@@ -23,9 +24,21 @@ export const useMapInteractions = (
   onRegionChange?: (region: MapRegion) => void,
   onPinClick?: (location: MapLocation, tour?: Tour) => void
 ) => {
+  const navigate = useNavigate();
+
   const handlePinClick = (point: any) => {
-    if (onPinClick && interactive) {
-      onPinClick(point, point.tour);
+    if (interactive) {
+      // If there's a tour associated with this point, navigate to tour detail
+      if (point.tour) {
+        console.log("Navigating to tour:", point.tour.id);
+        navigate(`/tour/${point.tour.id}`);
+        return;
+      }
+
+      // Call the optional onPinClick callback
+      if (onPinClick) {
+        onPinClick(point, point.tour);
+      }
       
       // Set active tour for highlighting path
       if (point.tour) {

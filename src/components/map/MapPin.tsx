@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapPin as MapPinIcon, Star, Book, Building, Landmark, Mountain } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -53,6 +52,14 @@ const MapPin: React.FC<MapPinProps> = ({
     }
   };
 
+  // Handle click event - prioritize navigation to tour detail
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("MapPin clicked:", point);
+    onClick(point);
+  };
+
   // Handle long press event
   const handleLongPress = () => {
     if (onLongPress) {
@@ -99,7 +106,7 @@ const MapPin: React.FC<MapPinProps> = ({
         left: `${50 + (point.lng - mapCenter.lng) * zoom * 200}%`, 
         top: `${50 - (point.lat - mapCenter.lat) * zoom * 200}%`
       }}
-      onClick={() => onClick(point)}
+      onClick={handleClick}
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
@@ -120,7 +127,7 @@ const MapPin: React.FC<MapPinProps> = ({
         </div>
         
         {/* Tooltip on hover */}
-        <div className="opacity-0 group-hover:opacity-100 absolute -top-10 bg-white px-2 py-1 rounded shadow-md text-xs whitespace-nowrap transition-opacity">
+        <div className="opacity-0 group-hover:opacity-100 absolute -top-10 bg-white px-2 py-1 rounded shadow-md text-xs whitespace-nowrap transition-opacity pointer-events-none">
           {point.tour?.title || 'Location'}
           {point.isPremium && (
             <span className="ml-1 text-gold">✦</span>

@@ -11,7 +11,10 @@ interface TourCardProps {
 
 const TourCard = ({ tour, featured = false }: TourCardProps) => {
   return (
-    <Link to={`/tour/${tour.id}`} className="block">
+    <Link 
+      to={`/tour/${tour.id}`} 
+      className="block transition-transform hover:scale-[1.02]"
+    >
       <div className={`bg-white rounded-lg overflow-hidden shadow-md card-hover ${featured ? 'md:flex' : ''}`}>
         <div className={`relative ${featured ? 'md:w-2/5' : 'h-52'}`}>
           <img 
