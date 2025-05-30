@@ -42,6 +42,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tours: {
+        Row: {
+          audio_url: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          duration: number
+          id: string
+          image_url: string | null
+          published: boolean | null
+          region: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          duration: number
+          id?: string
+          image_url?: string | null
+          published?: boolean | null
+          region: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          duration?: number
+          id?: string
+          image_url?: string | null
+          published?: boolean | null
+          region?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
@@ -72,12 +114,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { user_uuid: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

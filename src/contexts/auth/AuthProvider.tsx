@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,17 +18,37 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>(initialState);
+  const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const authCheckInProgress = useRef(false);
+
+  // Fetch user role from the database
+  const fetchUserRole = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        return null;
+      }
+
+      return data?.role as 'admin' | 'customer' || 'customer';
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      return 'customer';
+    }
+  };
 
   // Update auth state based on session changes
   useEffect(() => {
-    // Prevent multiple simultaneous auth checks
     if (authCheckInProgress.current) return;
     
     authCheckInProgress.current = true;
     console.log('Setting up auth listener...');
     
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         console.log('Auth state changed:', event, session ? 'Session exists' : 'No session');
@@ -41,10 +60,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isAuthenticated
         }));
         
-        // Fetch user profile when session changes
         if (session?.user) {
           setTimeout(() => {
             handleFetchUserProfile(session.user.id);
+            fetchUserRole(session.user.id).then(role => {
+              setUserRole(role);
+            });
           }, 0);
         } else {
           setAuthState(state => ({ 
@@ -53,11 +74,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isAuthenticated: false,
             isLoading: false
           }));
+          setUserRole(null);
         }
       }
     );
 
-    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session ? 'Session exists' : 'No session');
       const isAuthenticated = !!session?.user;
@@ -72,13 +93,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (session?.user) {
         handleFetchUserProfile(session.user.id);
+        fetchUserRole(session.user.id).then(role => {
+          setUserRole(role);
+        });
       }
       
-      // Reset the auth check flag
       authCheckInProgress.current = false;
     });
 
-    // Load language preference
     const savedLanguage = localStorage.getItem('aaj_language') as 'en' | 'ar';
     if (savedLanguage) {
       setAuthState(state => ({ ...state, language: savedLanguage }));
@@ -97,7 +119,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!userProfile) {
         console.log('User profile not found, creating new profile...');
-        // Get user data from auth
         const { data: userData } = await supabase.auth.getUser();
         const user = userData?.user;
         
@@ -108,11 +129,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (userProfile) {
-        // Create extended user with additional properties
         const extendedUser = authState.user ? {
           ...authState.user,
           name: userProfile.full_name,
-          isPremium: false // Default value, update based on your premium status logic
+          isPremium: false
         } : null;
 
         setAuthState(state => ({ 
@@ -123,7 +143,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           language: userProfile.preferred_language as 'en' | 'ar' || state.language
         }));
       } else {
-        // Even if profile creation fails, we still want to set isLoading to false
         setAuthState(state => ({ ...state, isLoading: false }));
       }
     } catch (error) {
@@ -135,10 +154,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
       const result = await authMethods.signUp(email, password, fullName, authState.language);
-      return result; // Return the result so we can use it for redirection
+      return result;
     } catch (error) {
       console.error('Error in signUp:', error);
-      throw error; // Re-throw the error for handling in the component
+      throw error;
     }
   };
 
@@ -146,16 +165,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await authMethods.signIn(email, password);
   };
 
-  // Enhanced logout method with complete cleanup
   const logout = async (): Promise<void> => {
     try {
-      // Set loading state
       setAuthState(state => ({ ...state, isLoading: true }));
-      
-      // Sign out from Supabase
       await authMethods.logout();
       
-      // Clear all auth state
       setAuthState(state => ({ 
         ...state, 
         user: null, 
@@ -164,22 +178,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: false,
         isLoading: false
       }));
+      setUserRole(null);
       
-      // Optionally keep language preference
       const language = localStorage.getItem('aaj_language');
-      
-      // Reset app state for fresh login (but keep onboarded status)
       const onboardedStatus = localStorage.getItem('aaj_onboarded');
-      
-      // Clear local storage but keep minimal preferences
       localStorage.clear();
-      
-      // Restore preferences we want to keep
       if (language) localStorage.setItem('aaj_language', language);
       if (onboardedStatus) localStorage.setItem('aaj_onboarded', onboardedStatus);
     } catch (error) {
       console.error('Error signing out:', error);
-      // Reset loading state on error
       setAuthState(state => ({ ...state, isLoading: false }));
     }
   };
@@ -199,7 +206,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(state => ({ ...state, language: lang }));
     localStorage.setItem('aaj_language', lang);
     
-    // If user is logged in, update their profile
     if (authState.user && authState.profile) {
       updateProfile({ preferred_language: lang }).catch(console.error);
     }
@@ -215,7 +221,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         ...authState,
-        isPremium: !!authState.user?.isPremium,
+        isPremium: false,
+        userRole,
         signUp,
         signIn,
         logout,

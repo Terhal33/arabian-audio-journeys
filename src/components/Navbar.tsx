@@ -1,41 +1,14 @@
 
 import React, { useState } from 'react';
-import { NavLink, useLocation, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, Menu, X, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
+import { useAppState } from '@/contexts/AppStateContext';
 
 const Navbar = () => {
-  // Use the auth context directly, with error handling
-  let { user, isAuthenticated, logout } = { user: null, isAuthenticated: false, logout: () => Promise.resolve() };
-  
-  try {
-    const auth = useAuth();
-    isAuthenticated = auth.isAuthenticated;
-    user = auth.user;
-    logout = auth.logout;
-  } catch (e) {
-    console.error("Navbar: Error accessing auth context:", e);
-  }
-  
+  const { user, isAuthenticated, userRole, logout } = useAuth();
+  const { navigateTo } = useAppState();
   const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  // Skip navbar display on pages with bottom navigation
-  const bottomNavPaths = ['/home', '/map', '/search', '/library', '/profile', '/tours', '/settings'];
-  const shouldShowNavbar = !bottomNavPaths.some(path => 
-    location.pathname === path || 
-    (path === '/home' && location.pathname.startsWith('/tour/'))
-  );
-
-  const isActive = (path: string) => {
-    // Consider sub-routes of profile like settings
-    if (path === '/profile' && location.pathname === '/settings') {
-      return true;
-    }
-    return location.pathname === path;
-  };
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -44,62 +17,78 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      // Logout is handled by AuthContext which will redirect appropriately
+      navigateTo('index');
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
-  
-  const handleCreateAccount = () => {
-    // Direct navigation to register page
-    navigate('/register');
+
+  const handleNavigation = (page: any) => {
+    navigateTo(page);
+    setMenuOpen(false);
   };
 
-  // If we're on a login or signup page, or a page with bottom navigation, don't show the navbar at all
-  const hiddenPaths = ['/login', '/signup', '/register', '/forgot-password', '/verification', '/onboarding'];
-  if (hiddenPaths.some(path => location.pathname.startsWith(path)) || !shouldShowNavbar) {
-    return null;
-  }
-
-  // For debugging
-  console.log('Navbar rendering. Current path:', location.pathname, 'isAuthenticated:', isAuthenticated, 'shouldShowNavbar:', shouldShowNavbar);
-
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2">
+        <button 
+          onClick={() => handleNavigation('index')}
+          className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+        >
           <span className="text-xl font-display font-semibold text-desert-dark">
             Arabian<span className="text-gold">Audio</span>
           </span>
-        </Link>
+        </button>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
-          {isAuthenticated ? (
+          <button 
+            onClick={() => handleNavigation('tours')}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            All Tours
+          </button>
+          
+          {!isAuthenticated ? (
             <>
-              <NavLink to="/tours" className={`nav-link ${isActive('/tours') ? 'text-foreground font-medium' : ''}`}>
-                Tours
-              </NavLink>
-              <NavLink to="/subscription" className={`nav-link ${isActive('/subscription') ? 'text-foreground font-medium' : ''}`}>
-                Subscription
-              </NavLink>
-              <Button variant="ghost" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
-                Sign Out
+              <Button 
+                variant="outline" 
+                onClick={() => handleNavigation('login')}
+              >
+                Sign In
+              </Button>
+              <Button 
+                className="bg-desert hover:bg-desert-dark" 
+                onClick={() => handleNavigation('signup')}
+              >
+                Create Account
               </Button>
             </>
           ) : (
             <>
-              <NavLink to="/tours" className={`nav-link ${isActive('/tours') ? 'text-foreground font-medium' : ''}`}>
-                Tours
-              </NavLink>
-              <Button variant="outline" asChild>
-                <Link to="/login">Sign In</Link>
-              </Button>
-              <Button 
-                className="bg-desert hover:bg-desert-dark" 
-                onClick={handleCreateAccount}
+              {userRole === 'admin' ? (
+                <button 
+                  onClick={() => handleNavigation('admin-dashboard')}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Admin Panel
+                </button>
+              ) : (
+                <button 
+                  onClick={() => handleNavigation('customer-dashboard')}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Dashboard
+                </button>
+              )}
+              <button 
+                onClick={() => handleNavigation('profile')}
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
-                Create Account
+                Profile
+              </button>
+              <Button variant="ghost" onClick={handleLogout}>
+                Sign Out
               </Button>
             </>
           )}
@@ -109,7 +98,6 @@ const Navbar = () => {
         <button 
           onClick={toggleMenu}
           className="md:hidden p-2 focus:outline-none"
-          aria-label="Toggle menu"
         >
           {menuOpen ? (
             <X className="h-6 w-6 text-desert-dark" />
@@ -123,52 +111,58 @@ const Navbar = () => {
       {menuOpen && (
         <nav className="bg-white px-4 py-2 md:hidden border-t border-gray-100">
           <div className="flex flex-col space-y-3">
-            <NavLink 
-              to="/tours" 
-              className={`py-2 ${isActive('/tours') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
-              onClick={() => setMenuOpen(false)}
+            <button 
+              onClick={() => handleNavigation('tours')}
+              className="py-2 text-left text-muted-foreground hover:text-foreground"
             >
-              Tours
-            </NavLink>
+              All Tours
+            </button>
             
-            {isAuthenticated ? (
+            {!isAuthenticated ? (
               <>
-                <NavLink 
-                  to="/subscription" 
-                  className={`py-2 ${isActive('/subscription') ? 'text-desert-dark font-medium' : 'text-muted-foreground'}`}
-                  onClick={() => setMenuOpen(false)}
+                <button 
+                  onClick={() => handleNavigation('login')}
+                  className="py-2 flex items-center text-desert-dark"
                 >
-                  Subscription
-                </NavLink>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </button>
                 <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }} 
-                  className="text-muted-foreground hover:text-foreground justify-start pl-0"
+                  className="bg-desert hover:bg-desert-dark w-full"
+                  onClick={() => handleNavigation('signup')}
                 >
-                  Sign Out
+                  Create Account
                 </Button>
               </>
             ) : (
               <>
-                <Link 
-                  to="/login" 
-                  className="py-2 flex items-center text-desert-dark"
-                  onClick={() => setMenuOpen(false)}
+                {userRole === 'admin' ? (
+                  <button 
+                    onClick={() => handleNavigation('admin-dashboard')}
+                    className="py-2 text-left text-muted-foreground hover:text-foreground"
+                  >
+                    Admin Panel
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleNavigation('customer-dashboard')}
+                    className="py-2 text-left text-muted-foreground hover:text-foreground"
+                  >
+                    Dashboard
+                  </button>
+                )}
+                <button 
+                  onClick={() => handleNavigation('profile')}
+                  className="py-2 text-left text-muted-foreground hover:text-foreground"
                 >
-                  <LogIn className="h-4 w-4 mr-2" />
-                  Sign In
-                </Link>
+                  Profile
+                </button>
                 <Button 
-                  className="bg-desert hover:bg-desert-dark w-full justify-center mt-2"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/register');
-                  }}
+                  variant="ghost" 
+                  onClick={handleLogout}
+                  className="w-full justify-start pl-0"
                 >
-                  Create Account
+                  Sign Out
                 </Button>
               </>
             )}
