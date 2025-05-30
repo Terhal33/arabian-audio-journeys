@@ -14,11 +14,12 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load the actual UNESCO heritage tours from your data
+    // Load the first 3 UNESCO heritage tours as featured
+    console.log('Loading tours data:', tours);
     setIsLoading(true);
     try {
-      // Get the first 3 tours as featured
       const featured = tours.slice(0, 3);
+      console.log('Featured tours set:', featured);
       setFeaturedTours(featured);
     } catch (error) {
       console.error('Failed to load tours:', error);
