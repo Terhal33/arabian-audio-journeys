@@ -1,5 +1,5 @@
 
-import { Link } from 'react-router-dom';
+import { useAppState } from '@/contexts/AppStateContext';
 import { Clock, MapPin } from 'lucide-react';
 import { Tour } from '@/services/toursData';
 import { Badge } from '@/components/ui/badge';
@@ -10,10 +10,16 @@ interface TourCardProps {
 }
 
 const TourCard = ({ tour, featured = false }: TourCardProps) => {
+  const { navigateTo } = useAppState();
+
+  const handleClick = () => {
+    navigateTo(`tour/${tour.id}`);
+  };
+
   return (
-    <Link 
-      to={`/tour/${tour.id}`} 
-      className="block transition-transform hover:scale-[1.02]"
+    <div 
+      onClick={handleClick}
+      className="block transition-transform hover:scale-[1.02] cursor-pointer"
     >
       <div className={`bg-white rounded-lg overflow-hidden shadow-md card-hover ${featured ? 'md:flex' : ''}`}>
         <div className={`relative ${featured ? 'md:w-2/5' : 'h-52'}`}>
@@ -51,7 +57,7 @@ const TourCard = ({ tour, featured = false }: TourCardProps) => {
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

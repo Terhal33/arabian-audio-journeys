@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import { useAppState } from '@/contexts/AppStateContext';
@@ -6,6 +5,7 @@ import Navbar from '@/components/Navbar';
 import GlobalMessage from '@/components/GlobalMessage';
 import IndexPage from '@/pages/IndexPage';
 import ToursPage from '@/pages/ToursPage';
+import TourDetailPage from '@/pages/TourDetailPage';
 import LoginPage from '@/pages/LoginPage';
 import SignupPage from '@/pages/SignupPage';
 import CustomerDashboard from '@/pages/CustomerDashboard';
@@ -15,6 +15,14 @@ import ProfilePage from '@/pages/ProfilePage';
 const MainApp: React.FC = () => {
   const { isAuthenticated, userRole, isLoading } = useAuth();
   const { currentPage, navigateTo } = useAppState();
+
+  // Extract tour ID from currentPage if it's a tour detail page
+  const getTourId = () => {
+    if (currentPage.startsWith('tour/')) {
+      return currentPage.split('/')[1];
+    }
+    return null;
+  };
 
   // Redirect logic based on authentication and role
   useEffect(() => {
@@ -46,6 +54,11 @@ const MainApp: React.FC = () => {
   }, [isAuthenticated, userRole, isLoading, currentPage, navigateTo]);
 
   const renderPage = () => {
+    if (currentPage.startsWith('tour/')) {
+      const tourId = getTourId();
+      return <TourDetailPage tourId={tourId} />;
+    }
+
     switch (currentPage) {
       case 'index':
         return <IndexPage />;

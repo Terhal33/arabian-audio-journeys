@@ -1,48 +1,12 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type PageType = 'index' | 'tours' | 'login' | 'signup' | 'customer-dashboard' | 'admin-dashboard' | 'profile' | 'admin-tours' | 'admin-users' | 'admin-overview';
-
 interface AppStateContextType {
-  currentPage: PageType;
-  navigateTo: (page: PageType) => void;
-  showMessage: (message: string, type: 'success' | 'error' | 'info') => void;
-  message: { text: string; type: 'success' | 'error' | 'info' } | null;
-  clearMessage: () => void;
+  currentPage: string;
+  navigateTo: (page: string, params?: any) => void;
 }
 
 const AppStateContext = createContext<AppStateContextType | undefined>(undefined);
-
-export function AppStateProvider({ children }: { children: ReactNode }) {
-  const [currentPage, setCurrentPage] = useState<PageType>('index');
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
-
-  const navigateTo = (page: PageType) => {
-    setCurrentPage(page);
-  };
-
-  const showMessage = (text: string, type: 'success' | 'error' | 'info') => {
-    setMessage({ text, type });
-    // Auto-clear message after 5 seconds
-    setTimeout(() => setMessage(null), 5000);
-  };
-
-  const clearMessage = () => {
-    setMessage(null);
-  };
-
-  return (
-    <AppStateContext.Provider value={{
-      currentPage,
-      navigateTo,
-      showMessage,
-      message,
-      clearMessage
-    }}>
-      {children}
-    </AppStateContext.Provider>
-  );
-}
 
 export const useAppState = () => {
   const context = useContext(AppStateContext);
@@ -50,4 +14,36 @@ export const useAppState = () => {
     throw new Error('useAppState must be used within an AppStateProvider');
   }
   return context;
+};
+
+interface AppStateProviderProps {
+  children: ReactNode;
+}
+
+export const AppStateProvider: React.FC<AppStateProviderProps> = ({ children }) => {
+  const [currentPage, setCurrentPage] = useState('index');
+
+  const navigateTo = (page: string, params?: any) => {
+    // Handle tour detail navigation
+    if (page.startsWith('/tour/')) {
+      const tourId = page.replace('/tour/', '');
+      setCurrentPage(`tour/${tourId}`);
+      return;
+    }
+    
+    // Remove leading slash if present
+    const cleanPage = page.startsWith('/') ? page.slice(1) : page;
+    setCurrentPage(cleanPage);
+  };
+
+  const value = {
+    currentPage,
+    navigateTo
+  };
+
+  return (
+    <AppStateContext.Provider value={value}>
+      {children}
+    </AppStateContext.Provider>
+  );
 };
