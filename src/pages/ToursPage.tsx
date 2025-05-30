@@ -34,11 +34,6 @@ const ToursPage: React.FC = () => {
                   alt={tour.title}
                   className="w-full h-full object-cover"
                 />
-                {tour.isPremium && (
-                  <div className="absolute top-3 right-3 bg-gold text-white px-2 py-1 rounded text-sm font-medium">
-                    Premium
-                  </div>
-                )}
               </div>
               <CardHeader>
                 <CardTitle className="text-xl">{tour.title}</CardTitle>

@@ -2,7 +2,6 @@
 import { useAppState } from '@/contexts/AppStateContext';
 import { Clock, MapPin } from 'lucide-react';
 import { Tour } from '@/services/toursData';
-import { Badge } from '@/components/ui/badge';
 
 interface TourCardProps {
   tour: Tour;
@@ -28,11 +27,6 @@ const TourCard = ({ tour, featured = false }: TourCardProps) => {
             alt={tour.title} 
             className={`w-full object-cover ${featured ? 'h-full' : 'h-52'}`} 
           />
-          {tour.isPremium && (
-            <Badge className="absolute top-3 right-3 bg-gold hover:bg-gold-dark">
-              Premium
-            </Badge>
-          )}
         </div>
         
         <div className={`p-5 ${featured ? 'md:w-3/5' : ''}`}>

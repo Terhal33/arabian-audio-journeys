@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/contexts/AppStateContext';
 import { Button } from '@/components/ui/button';
-import { HeadphonesIcon, MapPin, Star, Play, Clock, Heart } from 'lucide-react';
+import { HeadphonesIcon, MapPin, Star, Play, Clock } from 'lucide-react';
 import { tours } from '@/services/toursData';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import TourCard from '@/components/TourCard';
@@ -14,13 +14,13 @@ const Index = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load the first 3 UNESCO heritage tours as featured
-    console.log('Loading tours data:', tours);
+    // Load the UNESCO heritage tours
+    console.log('Loading UNESCO tours data:', tours);
     setIsLoading(true);
     try {
-      const featured = tours.slice(0, 3);
-      console.log('Featured tours set:', featured);
-      setFeaturedTours(featured);
+      // Show all 8 UNESCO heritage sites
+      setFeaturedTours(tours);
+      console.log('UNESCO tours loaded:', tours);
     } catch (error) {
       console.error('Failed to load tours:', error);
     } finally {
@@ -61,19 +61,19 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured UNESCO Tours Section */}
+      {/* UNESCO Tours Section */}
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-display font-bold text-center mb-4 text-desert-dark">
-            UNESCO World Heritage Audio Tours
+            Saudi Arabia's UNESCO World Heritage Sites
           </h2>
           <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Explore Saudi Arabia's UNESCO World Heritage Sites through immersive audio experiences
+            Explore all 8 UNESCO World Heritage Sites in Saudi Arabia through immersive audio experiences
           </p>
           
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
                 <div key={i} className="bg-white rounded-lg p-6 shadow-sm animate-pulse">
                   <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
@@ -82,22 +82,12 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {featuredTours.map((tour) => (
-                <TourCard key={tour.id} tour={tour} featured />
+                <TourCard key={tour.id} tour={tour} />
               ))}
             </div>
           )}
-
-          <div className="text-center mt-12">
-            <Button 
-              size="lg" 
-              className="bg-oasis hover:bg-oasis-dark text-white"
-              onClick={() => navigateTo('tours')}
-            >
-              View All {tours.length} UNESCO Sites
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -151,15 +141,9 @@ const Index = () => {
           <Button 
             size="lg" 
             className="bg-desert hover:bg-desert-dark text-white"
-            onClick={() => {
-              if (isAuthenticated) {
-                navigateTo('tours');
-              } else {
-                navigateTo('signup');
-              }
-            }}
+            onClick={() => navigateTo('tours')}
           >
-            {isAuthenticated ? 'Start Exploring' : 'Join Free Today'}
+            Start Exploring
           </Button>
         </div>
       </section>
