@@ -10,19 +10,18 @@ import TourCard from '@/components/TourCard';
 const Index = () => {
   const { isAuthenticated } = useAuth();
   const { navigateTo } = useAppState();
-  const [featuredTours, setFeaturedTours] = useState([]);
+  const [allTours, setAllTours] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load the UNESCO heritage tours
-    console.log('Loading UNESCO tours data:', tours);
+    console.log('Loading all UNESCO heritage sites:', tours);
     setIsLoading(true);
     try {
       // Show all 8 UNESCO heritage sites
-      setFeaturedTours(tours);
-      console.log('UNESCO tours loaded:', tours);
+      setAllTours(tours);
+      console.log('All UNESCO heritage sites loaded:', tours);
     } catch (error) {
-      console.error('Failed to load tours:', error);
+      console.error('Failed to load UNESCO heritage sites:', error);
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +82,7 @@ const Index = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {featuredTours.map((tour) => (
+              {allTours.map((tour) => (
                 <TourCard key={tour.id} tour={tour} />
               ))}
             </div>
