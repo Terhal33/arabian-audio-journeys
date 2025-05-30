@@ -1,9 +1,10 @@
+
 import React, { useEffect } from 'react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import { useAppState } from '@/contexts/AppStateContext';
 import Navbar from '@/components/Navbar';
 import GlobalMessage from '@/components/GlobalMessage';
-import IndexPage from '@/pages/IndexPage';
+import Index from '@/pages/Index';
 import ToursPage from '@/pages/ToursPage';
 import TourDetailPage from '@/pages/TourDetailPage';
 import LoginPage from '@/pages/LoginPage';
@@ -61,7 +62,7 @@ const MainApp: React.FC = () => {
 
     switch (currentPage) {
       case 'index':
-        return <IndexPage />;
+        return <Index />;
       case 'tours':
         return <ToursPage />;
       case 'login':
@@ -78,7 +79,7 @@ const MainApp: React.FC = () => {
       case 'profile':
         return <ProfilePage />;
       default:
-        return <IndexPage />;
+        return <Index />;
     }
   };
 
