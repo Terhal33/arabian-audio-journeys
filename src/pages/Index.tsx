@@ -16,7 +16,6 @@ const Index = () => {
   useEffect(() => {
     console.log('Loading all UNESCO heritage sites:', tours);
     try {
-      // Show all 8 UNESCO heritage sites
       setAllTours(tours);
       console.log('All UNESCO heritage sites loaded:', tours);
     } catch (error) {
@@ -169,7 +168,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="font-display font-semibold text-lg mb-4">
-                Arabian<span className="text-gold">Audio</span>
+                <span className="text-gold">Terhal</span>
               </h3>
               <p className="text-desert-light">
                 Discover Saudi Arabia's UNESCO heritage through immersive audio experiences.
@@ -216,7 +215,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-desert mt-8 pt-8 text-center text-desert-light">
-            <p>&copy; {currentYear} ArabianAudio. All rights reserved.</p>
+            <p>&copy; {currentYear} Terhal. All rights reserved.</p>
           </div>
         </div>
       </footer>

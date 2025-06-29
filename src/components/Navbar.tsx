@@ -36,7 +36,7 @@ const Navbar = () => {
           className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
         >
           <span className="text-xl font-display font-semibold text-desert-dark">
-            Arabian<span className="text-gold">Audio</span>
+            <span className="text-gold">Terhal</span>
           </span>
         </button>
 
