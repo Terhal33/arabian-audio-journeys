@@ -59,9 +59,6 @@ const Index = () => {
           <h1 className="text-4xl md:text-6xl font-display font-bold text-desert-dark mb-6">
             Discover Saudi
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Explore
-          </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
@@ -92,9 +89,6 @@ const Index = () => {
           <h2 className="text-3xl font-display font-bold text-center mb-4 text-desert-dark">
             Heritage Sites
           </h2>
-          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Discover
-          </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {allTours.map((tour) => (
@@ -148,9 +142,6 @@ const Index = () => {
           <h2 className="text-3xl font-display font-bold mb-6 text-desert-dark">
             Ready to Explore?
           </h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Start your journey
-          </p>
           <Button 
             size="lg" 
             className="bg-desert hover:bg-desert-dark text-white"
