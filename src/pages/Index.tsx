@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/contexts/AppStateContext';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ const Index = () => {
             Discover Saudi
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Immerse yourself in the rich history and culture of Saudi Arabia's UNESCO World Heritage Sites with our expertly crafted audio tours.
+            Explore
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
@@ -69,7 +70,7 @@ const Index = () => {
               aria-label="Explore UNESCO World Heritage audio tours"
             >
               <HeadphonesIcon className="mr-2 h-5 w-5" aria-hidden="true" />
-              Explore UNESCO Tours
+              Explore
             </Button>
             {!isAuthenticated && (
               <Button 
@@ -78,7 +79,7 @@ const Index = () => {
                 onClick={() => handleNavigation('signup')}
                 aria-label="Create a free account to access tours"
               >
-                Create Free Account
+                Join
               </Button>
             )}
           </div>
@@ -89,10 +90,10 @@ const Index = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto">
           <h2 className="text-3xl font-display font-bold text-center mb-4 text-desert-dark">
-            Saudi Arabia's UNESCO World Heritage Sites
+            Heritage Sites
           </h2>
           <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Explore all {tours.length} UNESCO World Heritage Sites in Saudi Arabia through immersive audio experiences
+            Discover
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -114,27 +115,27 @@ const Index = () => {
               <div className="w-16 h-16 bg-oasis rounded-full flex items-center justify-center mx-auto mb-4">
                 <HeadphonesIcon className="h-8 w-8 text-white" aria-hidden="true" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Listen & Learn</h3>
+              <h3 className="text-xl font-semibold mb-4">Listen</h3>
               <p className="text-muted-foreground">
-                Experience immersive audio narrations that bring Saudi Arabia's UNESCO heritage to life.
+                Experience immersive audio
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-desert rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPin className="h-8 w-8 text-white" aria-hidden="true" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Explore Heritage Sites</h3>
+              <h3 className="text-xl font-semibold mb-4">Explore</h3>
               <p className="text-muted-foreground">
-                Navigate through UNESCO World Heritage Sites with location-aware audio guides.
+                Navigate heritage sites
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="h-8 w-8 text-white" aria-hidden="true" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Discover Stories</h3>
+              <h3 className="text-xl font-semibold mb-4">Discover</h3>
               <p className="text-muted-foreground">
-                Uncover the rich history and cultural significance of each heritage site.
+                Uncover rich history
               </p>
             </div>
           </div>
@@ -145,10 +146,10 @@ const Index = () => {
       <section className="py-16 px-4">
         <div className="container mx-auto text-center">
           <h2 className="text-3xl font-display font-bold mb-6 text-desert-dark">
-            Ready to Explore Saudi Arabia's Heritage?
+            Ready to Explore?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Start your journey through Saudi Arabia's UNESCO World Heritage Sites today.
+            Start your journey
           </p>
           <Button 
             size="lg" 
@@ -170,7 +171,7 @@ const Index = () => {
                 <span className="text-gold">Terhal</span>
               </h3>
               <p className="text-desert-light">
-                Discover Saudi Arabia's UNESCO heritage through immersive audio experiences.
+                Discover Saudi heritage
               </p>
             </div>
             <div>
@@ -182,7 +183,7 @@ const Index = () => {
                     className="hover:text-white transition-colors text-left"
                     aria-label="Navigate to UNESCO tours"
                   >
-                    UNESCO Tours
+                    Tours
                   </button>
                 </li>
               </ul>
@@ -192,7 +193,7 @@ const Index = () => {
               <ul className="space-y-2 text-desert-light">
                 <li>
                   <button className="hover:text-white transition-colors text-left" aria-label="Help Center">
-                    Help Center
+                    Help
                   </button>
                 </li>
               </ul>
@@ -202,12 +203,12 @@ const Index = () => {
               <ul className="space-y-2 text-desert-light">
                 <li>
                   <button className="hover:text-white transition-colors text-left" aria-label="Terms of Service">
-                    Terms of Service
+                    Terms
                   </button>
                 </li>
                 <li>
                   <button className="hover:text-white transition-colors text-left" aria-label="Privacy Policy">
-                    Privacy Policy
+                    Privacy
                   </button>
                 </li>
               </ul>
