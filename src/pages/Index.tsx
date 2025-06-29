@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/contexts/AppStateContext';
 import { Button } from '@/components/ui/button';
@@ -57,7 +56,7 @@ const Index = () => {
       <section className="relative py-20 px-4 bg-gradient-to-br from-desert-light to-sand-light">
         <div className="container mx-auto text-center max-w-4xl">
           <h1 className="text-4xl md:text-6xl font-display font-bold text-desert-dark mb-6">
-            Discover Saudi Arabia's UNESCO Heritage Through Sound
+            Discover Saudi
           </h1>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
             Immerse yourself in the rich history and culture of Saudi Arabia's UNESCO World Heritage Sites with our expertly crafted audio tours.
