@@ -12,13 +12,16 @@ import SignupPage from '@/pages/SignupPage';
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import AdminDashboard from '@/pages/AdminDashboard';
 import ProfilePage from '@/pages/ProfilePage';
+import ErrorBoundaryWrapper from '@/components/ErrorBoundaryWrapper';
+
+type PageType = 'index' | 'tours' | 'login' | 'signup' | 'customer-dashboard' | 'admin-dashboard' | 'admin-overview' | 'admin-tours' | 'admin-users' | 'profile';
 
 const MainApp: React.FC = () => {
   const { isAuthenticated, userRole, isLoading } = useAuth();
   const { currentPage, navigateTo } = useAppState();
 
   // Extract tour ID from currentPage if it's a tour detail page
-  const getTourId = () => {
+  const getTourId = (): string | null => {
     if (currentPage.startsWith('tour/')) {
       return currentPage.split('/')[1];
     }
@@ -60,27 +63,20 @@ const MainApp: React.FC = () => {
       return <TourDetailPage tourId={tourId} />;
     }
 
-    switch (currentPage) {
-      case 'index':
-        return <Index />;
-      case 'tours':
-        return <ToursPage />;
-      case 'login':
-        return <LoginPage />;
-      case 'signup':
-        return <SignupPage />;
-      case 'customer-dashboard':
-        return <CustomerDashboard />;
-      case 'admin-dashboard':
-      case 'admin-overview':
-      case 'admin-tours':
-      case 'admin-users':
-        return <AdminDashboard />;
-      case 'profile':
-        return <ProfilePage />;
-      default:
-        return <Index />;
-    }
+    const pageMap: Record<PageType, React.ReactNode> = {
+      'index': <Index />,
+      'tours': <ToursPage />,
+      'login': <LoginPage />,
+      'signup': <SignupPage />,
+      'customer-dashboard': <CustomerDashboard />,
+      'admin-dashboard': <AdminDashboard />,
+      'admin-overview': <AdminDashboard />,
+      'admin-tours': <AdminDashboard />,
+      'admin-users': <AdminDashboard />,
+      'profile': <ProfilePage />
+    };
+
+    return pageMap[currentPage as PageType] || <Index />;
   };
 
   if (isLoading) {
@@ -95,13 +91,15 @@ const MainApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-sand-light">
-      <Navbar />
-      <GlobalMessage />
-      <main>
-        {renderPage()}
-      </main>
-    </div>
+    <ErrorBoundaryWrapper>
+      <div className="min-h-screen bg-sand-light">
+        <Navbar />
+        <GlobalMessage />
+        <main>
+          {renderPage()}
+        </main>
+      </div>
+    </ErrorBoundaryWrapper>
   );
 };
 

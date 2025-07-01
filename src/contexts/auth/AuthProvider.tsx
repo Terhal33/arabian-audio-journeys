@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authCheckInProgress = useRef(false);
 
   // Fetch user role from the database
-  const fetchUserRole = async (userId: string) => {
+  const fetchUserRole = async (userId: string): Promise<'admin' | 'customer' | null> => {
     try {
       const { data, error } = await supabase
         .from('user_roles')
@@ -32,13 +33,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Error fetching user role:', error);
-        return null;
+        return 'customer'; // Default role
       }
 
       return data?.role as 'admin' | 'customer' || 'customer';
     } catch (error) {
       console.error('Error fetching user role:', error);
       return 'customer';
+    }
+  };
+
+  const handleFetchUserProfile = async (userId: string) => {
+    try {
+      console.log('Fetching profile for user:', userId);
+      let userProfile = await fetchUserProfile(userId);
+
+      if (!userProfile) {
+        console.log('User profile not found, will be created by trigger');
+        // Profile will be created by database trigger, just wait a moment
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        userProfile = await fetchUserProfile(userId);
+      }
+
+      if (userProfile) {
+        const extendedUser = authState.user ? {
+          ...authState.user,
+          name: userProfile.full_name,
+          isPremium: false
+        } : null;
+
+        setAuthState(state => ({ 
+          ...state, 
+          profile: userProfile, 
+          user: extendedUser,
+          isLoading: false,
+          language: userProfile.preferred_language as 'en' | 'ar' || state.language
+        }));
+      } else {
+        setAuthState(state => ({ ...state, isLoading: false }));
+      }
+    } catch (error) {
+      console.error('Error handling user profile:', error);
+      setAuthState(state => ({ ...state, isLoading: false }));
     }
   };
 
@@ -61,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }));
         
         if (session?.user) {
+          // Use setTimeout to prevent blocking the auth state change
           setTimeout(() => {
             handleFetchUserProfile(session.user.id);
             fetchUserRole(session.user.id).then(role => {
@@ -111,45 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authCheckInProgress.current = false;
     };
   }, []);
-
-  const handleFetchUserProfile = async (userId: string) => {
-    try {
-      console.log('Fetching profile for user:', userId);
-      let userProfile = await fetchUserProfile(userId);
-
-      if (!userProfile) {
-        console.log('User profile not found, creating new profile...');
-        const { data: userData } = await supabase.auth.getUser();
-        const user = userData?.user;
-        
-        if (user) {
-          const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || '';
-          userProfile = await createUserProfile(userId, userName, user.email, authState.language);
-        }
-      }
-
-      if (userProfile) {
-        const extendedUser = authState.user ? {
-          ...authState.user,
-          name: userProfile.full_name,
-          isPremium: false
-        } : null;
-
-        setAuthState(state => ({ 
-          ...state, 
-          profile: userProfile, 
-          user: extendedUser,
-          isLoading: false,
-          language: userProfile.preferred_language as 'en' | 'ar' || state.language
-        }));
-      } else {
-        setAuthState(state => ({ ...state, isLoading: false }));
-      }
-    } catch (error) {
-      console.error('Error handling user profile:', error);
-      setAuthState(state => ({ ...state, isLoading: false }));
-    }
-  };
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {

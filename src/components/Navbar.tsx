@@ -5,7 +5,9 @@ import { User, Menu, X, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import { useAppState } from '@/contexts/AppStateContext';
 
-const Navbar = () => {
+type NavigationDestination = 'index' | 'tours' | 'login' | 'signup' | 'admin-dashboard' | 'customer-dashboard' | 'profile';
+
+const Navbar: React.FC = () => {
   const { user, isAuthenticated, userRole, logout } = useAuth();
   const { navigateTo } = useAppState();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -23,7 +25,7 @@ const Navbar = () => {
     }
   };
 
-  const handleNavigation = (page: any) => {
+  const handleNavigation = (page: NavigationDestination) => {
     navigateTo(page);
     setMenuOpen(false);
   };
