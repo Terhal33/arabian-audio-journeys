@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/contexts/AppStateContext';
-import { tours } from '@/services/toursData';
+import { tours, Tour } from '@/services/toursData';
 import { useAuth } from '@/contexts/auth/AuthProvider';
 import HeroSection from '@/components/home/HeroSection';
 import HeritageSection from '@/components/home/HeritageSection';
@@ -9,7 +9,6 @@ import HowItWorksSection from '@/components/home/HowItWorksSection';
 import CallToActionSection from '@/components/home/CallToActionSection';
 import Footer from '@/components/home/Footer';
 import ErrorBoundaryWrapper from '@/components/ErrorBoundaryWrapper';
-import { Tour } from '@/types/tour';
 
 const Index: React.FC = () => {
   const { isAuthenticated } = useAuth();
