@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,13 +13,23 @@ import {
   Edit,
   Trash2
 } from 'lucide-react';
-import { useAppState } from '@/contexts/AppStateContext';
 import AdminTours from '@/components/admin/AdminTours';
 import AdminUsers from '@/components/admin/AdminUsers';
 import AdminOverview from '@/components/admin/AdminOverview';
 
 const AdminDashboard: React.FC = () => {
-  const { currentPage } = useAppState();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Determine current page from URL
+  const getCurrentPage = () => {
+    const path = location.pathname;
+    if (path.includes('tours')) return 'admin-tours';
+    if (path.includes('users')) return 'admin-users';
+    return 'admin-overview';
+  };
+
+  const currentPage = getCurrentPage();
 
   const renderContent = () => {
     switch (currentPage) {
@@ -37,7 +48,7 @@ const AdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-sand-light">
       <div className="flex">
         {/* Sidebar */}
-        <AdminSidebar />
+        <AdminSidebar currentPage={currentPage} navigate={navigate} />
         
         {/* Main Content */}
         <div className="flex-1 p-6">
@@ -48,27 +59,33 @@ const AdminDashboard: React.FC = () => {
   );
 };
 
-const AdminSidebar: React.FC = () => {
-  const { currentPage, navigateTo } = useAppState();
+interface AdminSidebarProps {
+  currentPage: string;
+  navigate: (path: string) => void;
+}
 
+const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentPage, navigate }) => {
   const menuItems = [
     {
       id: 'admin-overview',
       label: 'Overview',
       icon: BarChart3,
-      description: 'Dashboard analytics'
+      description: 'Dashboard analytics',
+      path: '/admin'
     },
     {
       id: 'admin-tours',
       label: 'Manage Tours',
       icon: MapPin,
-      description: 'Tour management'
+      description: 'Tour management',
+      path: '/admin/tours'
     },
     {
       id: 'admin-users',
       label: 'Manage Users',
       icon: Users,
-      description: 'User management'
+      description: 'User management',
+      path: '/admin/users'
     }
   ];
 
@@ -92,7 +109,7 @@ const AdminSidebar: React.FC = () => {
             return (
               <li key={item.id}>
                 <button
-                  onClick={() => navigateTo(item.id as any)}
+                  onClick={() => navigate(item.path)}
                   className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
                     isActive 
                       ? 'bg-desert text-white' 

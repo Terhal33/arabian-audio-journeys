@@ -1,14 +1,14 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Headphones, Heart, Clock, MapPin } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
-import { useAppState } from '@/contexts/AppStateContext';
 
 const CustomerDashboard: React.FC = () => {
   const { user, profile } = useAuth();
-  const { navigateTo } = useAppState();
+  const navigate = useNavigate();
 
   const userName = profile?.full_name || user?.email?.split('@')[0] || 'User';
 
@@ -27,7 +27,7 @@ const CustomerDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigateTo('tours')}>
+          <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate('/tours')}>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Headphones className="h-5 w-5 text-oasis" />
@@ -79,7 +79,7 @@ const CustomerDashboard: React.FC = () => {
               <p className="text-muted-foreground mb-4">
                 We're working on creating personalized tour recommendations just for you.
               </p>
-              <Button onClick={() => navigateTo('tours')}>
+              <Button onClick={() => navigate('/tours')}>
                 Explore All Tours
               </Button>
             </div>

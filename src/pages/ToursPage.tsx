@@ -1,16 +1,16 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Clock, Play } from 'lucide-react';
 import { tours } from '@/services/toursData';
-import { useAppState } from '@/contexts/AppStateContext';
 
 const ToursPage: React.FC = () => {
-  const { navigateTo } = useAppState();
+  const navigate = useNavigate();
 
   const handleTourClick = (tourId: string) => {
-    navigateTo(`tour/${tourId}`);
+    navigate(`/tour/${tourId}`);
   };
 
   return (

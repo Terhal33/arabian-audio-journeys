@@ -1,5 +1,6 @@
 
-import { useAppState } from '@/contexts/AppStateContext';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Clock, MapPin } from 'lucide-react';
 import { Tour } from '@/services/toursData';
 
@@ -8,11 +9,11 @@ interface TourCardProps {
   featured?: boolean;
 }
 
-const TourCard = ({ tour, featured = false }: TourCardProps) => {
-  const { navigateTo } = useAppState();
+const TourCard: React.FC<TourCardProps> = ({ tour, featured = false }) => {
+  const navigate = useNavigate();
 
   const handleClick = () => {
-    navigateTo(`tour/${tour.id}`);
+    navigate(`/tour/${tour.id}`);
   };
 
   return (

@@ -1,12 +1,17 @@
 
 import React from 'react';
-import { useAppState } from '@/contexts/AppStateContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
 
-const GlobalMessage: React.FC = () => {
-  const { message, clearMessage } = useAppState();
+interface GlobalMessageProps {
+  message?: {
+    text: string;
+    type: 'success' | 'error' | 'info';
+  } | null;
+  onClear?: () => void;
+}
 
+const GlobalMessage: React.FC<GlobalMessageProps> = ({ message, onClear }) => {
   if (!message) return null;
 
   const getIcon = () => {
@@ -32,12 +37,14 @@ const GlobalMessage: React.FC = () => {
         {getIcon()}
         <AlertDescription className="flex items-center justify-between">
           <span>{message.text}</span>
-          <button
-            onClick={clearMessage}
-            className="ml-2 hover:opacity-70"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          {onClear && (
+            <button
+              onClick={onClear}
+              className="ml-2 hover:opacity-70"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </AlertDescription>
       </Alert>
     </div>

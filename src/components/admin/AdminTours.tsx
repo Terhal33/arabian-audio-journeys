@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAppState } from '@/contexts/AppStateContext';
+import { useToast } from '@/hooks/use-toast';
 import TourFormModal from '@/components/admin/TourFormModal';
 
 interface Tour {
@@ -24,7 +24,7 @@ const AdminTours: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingTour, setEditingTour] = useState<Tour | null>(null);
-  const { showMessage } = useAppState();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchTours();
@@ -39,14 +39,22 @@ const AdminTours: React.FC = () => {
 
       if (error) {
         console.error('Error fetching tours:', error);
-        showMessage('Failed to load tours', 'error');
+        toast({
+          title: "Error",
+          description: "Failed to load tours",
+          variant: "destructive",
+        });
         return;
       }
 
       setTours(data || []);
     } catch (error) {
       console.error('Error fetching tours:', error);
-      showMessage('Failed to load tours', 'error');
+      toast({
+        title: "Error",
+        description: "Failed to load tours",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -65,15 +73,26 @@ const AdminTours: React.FC = () => {
 
       if (error) {
         console.error('Error deleting tour:', error);
-        showMessage('Failed to delete tour', 'error');
+        toast({
+          title: "Error",
+          description: "Failed to delete tour",
+          variant: "destructive",
+        });
         return;
       }
 
-      showMessage('Tour deleted successfully', 'success');
+      toast({
+        title: "Success",
+        description: "Tour deleted successfully",
+      });
       fetchTours();
     } catch (error) {
       console.error('Error deleting tour:', error);
-      showMessage('Failed to delete tour', 'error');
+      toast({
+        title: "Error",
+        description: "Failed to delete tour",
+        variant: "destructive",
+      });
     }
   };
 

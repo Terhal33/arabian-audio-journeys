@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
-import { useAppState } from '@/contexts/AppStateContext';
+import { useToast } from '@/hooks/use-toast';
 
 const SignupPage: React.FC = () => {
   const [fullName, setFullName] = useState('');
@@ -17,7 +18,8 @@ const SignupPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const { signUp } = useAuth();
-  const { navigateTo, showMessage } = useAppState();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +39,10 @@ const SignupPage: React.FC = () => {
 
     try {
       await signUp(email, password, fullName);
-      showMessage('Account created successfully!', 'success');
+      toast({
+        title: "Success",
+        description: "Account created successfully!",
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create account');
     } finally {
@@ -130,7 +135,7 @@ const SignupPage: React.FC = () => {
           <p className="text-sm text-muted-foreground">
             Already have an account?{' '}
             <button 
-              onClick={() => navigateTo('login')}
+              onClick={() => navigate('/login')}
               className="text-oasis hover:underline"
             >
               Sign in here

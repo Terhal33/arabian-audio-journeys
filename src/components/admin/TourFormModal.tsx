@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
-import { useAppState } from '@/contexts/AppStateContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Tour {
   id: string;
@@ -34,7 +34,7 @@ const TourFormModal: React.FC<TourFormModalProps> = ({ tour, onClose }) => {
     published: false,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const { showMessage } = useAppState();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (tour) {
@@ -63,11 +63,18 @@ const TourFormModal: React.FC<TourFormModalProps> = ({ tour, onClose }) => {
 
         if (error) {
           console.error('Error updating tour:', error);
-          showMessage('Failed to update tour', 'error');
+          toast({
+            title: "Error",
+            description: "Failed to update tour",
+            variant: "destructive",
+          });
           return;
         }
 
-        showMessage('Tour updated successfully', 'success');
+        toast({
+          title: "Success",
+          description: "Tour updated successfully",
+        });
       } else {
         // Create new tour
         const { error } = await supabase
@@ -76,23 +83,34 @@ const TourFormModal: React.FC<TourFormModalProps> = ({ tour, onClose }) => {
 
         if (error) {
           console.error('Error creating tour:', error);
-          showMessage('Failed to create tour', 'error');
+          toast({
+            title: "Error",
+            description: "Failed to create tour",
+            variant: "destructive",
+          });
           return;
         }
 
-        showMessage('Tour created successfully', 'success');
+        toast({
+          title: "Success",
+          description: "Tour created successfully",
+        });
       }
 
       onClose();
     } catch (error) {
       console.error('Error saving tour:', error);
-      showMessage('Failed to save tour', 'error');
+      toast({
+        title: "Error",
+        description: "Failed to save tour",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: string | number | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 

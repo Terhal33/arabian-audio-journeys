@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,11 +8,12 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { User, Mail, Shield, Edit2, Save, X } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
-import { useAppState } from '@/contexts/AppStateContext';
+import { useToast } from '@/hooks/use-toast';
 
 const ProfilePage: React.FC = () => {
   const { user, profile, userRole, logout, updateProfile } = useAuth();
-  const { navigateTo, showMessage } = useAppState();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     full_name: profile?.full_name || '',
@@ -27,10 +29,17 @@ const ProfilePage: React.FC = () => {
         full_name: editForm.full_name,
       });
       setIsEditing(false);
-      showMessage('Profile updated successfully!', 'success');
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+      });
     } catch (error) {
       console.error('Error updating profile:', error);
-      showMessage('Failed to update profile', 'error');
+      toast({
+        title: "Error",
+        description: "Failed to update profile",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -46,11 +55,18 @@ const ProfilePage: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigateTo('index');
-      showMessage('Logged out successfully', 'success');
+      navigate('/');
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
     } catch (error) {
       console.error('Logout error:', error);
-      showMessage('Failed to logout', 'error');
+      toast({
+        title: "Error",
+        description: "Failed to logout",
+        variant: "destructive",
+      });
     }
   };
 
