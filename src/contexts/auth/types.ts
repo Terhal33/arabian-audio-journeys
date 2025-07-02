@@ -2,10 +2,15 @@
 import { User } from '@supabase/supabase-js';
 import { UserProfile } from '@/types/user';
 
+export interface ExtendedUser extends User {
+  name?: string;
+  isPremium: boolean;
+}
+
 export interface AuthState {
-  user: User | null;
+  user: ExtendedUser | null;
   profile: UserProfile | null;
-  session: any | null;
+  session: any;
   isLoading: boolean;
   isAuthenticated: boolean;
   language: 'en' | 'ar';
