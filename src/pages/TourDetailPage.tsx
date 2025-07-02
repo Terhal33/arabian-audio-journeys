@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAppState } from '@/contexts/AppStateContext';
+import { useNavigate } from 'react-router-dom';
 import { getTour, Tour } from '@/services/toursData';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -18,7 +18,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({ tourId }) => {
   const [tour, setTour] = useState<Tour | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
-  const { navigateTo } = useAppState();
+  const navigate = useNavigate();
   const { isPremium } = useAuth();
 
   useEffect(() => {
@@ -64,7 +64,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({ tourId }) => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-desert-dark mb-4">Tour Not Found</h2>
           <p className="text-muted-foreground mb-6">The tour you're looking for doesn't exist.</p>
-          <Button onClick={() => navigateTo('tours')}>
+          <Button onClick={() => navigate('/tours')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Tours
           </Button>
@@ -89,7 +89,7 @@ const TourDetailPage: React.FC<TourDetailPageProps> = ({ tourId }) => {
         <div className="container mx-auto px-4 py-4">
           <Button
             variant="ghost"
-            onClick={() => navigateTo('tours')}
+            onClick={() => navigate('/tours')}
             className="mb-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
