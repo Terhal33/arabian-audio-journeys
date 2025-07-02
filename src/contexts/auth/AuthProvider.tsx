@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { UserProfile } from '@/types/user';
 import { AuthContextType, AuthState, ExtendedUser } from './types';
@@ -22,7 +22,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [userRole, setUserRole] = useState<'admin' | 'customer' | null>(null);
   const authCheckInProgress = useRef(false);
 
-  // Fetch user role from the database
   const fetchUserRole = async (userId: string): Promise<'admin' | 'customer' | null> => {
     try {
       const { data, error } = await supabase
@@ -33,10 +32,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error('Error fetching user role:', error);
-        return 'customer'; // Default role
+        return 'customer';
       }
 
-      return data?.role as 'admin' | 'customer' || 'customer';
+      return (data?.role as 'admin' | 'customer') || 'customer';
     } catch (error) {
       console.error('Error fetching user role:', error);
       return 'customer';
@@ -50,13 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!userProfile) {
         console.log('User profile not found, will be created by trigger');
-        // Profile will be created by database trigger, just wait a moment
         await new Promise(resolve => setTimeout(resolve, 1000));
         userProfile = await fetchUserProfile(userId);
       }
 
       if (userProfile) {
-        const extendedUser: ExtendedUser = authState.user ? {
+        const extendedUser: ExtendedUser | null = authState.user ? {
           ...authState.user,
           name: userProfile.full_name,
           isPremium: false
@@ -67,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profile: userProfile, 
           user: extendedUser,
           isLoading: false,
-          language: userProfile.preferred_language as 'en' | 'ar' || state.language
+          language: (userProfile.preferred_language as 'en' | 'ar') || state.language
         }));
       } else {
         setAuthState(state => ({ ...state, isLoading: false }));
@@ -78,7 +76,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Update auth state based on session changes
   useEffect(() => {
     if (authCheckInProgress.current) return;
     
@@ -86,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('Setting up auth listener...');
     
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event, session: Session | null) => {
         console.log('Auth state changed:', event, session ? 'Session exists' : 'No session');
         const isAuthenticated = !!session?.user;
         const extendedUser: ExtendedUser | null = session?.user ? {
@@ -102,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }));
         
         if (session?.user) {
-          // Use setTimeout to prevent blocking the auth state change
           setTimeout(() => {
             handleFetchUserProfile(session.user.id);
             fetchUserRole(session.user.id).then(role => {

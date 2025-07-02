@@ -1,5 +1,5 @@
 
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
 import { UserProfile } from '@/types/user';
 
 export interface ExtendedUser extends User {
@@ -10,7 +10,7 @@ export interface ExtendedUser extends User {
 export interface AuthState {
   user: ExtendedUser | null;
   profile: UserProfile | null;
-  session: any;
+  session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   language: 'en' | 'ar';
@@ -19,7 +19,7 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   isPremium: boolean;
   userRole: 'admin' | 'customer' | null;
-  signUp: (email: string, password: string, fullName: string) => Promise<any>;
+  signUp: (email: string, password: string, fullName: string) => Promise<unknown>;
   signIn: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   signOut: () => Promise<void>;

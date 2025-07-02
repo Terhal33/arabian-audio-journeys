@@ -1,15 +1,14 @@
 
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { User, Menu, X, LogIn } from 'lucide-react';
 import { useAuth } from '@/contexts/auth/AuthProvider';
-import { useAppState } from '@/contexts/AppStateContext';
-
-type NavigationDestination = 'index' | 'tours' | 'login' | 'signup' | 'admin-dashboard' | 'customer-dashboard' | 'profile';
 
 const Navbar: React.FC = () => {
   const { user, isAuthenticated, userRole, logout } = useAuth();
-  const { navigateTo } = useAppState();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -19,14 +18,14 @@ const Navbar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigateTo('index');
+      navigate('/');
     } catch (error) {
       console.error("Logout failed:", error);
     }
   };
 
-  const handleNavigation = (page: NavigationDestination) => {
-    navigateTo(page);
+  const handleNavigation = (path: string) => {
+    navigate(path);
     setMenuOpen(false);
   };
 
@@ -34,7 +33,7 @@ const Navbar: React.FC = () => {
     <header className="bg-white shadow-sm sticky top-0 z-40">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <button 
-          onClick={() => handleNavigation('index')}
+          onClick={() => handleNavigation('/')}
           className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
         >
           <span className="text-xl font-display font-semibold text-desert-dark">
@@ -45,7 +44,7 @@ const Navbar: React.FC = () => {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-6">
           <button 
-            onClick={() => handleNavigation('tours')}
+            onClick={() => handleNavigation('/tours')}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             All Tours
@@ -55,13 +54,13 @@ const Navbar: React.FC = () => {
             <>
               <Button 
                 variant="outline" 
-                onClick={() => handleNavigation('login')}
+                onClick={() => handleNavigation('/login')}
               >
                 Sign In
               </Button>
               <Button 
                 className="bg-desert hover:bg-desert-dark" 
-                onClick={() => handleNavigation('signup')}
+                onClick={() => handleNavigation('/signup')}
               >
                 Create Account
               </Button>
@@ -70,21 +69,21 @@ const Navbar: React.FC = () => {
             <>
               {userRole === 'admin' ? (
                 <button 
-                  onClick={() => handleNavigation('admin-dashboard')}
+                  onClick={() => handleNavigation('/admin')}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Admin Panel
                 </button>
               ) : (
                 <button 
-                  onClick={() => handleNavigation('customer-dashboard')}
+                  onClick={() => handleNavigation('/home')}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Dashboard
                 </button>
               )}
               <button 
-                onClick={() => handleNavigation('profile')}
+                onClick={() => handleNavigation('/profile')}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 Profile
@@ -114,7 +113,7 @@ const Navbar: React.FC = () => {
         <nav className="bg-white px-4 py-2 md:hidden border-t border-gray-100">
           <div className="flex flex-col space-y-3">
             <button 
-              onClick={() => handleNavigation('tours')}
+              onClick={() => handleNavigation('/tours')}
               className="py-2 text-left text-muted-foreground hover:text-foreground"
             >
               All Tours
@@ -123,7 +122,7 @@ const Navbar: React.FC = () => {
             {!isAuthenticated ? (
               <>
                 <button 
-                  onClick={() => handleNavigation('login')}
+                  onClick={() => handleNavigation('/login')}
                   className="py-2 flex items-center text-desert-dark"
                 >
                   <LogIn className="h-4 w-4 mr-2" />
@@ -131,7 +130,7 @@ const Navbar: React.FC = () => {
                 </button>
                 <Button 
                   className="bg-desert hover:bg-desert-dark w-full"
-                  onClick={() => handleNavigation('signup')}
+                  onClick={() => handleNavigation('/signup')}
                 >
                   Create Account
                 </Button>
@@ -140,21 +139,21 @@ const Navbar: React.FC = () => {
               <>
                 {userRole === 'admin' ? (
                   <button 
-                    onClick={() => handleNavigation('admin-dashboard')}
+                    onClick={() => handleNavigation('/admin')}
                     className="py-2 text-left text-muted-foreground hover:text-foreground"
                   >
                     Admin Panel
                   </button>
                 ) : (
                   <button 
-                    onClick={() => handleNavigation('customer-dashboard')}
+                    onClick={() => handleNavigation('/home')}
                     className="py-2 text-left text-muted-foreground hover:text-foreground"
                   >
                     Dashboard
                   </button>
                 )}
                 <button 
-                  onClick={() => handleNavigation('profile')}
+                  onClick={() => handleNavigation('/profile')}
                   className="py-2 text-left text-muted-foreground hover:text-foreground"
                 >
                   Profile

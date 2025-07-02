@@ -1,6 +1,5 @@
 
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import { 
   QueryClient, 
   QueryClientProvider,
@@ -12,19 +11,19 @@ import { AuthProvider } from "@/contexts/auth/AuthProvider";
 import { AudioProvider } from "@/contexts/AudioContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import { Toaster } from "@/components/ui/toaster";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import App from './App.tsx';
 import './index.css';
 
-// Create a client with better performance settings
+// Create a client with better performance settings and error handling
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes (replaces cacheTime)
+      gcTime: 1000 * 60 * 30, // 30 minutes
       retry: 1,
       refetchOnWindowFocus: false,
       refetchOnMount: true,
-      // suspense option removed from here as it's no longer supported in global config
     },
   },
   queryCache: new QueryCache({
@@ -39,10 +38,18 @@ const queryClient = new QueryClient({
   }),
 });
 
+// Get root element with proper error handling
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
 // Initialize the app with React 18's createRoot
-createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
+createRoot(rootElement).render(
+  <ErrorBoundary onError={(error, errorInfo) => {
+    console.error('Application error:', error, errorInfo);
+  }}>
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <NetworkProvider>
           <AuthProvider>
@@ -53,6 +60,6 @@ createRoot(document.getElementById("root")!).render(
           </AuthProvider>
         </NetworkProvider>
       </TooltipProvider>
-    </BrowserRouter>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 );

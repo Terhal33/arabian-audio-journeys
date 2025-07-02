@@ -6,7 +6,10 @@ import Splash from '@/pages/Splash';
 import AuthNavigator from '@/navigation/AuthNavigator';
 import MainNavigator from '@/navigation/MainNavigator';
 import NotFound from '@/pages/NotFound';
+import LanguageSelection from '@/pages/LanguageSelection';
+import Onboarding from '@/pages/Onboarding';
 import { useToast } from '@/hooks/use-toast';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const AppInitializer: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -17,7 +20,6 @@ const AppInitializer: React.FC = () => {
   const location = useLocation();
   const { toast } = useToast();
   
-  // Add debug logs
   console.log('AppInitializer - Auth state:', { 
     isLoading, 
     isAuthenticated, 
@@ -25,7 +27,6 @@ const AppInitializer: React.FC = () => {
     hasInitialized: hasInitialized.current
   });
   
-  // Handle initial routing based on authentication state
   useEffect(() => {
     if (isLoading || hasInitialized.current || isNavigating.current) return;
     
@@ -33,32 +34,16 @@ const AppInitializer: React.FC = () => {
       setShowSplash(false);
       hasInitialized.current = true;
       
-      // Always allow access to auth-related pages
-      const publicPaths = [
-        '/register', 
-        '/verification', 
-        '/forgot-password',
-        '/signup',
-        '/login',
-        '/language-selection',
-        '/onboarding'
-      ];
-      
-      const isPublicPath = publicPaths.some(path => 
-        location.pathname === path || location.pathname.startsWith(path)
-      );
-      
-      // Root path handling
+      const publicPaths = ['/register', '/verification', '/forgot-password', '/signup', '/login', '/language-selection', '/onboarding'];
+      const isPublicPath = publicPaths.some(path => location.pathname === path || location.pathname.startsWith(path));
       const isRootPath = location.pathname === '/';
       
-      // Only redirect if we're not on a public path and not on root
       if (!isPublicPath && !isRootPath) {
         isNavigating.current = true;
         const hasSeenOnboarding = localStorage.getItem('aaj_onboarded') === 'true';
         const hasSelectedLanguage = localStorage.getItem('aaj_language');
         
         if (!isAuthenticated) {
-          // If not authenticated and not on a public path, follow the onboarding flow
           if (!hasSelectedLanguage) {
             navigate('/language-selection', { replace: true });
           } else if (!hasSeenOnboarding) {
@@ -70,11 +55,7 @@ const AppInitializer: React.FC = () => {
           } else {
             navigate('/login', { replace: true });
           }
-        } else if (location.pathname === '/profile') {
-          // If authenticated and on profile page, let it be (don't redirect)
-          isNavigating.current = false;
-        } else {
-          // If authenticated and not on a public path, go to home
+        } else if (location.pathname !== '/profile') {
           console.log("User is authenticated, redirecting to home page");
           navigate('/home', { replace: true });
           toast({
@@ -84,43 +65,33 @@ const AppInitializer: React.FC = () => {
           });
         }
         
-        // Reset navigation flag after a delay
         setTimeout(() => {
           isNavigating.current = false;
         }, 100);
       }
-    }, 2500); // Show splash for 2.5 seconds
+    }, 2500);
     
     return () => clearTimeout(timer);
   }, [isLoading, isAuthenticated, navigate, location.pathname, toast]);
   
-  // Show splash screen while loading
   if (showSplash || isLoading) {
     return <Splash />;
   }
   
-  // Log the route information
-  console.log('AppInitializer rendering routes. Current path:', location.pathname);
-  
   return (
-    <Routes>
-      {/* Language selection - unprotected */}
-      <Route path="/language-selection/*" element={<Navigate to="/language-selection" replace />} />
-      
-      {/* Auth routes - unprotected */}
-      <Route path="/onboarding/*" element={<AuthNavigator showOnboarding={true} />} />
-      <Route path="/login/*" element={<AuthNavigator showOnboarding={false} />} />
-      <Route path="/signup/*" element={<AuthNavigator showOnboarding={false} />} />
-      <Route path="/register/*" element={<AuthNavigator showOnboarding={false} />} />
-      <Route path="/forgot-password/*" element={<AuthNavigator showOnboarding={false} />} />
-      <Route path="/verification/*" element={<AuthNavigator showOnboarding={false} />} />
-      
-      {/* Protected app routes */}
-      <Route path="/*" element={<MainNavigator />} />
-      
-      {/* Fallback for unknown routes */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/language-selection" element={<LanguageSelection />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/login/*" element={<AuthNavigator showOnboarding={false} />} />
+        <Route path="/signup/*" element={<AuthNavigator showOnboarding={false} />} />
+        <Route path="/register/*" element={<AuthNavigator showOnboarding={false} />} />
+        <Route path="/forgot-password/*" element={<AuthNavigator showOnboarding={false} />} />
+        <Route path="/verification/*" element={<AuthNavigator showOnboarding={false} />} />
+        <Route path="/*" element={<MainNavigator />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </ErrorBoundary>
   );
 };
 
