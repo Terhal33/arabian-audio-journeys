@@ -2,8 +2,8 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { UserProfile, ExtendedUser } from '@/types/user';
-import { AuthContextType, AuthState } from './types';
+import { UserProfile } from '@/types/user';
+import { AuthContextType, AuthState, ExtendedUser } from './types';
 import { createUserProfile, fetchUserProfile, authMethods } from './authUtils';
 
 const initialState: AuthState = {
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (userProfile) {
-        const extendedUser = authState.user ? {
+        const extendedUser: ExtendedUser = authState.user ? {
           ...authState.user,
           name: userProfile.full_name,
           isPremium: false
@@ -89,10 +89,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       (event, session) => {
         console.log('Auth state changed:', event, session ? 'Session exists' : 'No session');
         const isAuthenticated = !!session?.user;
+        const extendedUser: ExtendedUser | null = session?.user ? {
+          ...session.user,
+          isPremium: false
+        } : null;
+        
         setAuthState(state => ({ 
           ...state, 
           session, 
-          user: session?.user as ExtendedUser || null,
+          user: extendedUser,
           isAuthenticated
         }));
         
@@ -119,11 +124,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session ? 'Session exists' : 'No session');
       const isAuthenticated = !!session?.user;
+      const extendedUser: ExtendedUser | null = session?.user ? {
+        ...session.user,
+        isPremium: false
+      } : null;
       
       setAuthState(state => ({ 
         ...state, 
         session, 
-        user: session?.user as ExtendedUser || null,
+        user: extendedUser,
         isAuthenticated,
         isLoading: false
       }));

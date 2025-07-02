@@ -37,7 +37,47 @@ export const fetchUserProfile = async (userId: string): Promise<UserProfile | nu
     throw error;
   }
 
-  return data;
+  // Ensure preferred_language is properly typed
+  return {
+    ...data,
+    preferred_language: (data.preferred_language as 'en' | 'ar') || 'en'
+  };
+};
+
+export const getUserFriendlyErrorMessage = (error: any, language: 'en' | 'ar'): string => {
+  if (!error) return '';
+  
+  const message = error.message || error.toString();
+  
+  // Handle specific Supabase auth errors
+  if (message.includes('User already registered')) {
+    return language === 'ar' 
+      ? 'هذا البريد الإلكتروني مسجل بالفعل'
+      : 'This email is already registered';
+  }
+  
+  if (message.includes('Invalid login credentials')) {
+    return language === 'ar'
+      ? 'بيانات تسجيل الدخول غير صحيحة'
+      : 'Invalid login credentials';
+  }
+  
+  if (message.includes('Email not confirmed')) {
+    return language === 'ar'
+      ? 'يرجى تأكيد بريدك الإلكتروني'
+      : 'Please confirm your email address';
+  }
+  
+  if (message.includes('Password should be at least 6 characters')) {
+    return language === 'ar'
+      ? 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل'
+      : 'Password should be at least 6 characters';
+  }
+  
+  // Default error message
+  return language === 'ar'
+    ? 'حدث خطأ، يرجى المحاولة مرة أخرى'
+    : 'An error occurred, please try again';
 };
 
 export const authMethods = {
@@ -83,5 +123,18 @@ export const authMethods = {
   resetPassword: async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) throw error;
+  },
+
+  resendVerificationEmail: async (email: string, language: 'en' | 'ar') => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+    });
+    if (error) throw error;
+  },
+
+  checkEmailVerification: async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.email_confirmed_at != null;
   }
 };
