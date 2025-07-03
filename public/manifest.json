@@ -1,0 +1,27 @@
+
+{
+  "name": "Terhal - Discover Saudi",
+  "short_name": "Terhal",
+  "description": "Discover Saudi heritage through immersive audio tours",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F2E8",
+  "theme_color": "#F5F2E8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["travel", "education", "entertainment"],
+  "lang": "en-US",
+  "dir": "ltr"
+}

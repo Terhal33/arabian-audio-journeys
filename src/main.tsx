@@ -12,8 +12,14 @@ import { AudioProvider } from "@/contexts/AudioContext";
 import { NetworkProvider } from "@/contexts/NetworkContext";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { configureMobileApp, handleBackButton, preventZoomOnInputs } from "@/utils/mobile";
 import App from './App.tsx';
 import './index.css';
+
+// Initialize mobile configurations
+configureMobileApp();
+handleBackButton();
+preventZoomOnInputs();
 
 // Create a client with better performance settings and error handling
 const queryClient = new QueryClient({
