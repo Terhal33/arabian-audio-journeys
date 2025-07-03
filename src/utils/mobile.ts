@@ -1,7 +1,6 @@
 
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { NavigationBar } from '@capacitor/navigation-bar';
 
 export const configureMobileApp = async () => {
   if (Capacitor.isNativePlatform()) {
@@ -9,11 +8,6 @@ export const configureMobileApp = async () => {
       // Configure status bar
       await StatusBar.setStyle({ style: Style.Light });
       await StatusBar.setBackgroundColor({ color: '#F5F2E8' });
-      
-      // Configure navigation bar (Android)
-      if (Capacitor.getPlatform() === 'android') {
-        await NavigationBar.setColor({ color: '#F5F2E8' });
-      }
     } catch (error) {
       console.log('Mobile configuration error:', error);
     }
